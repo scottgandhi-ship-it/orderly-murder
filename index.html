@@ -271,7 +271,7 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
         <button class="btn small" id="tool-mark" aria-pressed="false" title="Toggle marking mode (M)">✗ Mark</button>
         <button class="btn small" id="tool-undo" title="Undo (Z)">↶ Undo</button>
         <button class="btn small" id="tool-lens" aria-pressed="false" title="Highlight cells that fit the selected testimony (L)">🔍 Lens</button>
-        <button class="btn small" id="tool-hint" title="Ask the Inspector (H)">Hint</button>
+        <button class="btn small" id="tool-hint" title="Ask the Inspector, once per case (H)">Hint</button>
         <button class="btn small" id="tool-reset">Reset</button>
         <button class="btn small" id="tool-briefing">Briefing</button>
         <button class="btn small submit" id="tool-submit" disabled title="Available once everyone is placed">Submit Findings</button>
@@ -454,6 +454,8 @@ const store = {
   // the game stays fully playable without storage; only the solved stamps are lost
   set(v) { try { localStorage.setItem(STORE_KEY, JSON.stringify(v)); } catch {} },
   result(day, tierId) { return this.get().days[day]?.[tierId] || null; },
+  hintsUsed(day, tierId) { return this.get().days[day]?.["hints:" + tierId] || 0; },
+  setHintsUsed(day, tierId, n) { const v = this.get(); (v.days[day] = v.days[day] || {})["hints:" + tierId] = n; this.set(v); },
   record(day, tierId, result) { const v = this.get(); (v.days[day] = v.days[day] || {})[tierId] = result; this.set(v); },
   // only today and yesterday can be played, so nothing else is kept
   prune(today) {
@@ -574,7 +576,8 @@ function startCase(c, day) {
     draftMode: false,
     history: [],
     selected: 1, markMode: false, lens: false,
-    hints: 0, lensUses: 0, wrongAccusations: 0, elapsed: 0, solved: false, locked: false,
+    // hints already spent on this case today still count, so leaving and reopening does not refill them
+    hints: store.hintsUsed(day, c.tier), lensUses: 0, wrongAccusations: 0, elapsed: 0, solved: false, locked: false,
   };
   $("case-name").innerHTML = `${esc(c.title)}<small>${esc(c.subtitle)} · Day ${day}</small>`;
   $("timer").textContent = "0:00";
@@ -583,7 +586,7 @@ function startCase(c, day) {
   $("tool-lens").setAttribute("aria-pressed", "false");
   $("twist-box").innerHTML = (c.twist ? `<div class="twist"><b>Local rule: ${esc(c.twist.title)}</b>${esc(c.twist.text)}</div>` : "")
     + (c.tutorial ? `<div class="notes"><b>The Inspector's notes</b><ol>${c.tutorial.map(t => `<li>${esc(t)}</li>`).join("")}</ol></div>` : "");
-  buildBoard(); buildPeople(); buildLegend();
+  buildBoard(); buildPeople(); buildLegend(); updateHintButton();
   show("game");
   render();
   showBriefing(true);
@@ -905,14 +908,28 @@ function render() {
 }
 
 // ---------------------------------------------------------------- hints
+// One hint per case: pressing Hint repeatedly would otherwise solve the board on its own.
+const MAX_HINTS = 1;
+function updateHintButton() {
+  const spent = state.hints >= MAX_HINTS;
+  $("tool-hint").disabled = spent;
+  $("tool-hint").textContent = spent ? "Hint used" : "Hint";
+}
+function spendHint() {
+  state.hints++;
+  store.setHintsUsed(state.day, state.c.tier, state.hints);
+  updateHintButton();
+}
+
 function hint() {
   if (!state || state.solved) return;
+  if (state.hints >= MAX_HINTS) { flashStatus("The Inspector has already given his one hint for this case.", "warn"); return; }
   const { c, pos, people } = state;
   const { bad } = evaluate();
   // 1. point out a misplaced person
   const wrong = pos.findIndex((p, i) => p && (p[0] !== c.solution[i][0] || p[1] !== c.solution[i][1]));
   if (wrong >= 0) {
-    state.hints++;
+    spendHint();
     state.selected = wrong; render();
     flashStatus(`The Inspector taps the map: "${people[wrong].short} wasn't there. Look again."`, "warn");
     const [r, k] = pos[wrong]; state.cells[r][k].classList.add("hint-flash");
@@ -924,7 +941,7 @@ function hint() {
   const { order } = deduce(state.board, people, c.clues);
   const next = order.find(i => !pos[i]) ?? people.findIndex((_, i) => !pos[i]);
   if (next < 0) return;
-  state.hints++;
+  spendHint();
   snapshot();
   const [r, k] = c.solution[next];
   state.pos[next] = [r, k];
@@ -983,14 +1000,14 @@ function verdict(i) {
   const next = TIERS.find(t => !store.result(state.day, t.id));
   const rating = state.hints === 0 && state.wrongAccusations === 0 && state.lensUses === 0 ? "A flawless deduction."
     : state.hints === 0 && state.wrongAccusations === 0 ? "Sharp work. The Lens helped, but the logic was yours."
-    : state.hints <= 2 ? "Solved, with a little help from the Yard." : "Solved, eventually. The Inspector is very patient.";
+    : "Solved, with a little help from the Yard.";
   openModal(`
     <div class="kicker">${esc(c.subtitle)} · Day ${state.day} · Case Closed</div>
     <h2>${esc(k.name)}</h2>
     <div class="verdict">GUILTY</div>
     <p><i>${esc(c.motives[c.killer - 1])}</i></p>
     <p>Alone with ${esc(c.victim.short)} in the ${esc(c.roomNames[state.board.room(...c.solution[0])])}, ${esc(k.short)} had the only opportunity. Order has been restored.</p>
-    <p class="statsline">Time ${fmtTime(state.elapsed)} · Hints ${state.hints} · Lens used ${state.lensUses}× · Wrong accusations ${state.wrongAccusations}<br>${rating}</p>
+    <p class="statsline">Time ${fmtTime(state.elapsed)} · Hint ${state.hints ? "used" : "not used"} · Lens used ${state.lensUses}× · Wrong accusations ${state.wrongAccusations}<br>${rating}</p>
     <div class="row">
       <button class="btn" data-files>All Cases</button>
       ${next ? `<button class="btn primary" data-next>Next: ${esc(next.label)} →</button>` : `<button class="btn primary" data-files2>All four solved</button>`}
