@@ -605,7 +605,7 @@ $("modal-bg").addEventListener("click", e => { if (e.target === $("modal-bg") &&
 
 // ---------------------------------------------------------------- title / select
 const HOW_TO = `
-  <div class="kicker">Scotland Yard · Training</div>
+  <div class="kicker">The Inspector's Desk · Training</div>
   <h2>How to solve a murder</h2>
   <ol class="rules">
     <li><b>One person per row, one per column.</b> Like Sudoku, but everyone's a suspect. The victim counts as a person.</li>
@@ -643,7 +643,7 @@ function renderDay() {
   store.prune(today);
   if (today === 1) viewOffset = 0;
   const day = today - viewOffset;
-  $("day-kicker").textContent = `Scotland Yard · Day ${day}${TEST_DAY ? " · test day" : ""}`;
+  $("day-kicker").textContent = `The Inspector's Desk · Day ${day}${TEST_DAY ? " · test day" : ""}`;
   $("day-heading").textContent = viewOffset ? "Yesterday's Cases" : "Today's Cases";
   $("day-switch").hidden = today === 1;
   $("btn-day-today").setAttribute("aria-pressed", String(viewOffset === 0));
