@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="robots" content="noindex">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>A Most Orderly Murder</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -39,6 +39,8 @@ body {
   font-size: 16px;
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
+  /* viewport-fit=cover lets the page run under a notch when the phone is on its side */
+  padding: 0 env(safe-area-inset-right, 0px) 0 env(safe-area-inset-left, 0px);
 }
 button { font: inherit; color: inherit; cursor: pointer; }
 .screen { display: none; min-height: 100vh; }
@@ -55,9 +57,13 @@ button { font: inherit; color: inherit; cursor: pointer; }
   padding: 11px 20px; font-size: 14px; transition: background .15s, color .15s;
   position: relative;
 }
-.btn:hover, .btn:focus-visible { background: var(--gold); color: var(--ink); outline: none; }
+.btn:focus-visible { background: var(--gold); color: var(--ink); outline: none; }
 .btn.primary { background: var(--gold); color: var(--ink); }
-.btn.primary:hover { background: var(--gold-2); }
+/* a touch screen keeps :hover on the last button tapped, which would look the same as a pressed Draft or Cross out */
+@media (hover: hover) {
+  .btn:hover { background: var(--gold); color: var(--ink); }
+  .btn.primary:hover { background: var(--gold-2); }
+}
 .btn.small { padding: 6px 12px; font-size: 13px; letter-spacing: .1em; }
 .btn[aria-pressed="true"] { background: var(--gold); color: var(--ink); }
 .btn:disabled { opacity: .4; cursor: default; }
@@ -120,9 +126,6 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
 
 .board-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .board-frame { padding: 14px; background: #14161f; border: 1px solid var(--gold-dim); box-shadow: 0 0 0 6px var(--ink), 0 0 0 7px rgba(201,163,78,.45), 0 18px 40px rgba(0,0,0,.6); position: relative; }
-.compass { position: absolute; top: -9px; right: -9px; width: 30px; height: 30px; border-radius: 50%; background: var(--ink); border: 1px solid var(--gold); color: var(--gold); font-family: var(--deco); font-weight: 700; font-size: 13px; display: grid; place-items: center; }
-.board-axes { display: grid; gap: 0; }
-.axis { font-family: var(--type); color: #b39a62; font-size: 12px; display: grid; place-items: center; }
 .board { display: grid; position: relative; background: var(--wall); user-select: none; -webkit-user-select: none; touch-action: manipulation; }
 /* layers in a square, bottom to top: floor tint and staff hatch, object, window, brass corner,
    claimed wash, cross-out and draft marks, lens and hint overlay, token, room label */
@@ -142,7 +145,7 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
 .cell.claimed::after { content: ""; position: absolute; inset: 0; background: rgba(26,29,42,.2); z-index: 2; pointer-events: none; }
 .cell .mark { position: absolute; inset: 0; display: grid; place-items: center; z-index: 3; color: #a35f43; font-family: var(--type); font-weight: 700; font-size: calc(var(--cell) * .62); line-height: 1; pointer-events: none; }
 .drafts { position: absolute; left: 4%; right: 4%; bottom: 3%; display: flex; flex-wrap: wrap; gap: 0 calc(var(--cell) * .04); z-index: 3; pointer-events: none; }
-.draft { font-family: var(--type); font-style: italic; font-weight: 700; font-size: max(9px, calc(var(--cell) * .19)); line-height: 1.05; color: #4a3f2c; background: rgba(244,236,216,.72); padding: 0 .16em; }
+.draft { font-family: var(--type); font-style: italic; font-weight: 700; font-size: max(10px, calc(var(--cell) * .19)); line-height: 1.05; color: #4a3f2c; background: rgba(244,236,216,.72); padding: 0 .16em; }
 .draft.dim { opacity: .5; }
 .draft.focus { color: #231f1c; background: var(--gold-2); }
 .cell .fx { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
@@ -161,12 +164,7 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
 .token.victim::after { content: "\2020"; position: absolute; top: -22%; right: -22%; width: 46%; height: 46%; border-radius: 50%; background: var(--blood); border: 1px solid #f4ecd8;
   display: grid; place-items: center; font-size: calc(var(--cell) * .14); }
 .token.selected { outline: max(2px, calc(var(--cell) * .03)) solid var(--gold); outline-offset: 2px; }
-@media (max-width: 600px) {
-  body { font-size: 17px; }
-  #game { padding: 10px 8px 30px; }
-  .board-frame { padding: 6px; box-shadow: 0 0 0 3px var(--ink), 0 0 0 4px var(--gold-dim); }
-  .dossier { padding: 12px; }
-}
+.token.flagged { outline: max(3px, calc(var(--cell) * .05)) solid var(--blood); outline-offset: 2px; }
 @keyframes drop { from { transform: scale(1.4); opacity: 0; } }
 
 .tools { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
@@ -235,6 +233,77 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
 .rules .art-row .legend-art { width: 30px; height: 30px; }
 .modal.wide { max-width: 860px; }
 .toolkit { font-family: var(--type); font-size: 13.5px; line-height: 1.6; }
+/* ---------- phone ---------- */
+.tray, .statement, .sheet-head, .sheet-tools, .head-count, #tool-casebook { display: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* the small viewport: it does not change as the browser's bars slide in and out, so the board is not rebuilt mid-scroll */
+#vh-probe { position: fixed; top: 0; left: 0; width: 0; height: 100vh; height: calc(100svh - env(safe-area-inset-bottom, 0px)); visibility: hidden; pointer-events: none; }
+@media (max-width: 600px) {
+  body { font-size: 17px; }
+  body.sheet-open { overflow: hidden; }
+  /* the heights and margins in this block are mirrored by PHONE_CHROME, PHONE_FRAME and PHONE_MARGIN in the script */
+  #game { min-height: 100svh; padding: 0 8px calc(60px + env(safe-area-inset-bottom, 0px)); }
+  .topbar { flex-wrap: nowrap; height: 56px; margin: 0; gap: 8px; }
+  #btn-back-cases { flex: none; width: 44px; height: 44px; padding: 0; font-size: 0; }
+  #btn-back-cases::before { content: "\2190"; font-size: 18px; }
+  .topbar .case-name { min-width: 0; font-size: 20px; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .topbar .case-name small { font-size: 12px; letter-spacing: 0; overflow: hidden; text-overflow: ellipsis; }
+  .head-count { display: inline; }
+  .top-links { display: none; }
+  .timer { flex: none; min-width: 0; font-size: 18px; }
+  .layout { display: block; }
+  .board-wrap { gap: 10px; }
+  .board-frame { padding: 4px; box-shadow: 0 0 0 3px var(--ink), 0 0 0 4px var(--gold-dim); }
+  .status { display: none; }
+
+  .tray { display: flex; justify-content: center; align-items: center; gap: 6px; width: 100%; height: 56px; }
+  .tray-btn { flex: 0 1 52px; min-width: 44px; height: 52px; padding: 0; background: none; border: 0; display: grid; place-items: center; position: relative; }
+  .tray-btn .chip { position: relative; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-family: var(--serif); font-weight: 700; font-size: 16px; line-height: 1; color: #f4ecd8; border: 2px solid #f4ecd8; }
+  .tray-btn.victim .chip::after { content: "\2020"; position: absolute; top: -5px; right: -5px; width: 16px; height: 16px; border-radius: 50%; background: var(--blood); border: 1px solid #f4ecd8; display: grid; place-items: center; font-size: 10px; }
+  .tray-btn.placed .chip { opacity: .5; }
+  .tray-btn.placed::after { content: "\2713"; position: absolute; right: 0; bottom: 1px; width: 18px; height: 18px; border-radius: 50%; background: var(--ink); border: 1px solid var(--gold); color: var(--gold-2); font: 700 11px/16px var(--type); text-align: center; }
+  .tray-btn.selected .chip { opacity: 1; box-shadow: 0 0 0 2px var(--ink), 0 0 0 4px var(--gold); }
+  .tray-btn:focus-visible { outline: 2px solid var(--gold-2); }
+
+  .statement { display: flex; align-items: center; width: 100%; height: 60px; padding: 0 12px; overflow: hidden; background: var(--ink-2); border-left: 3px solid var(--gold); font-size: 15px; line-height: 1.3; color: var(--text); }
+  .statement.warn { color: #e48a7f; border-left-color: #e48a7f; }
+  .statement.good { color: #9fcf9f; border-left-color: #9fcf9f; }
+
+  .tools { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; flex-wrap: nowrap; gap: 6px; padding: 7px 8px calc(8px + env(safe-area-inset-bottom, 0px)); background: var(--ink); border-top: 1px solid var(--gold-dim); }
+  .tools .btn { flex: 0 0 44px; height: 44px; padding: 0; font-size: 0; letter-spacing: 0; display: grid; place-items: center; }
+  .tools .btn::before { font-family: var(--serif); font-size: 20px; line-height: 1; }
+  #tool-draft::before { content: "\270E"; }
+  #tool-mark::before { content: "\00D7"; font-size: 26px; }
+  #tool-undo::before { content: "\21BA"; }
+  #tool-hint::before { content: "?"; font-weight: 700; }
+  #tool-casebook, #tool-submit { flex: 1 1 0; min-width: 0; }
+  #tool-casebook { display: grid; background: var(--paper); border-color: var(--paper); color: var(--wall); font-family: var(--display); font-weight: 400; font-size: min(16px, 3.8vw); text-transform: none; }
+  #tool-submit { font-size: 13px; letter-spacing: .06em; }
+
+  /* the testimony panel becomes the Casebook: a sheet over the whole screen */
+  .dossier { display: none; position: fixed; inset: 0; z-index: 40; overflow-y: auto; overscroll-behavior: contain; background: var(--paper); color: var(--wall); border: 0; padding: 0 16px calc(20px + env(safe-area-inset-bottom, 0px)); }
+  .dossier.open { display: block; }
+  .dossier-head { display: none; }
+  .sheet-head { display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 1; background: var(--paper); padding: calc(10px + env(safe-area-inset-top, 0px)) 0 8px; border-bottom: 1px solid rgba(42,36,24,.3); }
+  .sheet-head h3 { flex: 1; margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; line-height: 1; }
+  .sheet-head span { font-family: var(--type); font-size: 13px; color: #5c5240; }
+  #casebook-close { flex: none; width: 44px; height: 44px; padding: 0; background: none; border: 1px solid var(--wall); color: var(--wall); font-size: 26px; line-height: 1; }
+  .dossier .twist { margin: 12px 0 0; }
+  .dossier .twist b { color: var(--blood); }
+  .people { gap: 0; }
+  .person, .person.victim-card { background: none; color: var(--wall); border: 0; border-bottom: 1px solid rgba(42,36,24,.2); padding: 12px 4px; }
+  .person.selected { background: var(--paper-2); box-shadow: none; }
+  .person .chip { box-shadow: 0 0 0 1px rgba(42,36,24,.4); }
+  .person .clue { color: var(--wall); font-size: 15px; }
+  .person .who small, .person .state, .legend h5, .legend .note { color: #5c5240; }
+  .person .state.placing { color: #6e521c; }
+  .legend { color: var(--wall); border-top-color: rgba(42,36,24,.3); }
+  .sheet-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(42,36,24,.3); }
+  #sheet-tools button { flex: 1 1 40%; min-height: 44px; padding: 0 10px; background: none; border: 1px solid var(--wall); color: var(--wall); font-family: var(--type); font-weight: 700; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; text-decoration: none; }
+  #sheet-tools button[aria-pressed="true"] { background: var(--wall); color: var(--paper); }
+  #sheet-tools button:focus-visible, #casebook-close:focus-visible { outline: 2px solid var(--wall); outline-offset: 2px; }
+  #tool-casebook:focus-visible { outline: 2px solid var(--gold-2); outline-offset: 2px; }
+}
 </style>
 </head>
 <body>
@@ -279,9 +348,9 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
 <!-- ============ GAME ============ -->
 <section id="game" class="screen">
   <div class="topbar">
-    <button class="btn small" id="btn-back-cases">← Cases</button>
+    <button class="btn small" id="btn-back-cases" aria-label="Back to the cases">← Cases</button>
     <div class="case-name" id="case-name"></div>
-    <div class="top-links">
+    <div class="top-links" id="top-links">
       <button class="link" id="tool-briefing">Briefing</button>
       <button class="link" id="tool-how">How to play</button>
       <button class="link" id="tool-reset">Reset</button>
@@ -290,29 +359,33 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
   </div>
   <div class="layout">
     <div class="board-wrap">
-      <div class="board-frame">
-        <div class="compass" title="North is up">N</div>
-        <div class="board-axes" id="board-axes"></div>
-      </div>
-      <div class="tools">
-        <button class="btn small" id="tool-draft" aria-pressed="false" title="Note where the selected person might be (D)">✎ Draft</button>
-        <button class="btn small" id="tool-mark" aria-pressed="false" title="Cross a square out (X)">× Cross out</button>
-        <button class="btn small" id="tool-undo" title="Undo (Z)">Undo</button>
+      <div class="board-frame" id="board-frame"></div>
+      <div class="tray" id="tray"></div>
+      <div class="statement" id="statement"></div>
+      <div class="tools" id="tools">
+        <button class="btn small" id="tool-casebook" aria-haspopup="dialog">Casebook</button>
+        <button class="btn small" id="tool-draft" aria-label="Draft" aria-pressed="false" title="Note where the selected person might be (D)">✎ Draft</button>
+        <button class="btn small" id="tool-mark" aria-label="Cross out" aria-pressed="false" title="Cross a square out (X)">× Cross out</button>
+        <button class="btn small" id="tool-undo" aria-label="Undo" title="Undo (Z)">Undo</button>
         <button class="btn small" id="tool-lens" aria-pressed="false" title="Dim the squares the selected person's statement rules out (L)">Lens</button>
         <button class="btn small" id="tool-hint" title="Ask the Inspector, once per case (H)">Hint</button>
         <button class="btn small primary" id="tool-submit" disabled title="Available once everyone is placed">Accuse</button>
       </div>
       <div class="status" id="status"></div>
+      <div class="sr-only" id="announce" aria-live="polite"></div>
     </div>
-    <aside class="dossier">
+    <aside class="dossier" id="casebook" aria-labelledby="casebook-title">
+      <div class="sheet-head"><h3 id="casebook-title">Casebook</h3><span id="sheet-count"></span><button id="casebook-close" aria-label="Close the casebook">×</button></div>
       <div id="twist-box"></div>
       <div class="dossier-head"><h4>Testimony</h4><span id="placed-count"></span></div>
       <div class="people" id="people"></div>
       <div class="legend" id="legend"></div>
+      <div class="sheet-tools" id="sheet-tools"></div>
     </aside>
   </div>
 </section>
 
+<div id="vh-probe"></div>
 <div class="modal-bg" id="modal-bg"><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
 
 <script>
@@ -497,8 +570,9 @@ const esc = s => String(s).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;"
 const initials = name => name.replace(/^(Lord|Lady|Mr\.|Mrs\.|Miss|Dr\.|Colonel|Countess|Father|Sir|Signora|Captain|Detective Sgt\.)\s+/, "")
   .replace(/'[^']*'\s*/g, "").split(/\s+/).filter(Boolean).map(w => w[0]).slice(0, 2).join("").toUpperCase();
 const fmtTime = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-const colLabel = c => String.fromCharCode(65 + c);
-const squareName = p => colLabel(p[1]) + (p[0] + 1);
+// the one test for the phone layout; the stylesheet's media query uses the same width
+const PHONE = window.matchMedia("(max-width: 600px)");
+const isPhone = () => PHONE.matches;
 const roomRef = name => name.startsWith("Compartment") ? name : "the " + name;
 const staffWord = c => /crew/i.test(c.twist?.title || "") ? "Crew" : "Staff";
 
@@ -616,13 +690,13 @@ function startCase(c, day) {
     // hints already spent on this case today still count, so leaving and reopening does not refill them
     hints: store.hintsUsed(day, c.tier), lensUses: 0, wrongAccusations: 0, falseStarts: 0, elapsed: 0, solved: false, gaveUp: false, locked: false,
   };
-  $("case-name").innerHTML = `${esc(c.title)}<small>${esc(c.subtitle)} · Day ${day}</small>`;
+  $("case-name").innerHTML = `${esc(c.title)}<small>${esc(c.subtitle)} · Day ${day}<span class="head-count" id="head-count"></span></small>`;
   $("timer").textContent = "0:00";
   $("tool-mark").setAttribute("aria-pressed", "false");
   $("tool-draft").setAttribute("aria-pressed", "false");
   $("tool-lens").setAttribute("aria-pressed", "false");
   $("twist-box").innerHTML = c.twist ? `<div class="twist"><b>Local rule: ${esc(c.twist.title)}</b>${esc(c.twist.text)}</div>` : "";
-  buildBoard(); buildPeople(); buildLegend(); updateHintButton();
+  buildBoard(); buildPeople(); buildTray(); buildLegend(); updateHintButton();
   show("game");
   render();
   // the Starter is where new players arrive, so it opens with the briefing; bigger cases begin at once
@@ -647,11 +721,23 @@ function showBriefing(first) {
 }
 
 // ---------------------------------------------------------------- board
+// header 56 + tray 56 + statement 60 + bar 60 + two 10px gaps, as the phone stylesheet sets them, + 10px of air above the bar.
+// They are constants because the board is built before the game screen is shown and can be measured.
+const PHONE_CHROME = 262;
+// around the board: frame padding 4 + frame border 1 on each side, and across the width a page margin of 8 as well
+const PHONE_FRAME = 10, PHONE_MARGIN = 16;
 function cellSize(n) {
   const vw = document.documentElement.clientWidth || window.innerWidth;
+  if (isPhone()) {
+    const byWidth = Math.floor((vw - PHONE_MARGIN - PHONE_FRAME) / n);
+    const tall = $("vh-probe").offsetHeight || window.innerHeight;
+    const byHeight = Math.floor((tall - PHONE_CHROME - PHONE_FRAME) / n);
+    // shrink to keep the game on one screen, but not below a comfortable tap; past that the page scrolls
+    return Math.min(byWidth, Math.max(byHeight, 44));
+  }
   const vh = window.innerHeight;
   const stacked = vw <= 900;
-  const availW = stacked ? vw - (vw < 600 ? 60 : 110) : vw - 400 - 24 - 130;
+  const availW = stacked ? vw - 110 : vw - 400 - 24 - 130;
   const availH = stacked ? Infinity : vh - 200;
   return Math.max(28, Math.min(130, Math.floor(Math.min(availW, availH) / n)));
 }
@@ -661,17 +747,8 @@ function buildBoard() {
   const n = b.n;
   const cell = state.cellSize = cellSize(n);
   document.documentElement.style.setProperty("--cell", cell + "px");
-  const axes = $("board-axes");
-  axes.innerHTML = "";
-  axes.style.gridTemplateColumns = `18px ${cell * n}px`;
-  axes.style.gridTemplateRows = `18px ${cell * n}px`;
-  axes.appendChild(el("div"));
-  const top = el("div"); top.style.display = "grid"; top.style.gridTemplateColumns = `repeat(${n}, ${cell}px)`;
-  for (let k = 0; k < n; k++) top.appendChild(el("div", "axis", colLabel(k)));
-  axes.appendChild(top);
-  const left = el("div"); left.style.display = "grid"; left.style.gridTemplateRows = `repeat(${n}, ${cell}px)`;
-  for (let r = 0; r < n; r++) left.appendChild(el("div", "axis", r + 1));
-  axes.appendChild(left);
+  const frame = $("board-frame");
+  frame.innerHTML = "";
 
   const grid = el("div", "board");
   grid.id = "board";
@@ -685,6 +762,8 @@ function buildBoard() {
     for (let k = 0; k < n; k++) {
       const d = el("div", "cell");
       const rm = b.room(r, k), o = b.obj(r, k);
+      // the grid carries no letters or numbers, so the position is spelled out for hover and screen readers
+      const where = `row ${r + 1}, column ${k + 1}`;
       d.style.background = ROOM_TINTS[roomCodes.indexOf(rm) % ROOM_TINTS.length];
       if (b.edge(r, k, -1, 0)) d.classList.add("wt");
       if (b.edge(r, k, 1, 0)) d.classList.add("wb");
@@ -712,10 +791,10 @@ function buildBoard() {
           d.insertAdjacentHTML("beforeend", artSvg(ART[L.name], "obj"));
         }
         if (!L.blocking) d.insertAdjacentHTML("beforeend", CORNER_SVG);
-        d.title = L.wall ? `${c.roomNames[rm]} · in front of a window · ${colLabel(k)}${r + 1}`
-          : `${c.roomNames[rm]} · ${L.name}${L.blocking ? " (solid)" : " (someone can be here)"} · ${colLabel(k)}${r + 1}`;
+        d.title = L.wall ? `${c.roomNames[rm]} · in front of a window · ${where}`
+          : `${c.roomNames[rm]} · ${L.name}${L.blocking ? " (solid)" : " (someone can be here)"} · ${where}`;
       } else {
-        d.title = `${c.roomNames[rm]} · ${colLabel(k)}${r + 1}`;
+        d.title = `${c.roomNames[rm]} · ${where}`;
       }
       d.appendChild(el("div", "fx"));
       d.dataset.r = r; d.dataset.c = k;
@@ -729,7 +808,7 @@ function buildBoard() {
       state.cells[r].push(d);
     }
   }
-  axes.appendChild(grid);
+  frame.appendChild(grid);
 }
 
 function buildPeople() {
@@ -745,8 +824,23 @@ function buildPeople() {
         <div class="clue">${esc(state.c.clues[i].text)}</div>
       </div>
       <div class="state"></div>`;
-    b.onclick = () => select(i);
+    b.onclick = () => {
+      if (!sheetOpen()) { select(i); return; }
+      // in the Casebook a tap always picks the person; it never deselects
+      if (!state.solved) { clearNotices(); state.selected = i; }
+      closeCasebook(); render();
+    };
     list.appendChild(b);
+    return b;
+  });
+}
+
+function buildTray() {
+  const tray = $("tray"); tray.innerHTML = "";
+  state.trayBtns = state.people.map((p, i) => {
+    const b = el("button", "tray-btn" + (p.victim ? " victim" : ""), `<span class="chip" style="background:${p.color}">${initials(p.name)}</span>`);
+    b.onclick = () => select(i);
+    tray.appendChild(b);
     return b;
   });
 }
@@ -763,8 +857,16 @@ function buildLegend() {
 }
 
 // ---------------------------------------------------------------- interaction
+// a new move clears the last message and any tokens the Inspector ringed
+function clearNotices() {
+  state.ringed = null; state.flash = null; clearTimeout(statusTimer);
+  // emptied so that the same message twice running is announced twice
+  $("announce").textContent = "";
+}
+
 function select(i) {
   if (state.solved) return;
+  clearNotices();
   state.selected = state.selected === i ? null : i;
   render();
 }
@@ -788,6 +890,7 @@ function settleDrafts(i, r, k) {
 
 function onCellClick(r, k, mark) {
   if (!state || state.solved) return;
+  clearNotices();
   const b = state.board;
   const occupant = state.pos.findIndex(p => p && p[0] === r && p[1] === k);
   if (mark || state.markMode) {
@@ -806,7 +909,7 @@ function onCellClick(r, k, mark) {
     // pick the person back up
     snapshot(); state.pos[occupant] = null; state.selected = occupant; render(); return;
   }
-  if (state.selected == null) { flashStatus("Choose a person from the testimony list first.", "warn"); return; }
+  if (state.selected == null) { flashStatus("Choose a person first.", "warn"); return; }
   if (b.blocking(r, k)) { flashStatus("Nobody can stand there; it's furniture.", "warn"); return; }
   snapshot();
   if (occupant >= 0) state.pos[occupant] = null;
@@ -822,6 +925,7 @@ function onCellClick(r, k, mark) {
 function undo() {
   const h = state.history.pop();
   if (!h) return;
+  clearNotices();
   state.pos = h.pos; state.marks = h.marks; state.drafts = h.drafts; render();
 }
 
@@ -836,34 +940,45 @@ $("tool-mark").onclick = () => setMode("mark");
 $("tool-draft").onclick = () => setMode("draft");
 $("tool-submit").onclick = () => submitFindings();
 $("tool-undo").onclick = () => undo();
-$("tool-lens").onclick = () => { state.lens = !state.lens; if (state.lens) state.lensUses++; $("tool-lens").setAttribute("aria-pressed", state.lens); render(); };
+$("tool-lens").onclick = () => { closeCasebook(); state.lens = !state.lens; if (state.lens) state.lensUses++; $("tool-lens").setAttribute("aria-pressed", state.lens); render(); };
 $("tool-reset").onclick = () => {
+  closeCasebook();
   openModal(`<h2>Start over?</h2><p>Everyone you have placed, and every draft mark and cross, will be cleared. A hint you have used stays used.</p>
     <div class="row"><button class="btn" data-no>Keep investigating</button><button class="btn primary" data-yes>Clear the board</button></div>`, m => {
     m.querySelector("[data-no]").onclick = closeModal;
     m.querySelector("[data-yes]").onclick = () => { snapshot(); state.pos = state.pos.map(() => null); state.marks.clear(); state.drafts.clear(); state.selected = 1; closeModal(); render(); };
   });
 };
-$("tool-briefing").onclick = () => showBriefing(false);
-$("tool-how").onclick = () => showHowTo();
-$("tool-hint").onclick = () => hint();
+$("tool-briefing").onclick = () => { closeCasebook(); showBriefing(false); };
+$("tool-how").onclick = () => { closeCasebook(); showHowTo(); };
+// on a phone the button is a bare question mark, which reads as help, and a hint cannot be taken back
+$("tool-hint").onclick = () => isPhone() ? askForHint() : hint();
+$("tool-casebook").onclick = () => openCasebook();
+$("casebook-close").onclick = () => closeCasebook();
 
 document.addEventListener("keydown", e => {
   if (!$("game").classList.contains("active") || !state) return;
   if ($("modal-bg").classList.contains("open")) { if (e.key === "Escape" && !state.locked) closeModal(); return; }
+  // the board is out of sight behind the Casebook, so its shortcuts must not reach it
+  if (sheetOpen()) { if (e.key === "Escape") closeCasebook(); return; }
   if (/^[0-9]$/.test(e.key)) { const i = +e.key; if (i < state.people.length) select(i); }
   else if (e.key === "Escape") { state.selected = null; render(); }
   else if (/^[mx]$/i.test(e.key)) setMode("mark");
   else if (/^[dp]$/i.test(e.key)) setMode("draft");
   else if (e.key === "z" || e.key === "Z") undo();
   else if (e.key === "l" || e.key === "L") $("tool-lens").click();
-  else if (e.key === "h" || e.key === "H") hint();
+  else if (e.key === "h" || e.key === "H") $("tool-hint").click();
 });
 
 let statusTimer = null;
-function flashStatus(msg, kind) {
-  const s = $("status"); s.textContent = msg; s.className = "status " + (kind || "");
-  clearTimeout(statusTimer); statusTimer = setTimeout(() => render(), 3200);
+// render() is the only writer of the status and statement lines; a message is held in state until it expires
+function flashStatus(msg, kind, sticky) {
+  state.flash = { msg, kind: kind || "" };
+  $("announce").textContent = msg;
+  clearTimeout(statusTimer);
+  // on a phone the hint is the one message worth rereading, so it waits for the player's next move
+  statusTimer = sticky && isPhone() ? null : setTimeout(() => { if (state) { state.flash = null; render(); } }, 3200);
+  render();
 }
 
 // ---------------------------------------------------------------- evaluation
@@ -915,7 +1030,7 @@ function render() {
   }
   pos.forEach((p, i) => {
     if (!p) return;
-    const t = el("div", "token" + (people[i].victim ? " victim" : "") + (sel === i ? " selected" : ""), initials(people[i].name));
+    const t = el("div", "token" + (people[i].victim ? " victim" : "") + (sel === i ? " selected" : "") + (!state.solved && state.ringed?.includes(i) ? " flagged" : ""), initials(people[i].name));
     t.style.background = people[i].color;
     cells[p[0]][p[1]].appendChild(t);
   });
@@ -924,20 +1039,35 @@ function render() {
     card.classList.toggle("placed", !!pos[i]);
     const st = card.querySelector(".state");
     const placing = sel === i && !pos[i];
-    st.textContent = pos[i] ? squareName(pos[i]) : placing ? "Placing" : "–";
+    st.textContent = pos[i] ? "Placed" : placing ? "Placing" : "–";
     st.className = "state" + (placing ? " placing" : "");
+    const tb = state.trayBtns[i], p = people[i];
+    tb.classList.toggle("selected", sel === i);
+    tb.classList.toggle("placed", !!pos[i]);
+    tb.setAttribute("aria-pressed", sel === i);
+    tb.setAttribute("aria-label", `${p.name}, ${p.victim ? "the deceased" : p.role}, ${pos[i] ? "placed in " + roomRef(c.roomNames[b.room(...pos[i])]) : "not placed"}`);
   });
-  const s = $("status");
   const placed = pos.filter(Boolean).length;
-  $("placed-count").textContent = `${placed} of ${people.length} placed`;
+  const count = `${placed} of ${people.length} placed`;
+  $("placed-count").textContent = count;
+  $("sheet-count").textContent = count;
+  $("head-count").textContent = " · " + count;
   $("tool-submit").disabled = state.solved || placed < people.length;
-  s.className = "status";
-  if (state.solved) s.textContent = state.gaveUp ? "Case abandoned." : "Case closed.";
-  else if (placed === people.length) s.textContent = "Everyone is placed. Press Accuse when you are sure.";
-  else if (sel != null) s.textContent = state.draftMode ? `Drafting ${people[sel].short}. Draft marks are just for you.`
+  const over = state.solved ? (state.gaveUp ? "Case abandoned." : "Case closed.") : null;
+  const ready = placed === people.length ? "Everyone is placed. Press Accuse when you are sure." : null;
+  const f = state.flash;
+  const kind = f && f.kind ? " " + f.kind : "";
+  const s = $("status");
+  s.className = "status" + kind;
+  s.textContent = f ? f.msg : over || ready || (sel == null ? "Choose someone from the testimony."
+    : state.draftMode ? `Drafting ${people[sel].short}. Draft marks are just for you.`
     : state.markMode ? "Crossing out. Tap a square to rule it out."
-    : `Placing ${people[sel].short}. Tap a square to put them there.`;
-  else s.textContent = "Choose someone from the testimony.";
+    : `Placing ${people[sel].short}. Tap a square to put them there.`);
+  // the phone has no room for a status line: the selected person's statement sits here, and messages borrow the space
+  const line = f ? f.msg : over || (sel != null ? c.clues[sel].text : ready || "Choose someone.");
+  const st = $("statement");
+  st.className = "statement" + kind;
+  if (st.textContent !== line) st.textContent = line;
 }
 
 // ---------------------------------------------------------------- hints
@@ -947,6 +1077,7 @@ function updateHintButton() {
   const spent = state.hints >= MAX_HINTS;
   $("tool-hint").disabled = spent;
   $("tool-hint").textContent = spent ? "Hint used" : "Hint";
+  $("tool-hint").setAttribute("aria-label", spent ? "Hint used" : "Hint");
 }
 function spendHint() {
   state.hints++;
@@ -963,7 +1094,7 @@ function hint() {
   if (wrong >= 0) {
     spendHint();
     state.selected = wrong; render();
-    flashStatus(`The Inspector taps the map: "${people[wrong].short} wasn't there. Look again."`, "warn");
+    flashStatus(`The Inspector taps the map: "${people[wrong].short} wasn't there. Look again."`, "warn", true);
     const [r, k] = pos[wrong]; state.cells[r][k].classList.add("hint-flash");
     setTimeout(() => state.cells[r][k].classList.remove("hint-flash"), 3000);
     return;
@@ -983,20 +1114,70 @@ function hint() {
   render();
   state.cells[r][k].classList.add("hint-flash");
   setTimeout(() => state.cells[r][k].classList.remove("hint-flash"), 3000);
-  flashStatus(`"Consider ${people[next].short}: ${c.clues[next].text}" The Inspector marks ${colLabel(k)}${r + 1}.`, "good");
+  flashStatus(`The Inspector places ${people[next].short}.`, "good", true);
+}
+
+function askForHint() {
+  if (!state || state.solved || state.hints >= MAX_HINTS) { hint(); return; }
+  openModal(`
+    <div class="kicker">One per case</div>
+    <h2>Ask the Inspector?</h2>
+    <p>He will give you one hint for this case, and only one.</p>
+    <div class="row">
+      <button class="btn" data-no>Not now</button>
+      <button class="btn primary" data-yes>Ask</button>
+    </div>`, m => {
+    m.querySelector("[data-no]").onclick = closeModal;
+    m.querySelector("[data-yes]").onclick = () => { closeModal(); hint(); };
+  });
+}
+
+// ---------------------------------------------------------------- casebook (phone)
+const sheetOpen = () => $("casebook").classList.contains("open");
+function openCasebook() {
+  if (!state || !isPhone()) return;
+  const sheet = $("casebook");
+  sheet.classList.add("open");
+  sheet.setAttribute("role", "dialog"); sheet.setAttribute("aria-modal", "true");
+  setBehindSheet(true);
+  sheet.scrollTop = 0;
+  $("casebook-close").focus();
+}
+function closeCasebook() {
+  if (!sheetOpen()) return;
+  const sheet = $("casebook");
+  sheet.classList.remove("open");
+  sheet.removeAttribute("role"); sheet.removeAttribute("aria-modal");
+  setBehindSheet(false);
+  $("tool-casebook").focus();
+}
+// the sheet lives inside the game screen, so its siblings are shut off rather than the screen itself
+function setBehindSheet(hidden) {
+  document.querySelectorAll("#game .topbar, #game .board-wrap").forEach(e => { e.inert = hidden; });
+  document.body.classList.toggle("sheet-open", hidden);
+}
+// Lens, Briefing, How to play and Reset are single buttons: they live in the Casebook on a phone and in their old places otherwise
+function placeControls() {
+  if (isPhone()) {
+    ["tool-lens", "tool-briefing", "tool-how", "tool-reset"].forEach(id => $("sheet-tools").appendChild($(id)));
+  } else {
+    $("tools").insertBefore($("tool-lens"), $("tool-hint"));
+    ["tool-briefing", "tool-how", "tool-reset"].forEach(id => $("top-links").appendChild($(id)));
+  }
 }
 
 // ---------------------------------------------------------------- completion & accusation
 // What the Inspector objects to first: a shared line, a guest out of bounds, then a broken statement.
 function findObjection() {
   const { board: b, pos, people, c } = state;
+  const inRoom = i => roomRef(c.roomNames[b.room(...pos[i])]);
   for (let i = 0; i < people.length; i++) for (let j = i + 1; j < people.length; j++) {
-    if (pos[i][0] === pos[j][0]) return { who: i, quote: "One person to every row.", detail: `${people[i].short} and ${people[j].short} are both in row ${pos[i][0] + 1}.` };
-    if (pos[i][1] === pos[j][1]) return { who: i, quote: "One person to every column.", detail: `${people[i].short} and ${people[j].short} are both in column ${colLabel(pos[i][1])}.` };
+    if (pos[i][0] === pos[j][0]) return { who: i, ring: [i, j], quote: "One person to every row.", detail: `${people[i].short} and ${people[j].short} are in the same row.` };
+    if (pos[i][1] === pos[j][1]) return { who: i, ring: [i, j], quote: "One person to every column.", detail: `${people[i].short} and ${people[j].short} are in the same column.` };
   }
   for (let i = 0; i < people.length; i++) {
     if (!b.allowed(people[i], pos[i][0], pos[i][1])) {
-      return { who: i, quote: c.twist ? c.twist.text : "Guests keep to their own rooms.", detail: `You've put ${people[i].short} in ${roomRef(c.roomNames[b.room(...pos[i])])}.` };
+      return { who: i, ring: [i], quote: c.twist ? c.twist.text : "Guests keep to their own rooms.", detail: `You've put ${people[i].short} in ${inRoom(i)}.` };
     }
   }
   const i = evaluate().clueState.indexOf(false);
@@ -1004,9 +1185,9 @@ function findObjection() {
   const cl = c.clues[i];
   // an ONLY or ALONE statement can be true of its speaker and still be broken by somebody else
   const rival = ONLY[cl.type] && b.unaryOk(cl, pos[i][0], pos[i][1]) ? pos.findIndex((q, j) => j !== i && b.unaryOk(cl, q[0], q[1])) : -1;
-  return { who: i, quote: cl.text, detail: rival >= 0
-    ? `You've put ${people[rival].short} at ${squareName(pos[rival])}, where the same would be true of them.`
-    : `You've put ${people[i].short} at ${squareName(pos[i])}.` };
+  return { who: i, ring: [rival >= 0 ? rival : i], quote: cl.text, detail: rival >= 0
+    ? `You've put ${people[rival].short} in ${inRoom(rival)}, where the same would be true of them.`
+    : `You've put ${people[i].short} in ${inRoom(i)}.` };
 }
 
 function submitFindings() {
@@ -1021,6 +1202,9 @@ function submitFindings() {
 
 function rejectAccusation(o) {
   const p = o ? state.people[o.who] : null;
+  // with no square names to quote, the tokens in question are ringed on the board instead
+  state.ringed = o ? o.ring : null;
+  render();
   openModal(`
     <div class="kicker">Accusation rejected</div>
     <h2>Not quite, Inspector.</h2>
@@ -1065,6 +1249,7 @@ function giveUp() {
   const { c } = state;
   state.pos = c.solution.map(p => [...p]);
   state.marks.clear(); state.drafts.clear();
+  clearNotices();
   state.selected = null; state.lens = false;
   state.solved = true; state.gaveUp = true; state.locked = false;
   stopTimer();
@@ -1096,6 +1281,7 @@ function verdict(i) {
     accuse(`${esc(people[i].short)} was in ${esc(where)}, ${scene === state.board.room(...c.solution[i]) ? "but not alone" : "nowhere near the body"}. The Inspector clears their throat. Try again.`);
     return;
   }
+  clearNotices();
   state.solved = true; state.locked = false; state.selected = null; state.lens = false;
   stopTimer();
   recordResult(false);
@@ -1133,6 +1319,13 @@ function showVerdict() {
 window.addEventListener("resize", () => {
   if (state && $("game").classList.contains("active") && cellSize(state.board.n) !== state.cellSize) { buildBoard(); render(); }
 });
+// crossing the phone width, by rotating for instance: an open Casebook would otherwise leave the page shut off
+PHONE.addEventListener("change", () => {
+  closeCasebook();
+  placeControls();
+  if (state && $("game").classList.contains("active")) { buildBoard(); render(); }
+});
+placeControls();
 </script>
 </body>
 </html>
