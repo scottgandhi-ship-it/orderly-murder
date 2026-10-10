@@ -220,6 +220,7 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
 .stats { display: flex; gap: 32px; margin: 16px 0 4px; padding: 14px 0; border-top: 1px dashed #a8956a; border-bottom: 1px dashed #a8956a; }
 .stats b { display: block; font-family: var(--display); font-weight: 400; font-size: 24px; line-height: 1.1; }
 .stats span { font-family: var(--type); font-size: 11.5px; letter-spacing: .2em; text-transform: uppercase; color: #5c5240; }
+.next-cases { text-align: center; font-style: italic; color: var(--text-dim); font-size: 14px; margin: 18px 0 0; }
 .modal .fine { font-style: italic; font-size: 13.5px; color: #5c5240; }
 .objection { display: flex; gap: 12px; align-items: flex-start; background: #fff8e8; border: 1px solid #a8956a; padding: 12px 14px; margin: 12px 0; }
 .objection p { margin: 0 0 4px; }
@@ -341,6 +342,7 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
     </div>
   </div>
   <div class="case-grid" id="case-grid"></div>
+  <p class="next-cases" id="next-cases"></p>
   <div class="back-row"><button class="btn small" id="btn-back-title">← Back</button></div>
 </section>
 
@@ -537,13 +539,39 @@ const DAY_MS = 86400000;
 const DEV_BUILD = false;
 const TEST_DAY = DEV_BUILD ? (() => { const v = parseInt(new URLSearchParams(location.search).get("day"), 10); return v >= 1 ? v : null; })() : null;
 
-function currentDay() {
-  if (TEST_DAY) return TEST_DAY;
+// The day changes for every player at the same moment: midnight in the US Eastern time zone, all year.
+// Everyone therefore has the same cases at the same time, wherever they are.
+const RESET_ZONE = "America/New_York";
+function resetZoneParts(at) {
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", { timeZone: RESET_ZONE, hourCycle: "h23", hour12: false, year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric" }).formatToParts(at);
+    const v = name => +parts.find(x => x.type === name).value;
+    // some browsers write midnight as hour 24
+    return { y: v("year"), m: v("month"), d: v("day"), secs: (v("hour") % 24) * 3600 + v("minute") * 60 + v("second") };
+  } catch {
+    // a browser without time zone data falls back to the player's own clock
+    return { y: at.getFullYear(), m: at.getMonth() + 1, d: at.getDate(), secs: at.getHours() * 3600 + at.getMinutes() * 60 + at.getSeconds() };
+  }
+}
+function dayAt(at) {
   const [y, m, d] = DATA.epoch.split("-").map(Number);
-  const now = new Date();
-  // compare calendar dates rather than elapsed time, so the day changes at the player's own midnight
-  const days = Math.round((Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) - Date.UTC(y, m - 1, d)) / DAY_MS);
-  return Math.max(1, days + 1);
+  const now = resetZoneParts(at);
+  // calendar dates in the reset zone, not elapsed hours, so a 23 or 25 hour day at a clock change still counts as one
+  return Math.max(1, Math.round((Date.UTC(now.y, now.m - 1, now.d) - Date.UTC(y, m - 1, d)) / DAY_MS) + 1);
+}
+function currentDay() { return TEST_DAY || dayAt(new Date()); }
+// milliseconds until the next day begins
+function untilNextDay(at) {
+  const zone = resetZoneParts(at);
+  let next = at.getTime() - at.getMilliseconds() + (86400 - zone.secs) * 1000;
+  // the day of a clock change is an hour short or an hour long
+  const date = t => { const z = resetZoneParts(new Date(t)); return z.y * 10000 + z.m * 100 + z.d; }, today = date(at.getTime());
+  if (date(next - 1000) !== today) next -= 3600000; else if (date(next) === today) next += 3600000;
+  return next - at.getTime();
+}
+function nextCasesIn(at) {
+  const mins = Math.max(1, Math.ceil(untilNextDay(at) / 60000));
+  return `${Math.floor(mins / 60)}h ${String(mins % 60).padStart(2, "0")}m`;
 }
 function puzzleFor(tierId, day) { const pool = DATA.puzzles[tierId]; return pool[(day - 1) % pool.length]; }
 
@@ -580,7 +608,9 @@ const store = {
   // only today and yesterday can be played, so nothing else is kept
   prune(today) {
     const v = this.get();
-    const stale = Object.keys(v.days).filter(k => +k !== today && +k !== today - 1);
+    // the day after today is kept too: before the day began at one moment for everyone, a player
+    // east of the reset zone could already have solved cases that are now tomorrow's
+    const stale = Object.keys(v.days).filter(k => +k !== today && +k !== today - 1 && +k !== today + 1);
     if (!stale.length) return;
     stale.forEach(k => delete v.days[k]);
     this.set(v);
@@ -649,7 +679,20 @@ $("btn-day-yesterday").onclick = () => { viewOffset = 1; renderDay(); };
 
 let viewOffset = 0;  // 0 = today, 1 = yesterday
 
-// The day is read every time this screen is drawn, so a tab left open overnight rolls over here.
+let shownDay = 0;
+function showNextCases() {
+  $("next-cases").textContent = TEST_DAY ? "" : `New cases in ${nextCasesIn(new Date())}. The day turns at midnight Eastern for everyone.`;
+}
+// A tab left on this screen keeps its countdown honest and brings in the new cases when the day turns.
+// The cards are only rebuilt when the day has changed, so a keyboard user's place on them is not lost.
+function refreshDayScreen() {
+  if (!$("select").classList.contains("active") || $("modal-bg").classList.contains("open")) return;
+  if (currentDay() !== shownDay) renderDay(); else showNextCases();
+}
+setInterval(refreshDayScreen, 60000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshDayScreen(); });
+
+// The day is read every time this screen is drawn, so a tab left open past the reset rolls over here.
 function renderDay() {
   const today = currentDay();
   store.prune(today);
@@ -657,6 +700,8 @@ function renderDay() {
   const day = today - viewOffset;
   $("day-kicker").textContent = `The Inspector's Desk · Day ${day}${TEST_DAY ? " · test day" : ""}`;
   $("day-heading").textContent = viewOffset ? "Yesterday's Cases" : "Today's Cases";
+  shownDay = today;
+  showNextCases();
   $("day-switch").hidden = today === 1;
   $("btn-day-today").setAttribute("aria-pressed", String(viewOffset === 0));
   $("btn-day-yesterday").setAttribute("aria-pressed", String(viewOffset === 1));
@@ -1344,7 +1389,7 @@ function showVerdict() {
       <button class="btn" data-files>All cases</button>
       ${next ? `<button class="btn primary" data-next>Next case: ${esc(next.label)} →</button>` : ""}
     </div>
-    <p class="fine">${next ? "" : "That is every case for this day. "}Tomorrow's body arrives at midnight.</p>`, m => {
+    <p class="fine">${next ? "" : "That is every case for this day. "}The next body arrives in ${nextCasesIn(new Date())}, at midnight Eastern.</p>`, m => {
     m.querySelector("[data-files]").onclick = () => { closeModal(); backToDay(); };
     const nx = m.querySelector("[data-next]");
     if (nx) nx.onclick = () => { closeModal(); startCase(puzzleFor(next.id, state.day), state.day); };
