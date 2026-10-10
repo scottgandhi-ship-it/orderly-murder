@@ -145,9 +145,9 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
 .cell.claimed::after { content: ""; position: absolute; inset: 0; background: rgba(26,29,42,.2); z-index: 2; pointer-events: none; }
 .cell .mark { position: absolute; inset: 0; display: grid; place-items: center; z-index: 3; color: #a35f43; font-family: var(--type); font-weight: 700; font-size: calc(var(--cell) * .62); line-height: 1; pointer-events: none; }
 .drafts { position: absolute; left: 4%; right: 4%; bottom: 3%; display: flex; flex-wrap: wrap; gap: 0 calc(var(--cell) * .04); z-index: 3; pointer-events: none; }
-.draft { font-family: var(--type); font-style: italic; font-weight: 700; font-size: max(10px, calc(var(--cell) * .19)); line-height: 1.05; color: #4a3f2c; background: rgba(244,236,216,.72); padding: 0 .16em; }
-.draft.dim { opacity: .5; }
-.draft.focus { color: #231f1c; background: var(--gold-2); }
+.draft { font-family: var(--type); font-style: italic; font-weight: 700; font-size: max(10px, calc(var(--cell) * .19)); line-height: 1.05; color: var(--who, #4a3f2c); background: #f4ecd8; padding: 0 .16em; }
+/* the token colours are too weak on gold, so the selected person's drafts reverse into a small copy of their token, cream ring included: without it the chip has no edge on teal art */
+.draft.focus { color: #f4ecd8; background: var(--who, #4a3f2c); box-shadow: 0 0 0 1px #f4ecd8; }
 .cell .fx { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
 .cell.lens .fx { box-shadow: inset 0 0 0 2px rgba(201,163,78,.95); }
 .cell.lens-off .fx { background: rgba(26,29,42,.5); }
@@ -752,14 +752,16 @@ function stopTimer() { if (timerHandle) clearInterval(timerHandle); timerHandle 
 
 function startCase(c, day) {
   const people = [{ ...c.victim, victim: true }, ...c.suspects];
+  // shown victim first, then suspects A to Z; everything else keeps the stored order the statements and solution use
+  const order = [0, ...people.map((_, i) => i).slice(1).sort((a, b) => people[a].name.localeCompare(people[b].name, "en"))];
   state = {
-    day, c, board: new Board(c), people,
+    day, c, board: new Board(c), people, order,
     pos: people.map(() => null),            // [r,c] per person
     marks: new Set(),                        // "r,c"
     drafts: new Map(),                       // "r,c" -> Set(person idx)
     draftMode: false,
     history: [],
-    selected: 1, markMode: false, lens: false,
+    selected: null, markMode: false, lens: false,
     // hints already spent on this case today still count, so leaving and reopening does not refill them
     hints: store.hintsUsed(day, c.tier), lensUses: 0, falseStarts: 0, elapsed: 0, solved: false, gaveUp: false,
   };
@@ -896,9 +898,11 @@ function buildBoard() {
 function buildPeople() {
   const list = $("people"); list.innerHTML = "";
   const staffTag = " · " + staffWord(state.c).toLowerCase();
-  state.cards = state.people.map((p, i) => {
+  state.cards = [];
+  state.order.forEach((i, at) => {
+    const p = state.people[i];
     const b = el("button", "person" + (p.victim ? " victim-card" : ""));
-    p.color = p.victim ? VICTIM_COLOR : TOKEN_COLORS[(i - 1) % TOKEN_COLORS.length];
+    p.color = p.victim ? VICTIM_COLOR : TOKEN_COLORS[(at - 1) % TOKEN_COLORS.length];
     b.innerHTML = `
       <div class="chip" style="background:${p.color}">${initials(p.name)}</div>
       <div>
@@ -913,17 +917,19 @@ function buildPeople() {
       closeCasebook(); render();
     };
     list.appendChild(b);
-    return b;
+    state.cards[i] = b;
   });
 }
 
 function buildTray() {
   const tray = $("tray"); tray.innerHTML = "";
-  state.trayBtns = state.people.map((p, i) => {
+  state.trayBtns = [];
+  state.order.forEach(i => {
+    const p = state.people[i];
     const b = el("button", "tray-btn" + (p.victim ? " victim" : ""), `<span class="chip" style="background:${p.color}">${initials(p.name)}</span>`);
     b.onclick = () => select(i);
     tray.appendChild(b);
-    return b;
+    state.trayBtns[i] = b;
   });
 }
 
@@ -1004,9 +1010,8 @@ function onCellClick(r, k, mark) {
   state.pos[state.selected] = [r, k];
   state.marks.delete(r + "," + k);
   settleDrafts(state.selected, r, k);
-  // move selection to the next unplaced person, a small convenience
-  const next = state.people.findIndex((_, i) => !state.pos[i]);
-  state.selected = next >= 0 ? next : null;
+  // nobody is selected afterwards: testers kept placing a person the game had picked for them
+  state.selected = null;
   render();
 }
 
@@ -1028,13 +1033,18 @@ $("tool-mark").onclick = () => setMode("mark");
 $("tool-draft").onclick = () => setMode("draft");
 $("tool-submit").onclick = () => submitFindings();
 $("tool-undo").onclick = () => undo();
-$("tool-lens").onclick = () => { closeCasebook(); state.lens = !state.lens; if (state.lens) state.lensUses++; $("tool-lens").setAttribute("aria-pressed", state.lens); render(); };
+$("tool-lens").onclick = () => {
+  closeCasebook();
+  // the lens reads one person's statement, and nobody is selected until the player chooses
+  if (!state.lens && state.selected == null) { flashStatus("Choose a person to use the lens.", "warn"); return; }
+  state.lens = !state.lens; if (state.lens) state.lensUses++; $("tool-lens").setAttribute("aria-pressed", state.lens); render();
+};
 $("tool-reset").onclick = () => {
   closeCasebook();
   openModal(`<h2>Start over?</h2><p>Everyone you have placed, and every draft mark and cross, will be cleared. A hint you have used stays used.</p>
     <div class="row"><button class="btn" data-no>Keep investigating</button><button class="btn primary" data-yes>Clear the board</button></div>`, m => {
     m.querySelector("[data-no]").onclick = closeModal;
-    m.querySelector("[data-yes]").onclick = () => { snapshot(); state.pos = state.pos.map(() => null); state.marks.clear(); state.drafts.clear(); state.selected = 1; closeModal(); render(); };
+    m.querySelector("[data-yes]").onclick = () => { snapshot(); state.pos = state.pos.map(() => null); state.marks.clear(); state.drafts.clear(); state.selected = null; closeModal(); render(); };
   });
 };
 $("tool-briefing").onclick = () => { closeCasebook(); showBriefing(false); };
@@ -1049,7 +1059,7 @@ document.addEventListener("keydown", e => {
   if ($("modal-bg").classList.contains("open")) { if (e.key === "Escape") closeModal(); return; }
   // the board is out of sight behind the Casebook, so its shortcuts must not reach it
   if (sheetOpen()) { if (e.key === "Escape") closeCasebook(); return; }
-  if (/^[0-9]$/.test(e.key)) { const i = +e.key; if (i < state.people.length) select(i); }
+  if (/^[0-9]$/.test(e.key)) { const i = +e.key; if (i < state.order.length) select(state.order[i]); }
   else if (e.key === "Escape") { state.selected = null; render(); }
   else if (/^[mx]$/i.test(e.key)) setMode("mark");
   else if (/^[dp]$/i.test(e.key)) setMode("draft");
@@ -1111,8 +1121,11 @@ function render() {
     const ds = state.drafts.get(r + "," + k);
     if (ds && !taken) {
       const box = el("div", "drafts");
-      [...ds].sort((a, b) => a - b).forEach(i =>
-        box.appendChild(el("span", "draft" + (sel == null ? "" : sel === i ? " focus" : " dim"), initials(people[i].name))));
+      [...ds].sort((a, b) => state.order.indexOf(a) - state.order.indexOf(b)).forEach(i => {
+        const mark = el("span", "draft" + (sel === i ? " focus" : ""), initials(people[i].name));
+        mark.style.setProperty("--who", people[i].color);
+        box.appendChild(mark);
+      });
       d.appendChild(box);
     }
   }
@@ -1147,9 +1160,9 @@ function render() {
   const kind = f && f.kind ? " " + f.kind : "";
   const s = $("status");
   s.className = "status" + kind;
-  s.textContent = f ? f.msg : over || ready || (sel == null ? "Choose someone from the testimony."
+  s.textContent = f ? f.msg : over || ready || (state.markMode ? "Crossing out. Tap a square to rule it out."
+    : sel == null ? "Choose someone from the testimony."
     : state.draftMode ? `Drafting ${people[sel].short}. Draft marks are just for you.`
-    : state.markMode ? "Crossing out. Tap a square to rule it out."
     : `Placing ${people[sel].short}. Tap a square to put them there.`);
   // the phone has no room for a status line: the selected person's statement sits here, and messages borrow the space
   const line = f ? f.msg : over || (sel != null ? c.clues[sel].text : ready || "Choose someone.");
@@ -1197,8 +1210,7 @@ function hint() {
   state.pos[next] = [r, k];
   state.marks.delete(r + "," + k);
   settleDrafts(next, r, k);
-  state.selected = people.findIndex((_, i) => !state.pos[i]);
-  if (state.selected < 0) state.selected = null;
+  state.selected = null;
   render();
   state.cells[r][k].classList.add("hint-flash");
   setTimeout(() => state.cells[r][k].classList.remove("hint-flash"), 3000);
