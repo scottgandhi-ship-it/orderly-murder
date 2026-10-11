@@ -57,7 +57,10 @@ button { font: inherit; color: inherit; cursor: pointer; }
   padding: 11px 20px; font-size: 14px; transition: background .15s, color .15s;
   position: relative;
 }
-.btn:focus-visible { background: var(--gold); color: var(--ink); outline: none; }
+/* focus is a detached, square-cornered ring and never a fill: a fill means pressed, a flush edge means selected */
+.btn:focus-visible, .case-card:focus-visible { outline: 3px solid var(--gold-2); outline-offset: 3px; }
+/* a control the browser scrolls to must not sit flush with the screen edge, or the far side of its ring is off screen */
+.btn, .case-card { scroll-margin: 8px; }
 .btn.primary { background: var(--gold); color: var(--ink); }
 /* a touch screen keeps :hover on the last button tapped, which would look the same as a pressed Draft or Cross out */
 @media (hover: hover) {
@@ -96,7 +99,7 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
   box-shadow: 0 10px 30px rgba(0,0,0,.45); position: relative; transition: transform .15s;
   display: flex; flex-direction: column;
 }
-.case-card:hover, .case-card:focus-visible { transform: translateY(-4px) rotate(-.4deg); outline: none; }
+.case-card:hover { transform: translateY(-4px) rotate(-.4deg); }
 .case-card .tab { background: var(--paper-2); padding: 10px 16px; font-family: var(--type); font-size: 14px; display: flex; justify-content: space-between; border-bottom: 1px dashed #a8956a; }
 .case-card .body { padding: 16px 18px 20px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
 .case-card h3 { font-family: var(--display); font-weight: 400; font-size: 25px; margin: 0; line-height: 1.1; }
@@ -110,18 +113,24 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
 .stamp {
   position: absolute; bottom: 14px; right: 12px; transform: rotate(-8deg);
   font-family: var(--type); color: var(--blood); border: 3px double var(--blood); padding: 4px 10px;
-  font-size: 18px; letter-spacing: .1em; opacity: .85; background: rgba(241,230,207,.6);
+  font-size: 18px; letter-spacing: .1em; background: rgba(241,230,207,.6);
 }
 .back-row { text-align: center; margin-top: 34px; }
 
 /* ---------- game ---------- */
 #game { padding: 14px 16px 40px; }
 .topbar { display: flex; align-items: center; gap: 12px; max-width: 1800px; margin: 0 auto 14px; flex-wrap: wrap; }
-.topbar .case-name { font-family: var(--display); font-size: clamp(22px, 3vw, 30px); color: var(--gold-2); flex: 1; min-width: 200px; }
+.topbar .case-name { font-family: var(--display); font-weight: 400; font-size: clamp(22px, 3vw, 30px); color: var(--gold-2); flex: 1; min-width: 200px; margin: 0; }
+/* A heading takes focus when its screen or dialog opens. It is not a control and is never reached by Tab, so it draws no ring:
+   left to the browser, a ring appears round the case name whenever a case is reopened by a reload. */
+.screen :is(h1, h2):focus, .modal h2:focus { outline: none; }
+body.modal-open { overflow: hidden; }
 .topbar .case-name small { display: block; font-family: var(--type); font-size: 14px; color: var(--text-dim); letter-spacing: .05em; }
 .top-links { display: flex; gap: 2px; flex-wrap: wrap; }
 .link { background: none; border: none; font-family: var(--type); font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-dim); padding: 12px 8px; }
-.link:hover, .link:focus-visible { color: var(--gold-2); outline: none; text-decoration: underline; text-underline-offset: 4px; }
+.link:hover, .link:focus-visible { color: var(--gold-2); text-decoration: underline; text-underline-offset: 4px; }
+/* the links sit 2px apart, so their ring is drawn inside */
+.link:focus-visible { outline: 2px solid var(--gold-2); outline-offset: -2px; }
 .timer { font-family: var(--type); font-weight: 700; color: var(--gold-2); font-size: 20px; min-width: 64px; text-align: right; }
 .layout { display: grid; grid-template-columns: minmax(0, auto) minmax(300px, 400px); gap: 24px; max-width: 1800px; margin: 0 auto; align-items: start; justify-content: center; }
 @media (max-width: 900px) { .layout { grid-template-columns: minmax(0, 1fr); } }
@@ -187,6 +196,8 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
 .person:hover { border-color: var(--gold-dim); }
 .person.selected { border-color: var(--gold-2); background: #343a49; box-shadow: 0 0 0 1px var(--gold-2); }
 .person.victim-card { background: #261a1a; }
+/* stands off the card, clear of the flush edge that means selected */
+.person:focus-visible { outline: 3px solid var(--gold-2); outline-offset: 3px; }
 .person .chip { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-family: var(--serif); font-weight: 700; font-size: 16px; color: #f4ecd8; border: 2px solid #f4ecd8; }
 .person .who { font-weight: 700; font-size: 15.5px; line-height: 1.2; }
 .person .who small { font-weight: 400; font-style: italic; color: var(--text-dim); font-size: 12.5px; display: block; }
@@ -201,6 +212,8 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
   .people:has(.person:not(.placed)) .person.placed:not(.selected, :focus-visible) .chip { box-shadow: inset 0 0 0 40px rgba(26,29,42,.55); border-color: rgba(244,236,216,.5); }
   .people:has(.person:not(.placed)) .person.placed:not(.selected, :focus-visible) :is(.who, .clue) { color: var(--text-dim); }
 }
+/* the dim text is too faint on the lighter fill of a selected card; on the phone's paper sheet it has its own colour */
+@media (min-width: 601px) { .person.selected .who small, .person.selected .state:not(.placing) { color: #b3a994; } }
 @media (min-width: 601px) and (hover: hover) {
   .people:has(.person:not(.placed)) .person.placed:hover .chip { box-shadow: none; border-color: #f4ecd8; }
   .people:has(.person:not(.placed)) .person.placed:hover :is(.who, .clue) { color: inherit; }
@@ -219,12 +232,14 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
 .modal { background: var(--paper); color: var(--ink); max-width: 640px; width: 100%; padding: 30px 30px 26px; position: relative; box-shadow: 0 30px 60px rgba(0,0,0,.6); }
 .modal::before { content: ""; position: absolute; inset: 8px; border: 1px solid #a8956a; pointer-events: none; }
 .modal h2 { font-family: var(--display); font-weight: 400; font-size: clamp(28px, 6vw, 38px); margin: 4px 0 8px; line-height: 1.05; }
-.modal .kicker { color: #7d6531; }
+.modal .kicker { color: #6f5a2b; }
 .modal p { font-size: 15.5px; line-height: 1.55; margin: 10px 0; }
 .modal .typed { font-family: var(--type); font-size: 15px; background: rgba(0,0,0,.04); border-left: 3px solid #7d6531; padding: 10px 12px; }
 .modal .btn { color: var(--ink); border-color: var(--ink); }
 .modal .btn:hover { background: var(--ink); color: var(--paper); }
 .modal .btn.primary { background: var(--ink); color: var(--paper); }
+/* gold on paper would be 1.3:1 */
+.modal .btn:focus-visible { outline-color: var(--ink); }
 .modal .row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; margin-top: 18px; }
 .modal ol, .modal ul { font-size: 15px; line-height: 1.5; padding-left: 22px; }
 .modal li { margin: 4px 0; }
@@ -240,10 +255,20 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
   .solved-check .seal { width: 56px; height: 56px; }
   .solved-check .seal::after { width: 15px; height: 28px; border-width: 0 5px 5px 0; }
 }
-@media (prefers-reduced-motion: reduce) { .solved-check .seal { animation: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .token, .solved-check .seal { animation: none; }
+  .btn, .case-card { transition: none; }
+  .case-card:hover { transform: none; }
+  /* the hint must not be lost with its flash: a still ring for the same three seconds */
+  .cell.hint-flash .fx { animation: none; box-shadow: inset 0 0 0 4px var(--blood); }
+}
+/* small buttons and links are finger-sized wherever a finger is likely: a touch screen of any width, and every phone */
+@media (pointer: coarse), (max-width: 600px) { .btn.small, .link { min-height: 44px; min-width: 44px; } }
 .stats { display: flex; gap: 32px; margin: 16px 0 4px; padding: 14px 0; border-top: 1px dashed #a8956a; border-bottom: 1px dashed #a8956a; }
-.stats b { display: block; font-family: var(--display); font-weight: 400; font-size: 24px; line-height: 1.1; }
-.stats span { font-family: var(--type); font-size: 11.5px; letter-spacing: .2em; text-transform: uppercase; color: #5c5240; }
+/* a description list, so each label is read before its figure; drawn figure first, as before */
+.stats div { display: flex; flex-direction: column-reverse; }
+.stats dd { margin: 0; font-family: var(--display); font-weight: 400; font-size: 24px; line-height: 1.1; }
+.stats dt { font-family: var(--type); font-size: 11.5px; letter-spacing: .2em; text-transform: uppercase; color: #5c5240; }
 .next-cases { text-align: center; font-style: italic; color: var(--text-dim); font-size: 14px; margin: 18px 0 0; }
 .modal .fine { font-style: italic; font-size: 13.5px; color: #5c5240; }
 .objection { display: flex; gap: 12px; align-items: flex-start; background: #fff8e8; border: 1px solid #a8956a; padding: 12px 14px; margin: 12px 0; }
@@ -251,7 +276,7 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
 .objection .quote { font-weight: 700; }
 .rules { counter-reset: rule; list-style: none; padding-left: 0 !important; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
 .rules li { counter-increment: rule; background: #fff8e8; border: 1px solid #a8956a; padding: 10px 12px; margin: 0; }
-.rules li::before { content: "0" counter(rule); display: block; font-family: var(--type); font-weight: 700; font-size: 12px; letter-spacing: .2em; color: #7d6531; }
+.rules li::before { content: "0" counter(rule); display: block; font-family: var(--type); font-weight: 700; font-size: 12px; letter-spacing: .2em; color: #6f5a2b; }
 .rules li b { display: block; font-family: var(--display); font-weight: 400; font-size: 18px; line-height: 1.15; margin: 2px 0 4px; }
 .rules .art-row { display: flex; align-items: center; gap: 4px; margin-top: 6px; flex-wrap: wrap; font-family: var(--type); font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: #5c5240; }
 .rules .art-row .legend-art { width: 30px; height: 30px; }
@@ -260,6 +285,8 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
 /* ---------- phone ---------- */
 .tray, .statement, .sheet-head, .sheet-tools, .head-count, #tool-casebook { display: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* pinned to the top: left where it falls at the end of the page it would make every screen one pixel taller */
+#announce { top: 0; left: 0; }
 /* the small viewport: it does not change as the browser's bars slide in and out, so the board is not rebuilt mid-scroll */
 #vh-probe { position: fixed; top: 0; left: 0; width: 0; height: 100vh; height: calc(100svh - env(safe-area-inset-bottom, 0px)); visibility: hidden; pointer-events: none; }
 @media (max-width: 600px) {
@@ -267,7 +294,8 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
   body.sheet-open { overflow: hidden; }
   /* the heights and margins in this block are mirrored by PHONE_CHROME, PHONE_FRAME and PHONE_MARGIN in the script */
   #game { min-height: 100svh; padding: 0 8px calc(60px + env(safe-area-inset-bottom, 0px)); }
-  .topbar { flex-wrap: nowrap; height: 56px; margin: 0; gap: 8px; }
+  /* raised over the board frame's shadow, which was painting across the foot of the Back button's focus ring */
+  .topbar { flex-wrap: nowrap; height: 56px; margin: 0; gap: 8px; position: relative; z-index: 1; }
   #btn-back-cases { flex: none; width: 44px; height: 44px; padding: 0; font-size: 0; }
   #btn-back-cases::before { content: "\2190"; font-size: 18px; }
   .topbar .case-name { min-width: 0; font-size: 20px; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -281,13 +309,17 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
   .status { display: none; }
 
   .tray { display: flex; justify-content: center; align-items: center; gap: 6px; width: 100%; height: 56px; }
-  .tray-btn { flex: 0 1 52px; min-width: 44px; height: 52px; padding: 0; background: none; border: 0; display: grid; place-items: center; position: relative; }
+  .tray-btn { flex: 0 1 52px; min-width: 44px; height: 50px; padding: 0; background: none; border: 0; display: grid; place-items: center; position: relative; }
   .tray-btn .chip { position: relative; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-family: var(--serif); font-weight: 700; font-size: 16px; line-height: 1; color: #f4ecd8; border: 2px solid #f4ecd8; }
   .tray-btn.victim .chip::after { content: "\2020"; position: absolute; top: -5px; right: -5px; width: 16px; height: 16px; border-radius: 50%; background: var(--blood); border: 1px solid #f4ecd8; display: grid; place-items: center; font-size: 10px; }
-  .tray-btn.placed .chip { opacity: .5; }
-  .tray-btn.placed::after { content: "\2713"; position: absolute; right: 0; bottom: 1px; width: 18px; height: 18px; border-radius: 50%; background: var(--ink); border: 1px solid var(--gold); color: var(--gold-2); font: 700 11px/16px var(--type); text-align: center; }
-  .tray-btn.selected .chip { opacity: 1; box-shadow: 0 0 0 2px var(--ink), 0 0 0 4px var(--gold); }
-  .tray-btn:focus-visible { outline: 2px solid var(--gold-2); }
+  /* placed: the fill is darkened under the initial, not faded with it, and only while somebody is still to place */
+  .tray:has(.tray-btn:not(.placed)) .tray-btn.placed:not(.selected) .chip { box-shadow: inset 0 0 0 40px rgba(26,29,42,.55); border-color: rgba(244,236,216,.5); }
+  /* the tick is drawn with borders, as the green seal is, so it is never a font's glyph */
+  .tray-btn.placed::after { content: ""; position: absolute; right: 0; bottom: 0; width: 18px; height: 18px; border-radius: 50%; background: var(--ink); border: 1px solid var(--gold); }
+  .tray-btn.placed::before { content: ""; position: absolute; z-index: 1; right: 6.5px; bottom: 5.5px; width: 5px; height: 9px; border: solid var(--gold-2); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  .tray-btn.selected .chip { box-shadow: 0 0 0 2px var(--ink), 0 0 0 4px var(--gold); }
+  /* a square ring against the round ring that means selected; 50px of button and 3px of ring each side fill the tray's 56 */
+  .tray-btn:focus-visible { outline: 3px solid var(--gold-2); }
 
   .statement { display: flex; align-items: center; width: 100%; height: 60px; padding: 0 12px; overflow: hidden; background: var(--ink-2); border-left: 3px solid var(--gold); font-size: 15px; line-height: 1.3; color: var(--text); }
   .statement.warn { color: #e48a7f; border-left-color: #e48a7f; }
@@ -313,7 +345,7 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
   .sheet-head span { font-family: var(--type); font-size: 13px; color: #5c5240; }
   #casebook-close { flex: none; width: 44px; height: 44px; padding: 0; background: none; border: 1px solid var(--wall); color: var(--wall); font-size: 26px; line-height: 1; }
   .dossier .twist { margin: 12px 0 0; }
-  .dossier .twist b { color: var(--blood); }
+  .dossier .twist b { color: #8f2a23; }
   .people { gap: 0; }
   .person, .person.victim-card { background: none; color: var(--wall); border: 0; border-bottom: 1px solid rgba(42,36,24,.2); padding: 12px 4px; }
   .person.selected { background: var(--paper-2); box-shadow: none; }
@@ -325,8 +357,18 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
   .sheet-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(42,36,24,.3); }
   #sheet-tools button { flex: 1 1 40%; min-height: 44px; padding: 0 10px; background: none; border: 1px solid var(--wall); color: var(--wall); font-family: var(--type); font-weight: 700; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; text-decoration: none; }
   #sheet-tools button[aria-pressed="true"] { background: var(--wall); color: var(--paper); }
-  #sheet-tools button:focus-visible, #casebook-close:focus-visible { outline: 2px solid var(--wall); outline-offset: 2px; }
-  #tool-casebook:focus-visible { outline: 2px solid var(--gold-2); outline-offset: 2px; }
+  #sheet-tools button:focus-visible, #casebook-close:focus-visible { outline: 3px solid var(--wall); outline-offset: 2px; }
+  /* the Casebook is paper and its rows touch: an ink ring, drawn inside each row */
+  .person:focus-visible { outline: 3px solid var(--wall); outline-offset: -3px; }
+}
+/* narrower than any phone the board is sized for: seven people no longer fit, and the tray scrolls in place of the page.
+   A scrolling box clips what is drawn outside it, so here the ring is drawn inside the button. */
+@media (max-width: 359px) {
+  /* centred by the end buttons' margins, not by "safe center": where that keyword is unknown the first people could not be scrolled to */
+  .tray { overflow-x: auto; justify-content: flex-start; }
+  .tray-btn:first-child { margin-left: auto; }
+  .tray-btn:last-child { margin-right: auto; }
+  .tray-btn:focus-visible { outline-offset: -3px; }
 }
 </style>
 </head>
@@ -352,7 +394,7 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
 <!-- ============ TITLE ============ -->
 <section id="title" class="screen active">
   <div class="sunburst" aria-hidden="true"></div>
-  <h1 class="logo">A Most Orderly Murder</h1>
+  <h1 class="logo" id="title-heading" tabindex="-1">A Most Orderly Murder</h1>
   <div class="deco-rule">✦</div>
   <p class="tagline">One person to every row. One person to every column. One killer alone with the body.<br>Four new cases every day.</p>
   <div class="title-buttons">
@@ -365,7 +407,7 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
 <section id="select" class="screen">
   <div class="page-head">
     <div class="kicker" id="day-kicker"></div>
-    <h2 id="day-heading">Today's Cases</h2>
+    <h2 id="day-heading" tabindex="-1">Today's Cases</h2>
     <div class="deco-rule">✦</div>
     <div class="day-switch" id="day-switch">
       <button class="btn small" id="btn-day-today" aria-pressed="true">Today</button>
@@ -381,7 +423,7 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
 <section id="game" class="screen">
   <div class="topbar">
     <button class="btn small" id="btn-back-cases" aria-label="Back to the cases">← Cases</button>
-    <div class="case-name" id="case-name"></div>
+    <h2 class="case-name" id="case-name" tabindex="-1"></h2>
     <div class="top-links" id="top-links">
       <button class="link" id="tool-briefing">Briefing</button>
       <button class="link" id="tool-how">How to play</button>
@@ -404,7 +446,6 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
         <button class="btn small primary" id="tool-submit" disabled title="Available once everyone is placed">Accuse</button>
       </div>
       <div class="status" id="status"></div>
-      <div class="sr-only" id="announce" aria-live="polite"></div>
     </div>
     <aside class="dossier" id="casebook" aria-labelledby="casebook-title">
       <div class="sheet-head"><h3 id="casebook-title">Casebook</h3><span id="sheet-count"></span><button id="casebook-close" aria-label="Close the casebook">×</button></div>
@@ -419,6 +460,8 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
 
 <div id="vh-probe"></div>
 <div class="modal-bg" id="modal-bg"><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+<!-- at the top level, beside the dialog: inside a screen it would go silent whenever that screen is shut off behind a dialog or the Casebook -->
+<div class="sr-only" id="announce" role="status"></div>
 
 <script>
 "use strict";
@@ -706,19 +749,72 @@ const isPhone = () => PHONE.matches;
 const roomRef = name => name.startsWith("Compartment") ? name : "the " + name;
 const staffWord = c => /crew/i.test(c.twist?.title || "") ? "Crew" : "Staff";
 
+const GAME_NAME = document.title;
+const HEADINGS = { title: "title-heading", select: "day-heading", game: "case-name" };
+// the browser tab, and a screen reader's first words, follow the screen
+function pageTitle() {
+  const on = id => $(id).classList.contains("active");
+  document.title = on("game") && state ? `${state.c.title} · ${GAME_NAME}` : on("select") ? `${$("day-heading").textContent} · ${GAME_NAME}` : GAME_NAME;
+}
+// never scrolls: show() goes to the top of the page itself, and every other caller must leave the player where they are
+function focusHeading() { $(HEADINGS[document.querySelector(".screen.active").id]).focus({ preventScroll: true }); }
 function show(id) {
   document.querySelectorAll(".screen").forEach(s => s.classList.toggle("active", s.id === id));
   window.scrollTo(0, 0);
+  pageTitle();
+  // focus left on a control of the screen just hidden would be nowhere
+  focusHeading();
 }
-function openModal(html, onMount) {
-  $("modal").className = "modal";
-  $("modal").innerHTML = html;
+
+const modalOpen = () => $("modal-bg").classList.contains("open");
+// what had focus when the first dialog of a chain opened
+let modalOpener = null;
+// the screens are shut off, which is what keeps Tab inside the dialog, and the page does not scroll behind it
+function setBehindModal(open) {
+  document.querySelectorAll(".screen").forEach(s => { s.inert = open; });
+  document.body.classList.toggle("modal-open", open);
+}
+// kind "alert": a short question, read out with its text, entered at its first button. Otherwise a long sheet, entered at its heading.
+function openModal(html, onMount, kind) {
+  // Dialogs replace one another (the rules from the briefing, give up from the rejection). Only the first remembers
+  // where focus was: the second would remember a button the first is about to destroy.
+  if (!modalOpen()) modalOpener = document.activeElement;
+  const m = $("modal");
+  m.className = "modal";
+  m.innerHTML = html;
+  const heading = m.querySelector("h2"), text = kind === "alert" ? document.createElement("div") : null;
+  heading.id = "modal-title"; m.setAttribute("aria-labelledby", "modal-title");
+  m.setAttribute("role", text ? "alertdialog" : "dialog");
+  if (text) {
+    // everything between the heading and the buttons is the message: a rejection's first paragraph alone leaves out what the witness said
+    text.id = "modal-text"; heading.after(text);
+    while (text.nextElementSibling && !text.nextElementSibling.matches(".row")) text.append(text.nextElementSibling);
+    m.setAttribute("aria-describedby", "modal-text");
+  } else m.removeAttribute("aria-describedby");
   $("modal-bg").classList.add("open");
-  if (onMount) onMount($("modal"));
-  const f = $("modal").querySelector("button"); if (f) f.focus();
+  setBehindModal(true);
+  if (onMount) onMount(m);
+  if (text) m.querySelector("button").focus();
+  else { heading.tabIndex = -1; heading.focus(); $("modal-bg").scrollTop = 0; }
 }
-function closeModal() { $("modal-bg").classList.remove("open"); }
-$("modal-bg").addEventListener("click", e => { if (e.target === $("modal-bg")) closeModal(); });
+function closeModal() {
+  if (!modalOpen()) return;
+  $("modal-bg").classList.remove("open");
+  setBehindModal(false);
+  const back = modalOpener; modalOpener = null;
+  // focus goes back where it was, unless that control is gone, switched off, hidden or on a screen no longer shown
+  if (back && back.isConnected && !back.disabled && back.closest(".screen.active") && back.getClientRects().length) back.focus();
+  else focusHeading();
+}
+// Escape and a click on the backdrop press the dialog's own way out, so whatever that button does (the Starter briefing's
+// starts the clock) is done however the dialog is left. The verdict has none: it closes and leaves the solved board on view.
+function dismissModal() {
+  const out = $("modal").querySelector("[data-dismiss]");
+  if (out) { out.click(); return; }
+  closeModal();
+  if ($("game").classList.contains("active")) $("btn-back-cases").focus();
+}
+$("modal-bg").addEventListener("click", e => { if (e.target === $("modal-bg")) dismissModal(); });
 
 // ---------------------------------------------------------------- title / select
 // The furniture is named and drawn from the open case's art set; with no case open it is the 1930s set.
@@ -741,7 +837,7 @@ const howTo = c => { const set = artSet(c).objects, pic = o => artSvg(set[o].sym
   </ol>
   <p class="toolkit"><b>Draft</b> notes where someone might be · <b>Cross out</b> rules a square out · <b>Lens</b> dims every square the selected person's own statement rules out · <b>Hint</b> has the Inspector put one person on their correct square.</p>
   <p class="typed">Every case has exactly one solution, and you can reach it by reasoning alone. Nothing is checked until you accuse.</p>
-  <div class="row"><button class="btn primary" data-close>Got it. Show me the body.</button></div>`; };
+  <div class="row"><button class="btn primary" data-close data-dismiss>Got it. Show me the body.</button></div>`; };
 
 function showHowTo(onClose, c) {
   openModal(howTo(c), m => { m.classList.add("wide"); m.querySelector("[data-close]").onclick = onClose || closeModal; });
@@ -763,7 +859,7 @@ function showNextCases() {
 // A tab left on this screen keeps its countdown honest and brings in the new cases when the day turns.
 // The cards are only rebuilt when the day has changed, so a keyboard user's place on them is not lost.
 function refreshDayScreen() {
-  if (!$("select").classList.contains("active") || $("modal-bg").classList.contains("open")) return;
+  if (!$("select").classList.contains("active") || modalOpen()) return;
   if (currentDay() !== shownDay) renderDay(); else showNextCases();
 }
 setInterval(refreshDayScreen, 60000);
@@ -777,6 +873,7 @@ function renderDay() {
   const day = today - viewOffset;
   $("day-kicker").textContent = `The Inspector's Desk · Day ${day}${TEST_DAY ? " · test day" : ""}`;
   $("day-heading").textContent = viewOffset ? "Yesterday's Cases" : "Today's Cases";
+  pageTitle();
   shownDay = today;
   showNextCases();
   $("day-switch").hidden = today === 1;
@@ -923,8 +1020,6 @@ function startCase(c, day) {
   show("game");
   render();
   // the Starter is where new players arrive, so it opens with the briefing; bigger cases begin at once
-  // a message timer left running by the last case must not wipe this case's opening line
-  clearTimeout(statusTimer);
   // a player picking a Starter up again has already begun: the briefing's button is what starts the clock on a first visit
   if (c.n < 5 && !kept) showBriefing(true);
   else {
@@ -955,7 +1050,7 @@ function showBriefing(first) {
     <p class="typed">${c.n}×${c.n} map · ${c.n} people · exactly one per row and column.<br>The killer is the one suspect alone in the room with the victim.<br>Nothing is checked until you accuse.</p>
     <div class="row">
       <button class="btn" data-how>Rules</button>
-      <button class="btn primary" data-go>${first ? "Begin the Investigation" : "Return to the Scene"}</button>
+      <button class="btn primary" data-go data-dismiss>${first ? "Begin the Investigation" : "Return to the Scene"}</button>
     </div>`, m => {
       m.querySelector("[data-go]").onclick = () => { closeModal(); if (first) startTimer(); };
       m.querySelector("[data-how]").onclick = () => showHowTo(() => showBriefing(first), c);
@@ -1081,6 +1176,8 @@ function buildPeople() {
   });
 }
 
+// where the tray scrolls (under 360px wide), focus must bring the whole button and its ring into view
+$("tray").addEventListener("focusin", e => e.target.scrollIntoView({ block: "nearest", inline: "nearest" }));
 function buildTray() {
   const tray = $("tray"); tray.innerHTML = "";
   state.trayBtns = [];
@@ -1113,16 +1210,16 @@ function buildLegend() {
 // ---------------------------------------------------------------- interaction
 // a new move clears the last message and any tokens the Inspector ringed
 function clearNotices() {
-  state.ringed = null; state.flash = null; clearTimeout(statusTimer);
+  state.ringed = null; state.flash = null;
   // emptied so that the same message twice running is announced twice
   $("announce").textContent = "";
 }
 
 function select(i) {
   if (state.solved) return;
-  // a tap that dismissed the Local rule shown on opening keeps the person selected,
-  // so their statement appears instead of the selection toggling off
-  const dismissed = !!state.flash?.rule;
+  // A message stays until the next move, and on a phone it sits over the selected person's statement:
+  // the tap that dismisses it keeps the person selected, so their statement appears instead of the selection toggling off.
+  const dismissed = !!state.flash;
   clearNotices();
   state.selected = state.selected === i && !dismissed ? null : i;
   render();
@@ -1185,10 +1282,13 @@ function undo() {
   state.pos = h.pos; state.marks = h.marks; state.drafts = h.drafts; render();
 }
 
+// A passing warning must not sit over the line a tool is about to show; the Local rule and the hint wait for a move.
+// Only the message goes: the Inspector's rings wait for a move, and pressing a tool is not one.
+function clearPassing() {
+  if (state.flash && !state.flash.rule && !state.flash.sticky) { state.flash = null; $("announce").textContent = ""; }
+}
 function setMode(mode) {
-  // a passing warning must not sit over the new mode's own line; the Local rule and the phone's hint wait for a move
-  // only the message goes: the Inspector's rings wait for a move, and a change of mode is not one
-  if (state.flash && !state.flash.rule && !state.flash.sticky) { state.flash = null; clearTimeout(statusTimer); $("announce").textContent = ""; }
+  clearPassing();
   state.markMode = mode === "mark" && !state.markMode;
   state.draftMode = mode === "draft" && !state.draftMode;
   $("tool-mark").setAttribute("aria-pressed", state.markMode);
@@ -1201,6 +1301,9 @@ $("tool-submit").onclick = () => submitFindings();
 $("tool-undo").onclick = () => undo();
 $("tool-lens").onclick = () => {
   closeCasebook();
+  // a finished case has nobody to select, so the lens's own warning could never be answered or cleared
+  if (state.solved) return;
+  clearPassing();
   // the lens reads one person's statement, and nobody is selected until the player chooses
   if (!state.lens && state.selected == null) { flashStatus("Choose a person to use the lens.", "warn"); return; }
   state.lens = !state.lens; if (state.lens) state.lensUses++; $("tool-lens").setAttribute("aria-pressed", state.lens); render();
@@ -1208,10 +1311,10 @@ $("tool-lens").onclick = () => {
 $("tool-reset").onclick = () => {
   closeCasebook();
   openModal(`<h2>Start over?</h2><p>Everyone you have placed, and every draft mark and cross, will be cleared. A hint you have used stays used.</p>
-    <div class="row"><button class="btn" data-no>Keep investigating</button><button class="btn primary" data-yes>Clear the board</button></div>`, m => {
+    <div class="row"><button class="btn" data-no data-dismiss>Keep investigating</button><button class="btn primary" data-yes>Clear the board</button></div>`, m => {
     m.querySelector("[data-no]").onclick = closeModal;
-    m.querySelector("[data-yes]").onclick = () => { snapshot(); state.pos = state.pos.map(() => null); state.marks.clear(); state.drafts.clear(); state.selected = null; closeModal(); render(); };
-  });
+    m.querySelector("[data-yes]").onclick = () => { snapshot(); clearNotices(); state.pos = state.pos.map(() => null); state.marks.clear(); state.drafts.clear(); state.selected = null; closeModal(); render(); };
+  }, "alert");
 };
 $("tool-briefing").onclick = () => { closeCasebook(); showBriefing(false); };
 $("tool-how").onclick = () => { closeCasebook(); showHowTo(null, state.c); };
@@ -1221,12 +1324,16 @@ $("tool-casebook").onclick = () => openCasebook();
 $("casebook-close").onclick = () => closeCasebook();
 
 document.addEventListener("keydown", e => {
+  // Ctrl+H once spent the hint; with a modifier held a key belongs to the browser or to speech input, never to the game
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  // a dialog can be open on any screen (How to Play from the title screen), and Escape is its way out on all of them
+  // a held key repeats: one press leaves one dialog, not a chain of them
+  if (modalOpen()) { if (e.key === "Escape" && !e.repeat) dismissModal(); return; }
   if (!$("game").classList.contains("active") || !state) return;
-  if ($("modal-bg").classList.contains("open")) { if (e.key === "Escape") closeModal(); return; }
   // the board is out of sight behind the Casebook, so its shortcuts must not reach it
   if (sheetOpen()) { if (e.key === "Escape") closeCasebook(); return; }
   if (/^[0-9]$/.test(e.key)) { const i = +e.key; if (i < state.order.length) select(state.order[i]); }
-  else if (e.key === "Escape") { state.selected = null; render(); }
+  else if (e.key === "Escape") { clearPassing(); state.selected = null; render(); }
   else if (/^[mx]$/i.test(e.key)) setMode("mark");
   else if (/^[dp]$/i.test(e.key)) setMode("draft");
   else if (e.key === "z" || e.key === "Z") undo();
@@ -1234,14 +1341,11 @@ document.addEventListener("keydown", e => {
   else if (e.key === "h" || e.key === "H") $("tool-hint").click();
 });
 
-let statusTimer = null;
-// render() is the only writer of the status and statement lines; a message is held in state until it expires
+// render() is the only writer of the status and statement lines. A message is held in state until the next move clears it:
+// nothing vanishes on a timer, least of all the hint, which cannot be asked for again. A sticky message also outlasts a tool being pressed.
 function flashStatus(msg, kind, sticky) {
   state.flash = { msg, kind: kind || "", sticky: !!sticky };
   $("announce").textContent = msg;
-  clearTimeout(statusTimer);
-  // on a phone the hint is the one message worth rereading, so it waits for the player's next move
-  statusTimer = sticky && isPhone() ? null : setTimeout(() => { if (state) { state.flash = null; render(); } }, 3200);
   render();
 }
 
@@ -1344,6 +1448,8 @@ function render() {
 const MAX_HINTS = 1;
 function updateHintButton() {
   const spent = state.hints >= MAX_HINTS;
+  // a button switched off while it holds focus would leave the keyboard nowhere
+  if (spent && document.activeElement === $("tool-hint")) focusHeading();
   $("tool-hint").disabled = spent;
   $("tool-hint").textContent = spent ? "Hint used" : "Hint";
   $("tool-hint").setAttribute("aria-label", spent ? "Hint used" : "Hint");
@@ -1398,12 +1504,12 @@ function askForHint() {
     <h2>Ask the Inspector?</h2>
     <p>He will put one person on their correct square.</p>
     <div class="row">
-      <button class="btn" data-no>Not now</button>
+      <button class="btn" data-no data-dismiss>Not now</button>
       <button class="btn primary" data-yes>Ask</button>
     </div>`, m => {
     m.querySelector("[data-no]").onclick = closeModal;
     m.querySelector("[data-yes]").onclick = () => { closeModal(); hint(); };
-  });
+  }, "alert");
 }
 
 // ---------------------------------------------------------------- casebook (phone)
@@ -1462,7 +1568,8 @@ function findObjection() {
   const cl = c.clues[i];
   // an ONLY or ALONE statement can be true of its speaker and still be broken by somebody else
   const rival = ONLY[cl.type] && b.unaryOk(cl, pos[i][0], pos[i][1]) ? pos.findIndex((q, j) => j !== i && b.unaryOk(cl, q[0], q[1])) : -1;
-  return { who: i, ring: [rival >= 0 ? rival : i], quote: cl.text, detail: rival >= 0
+  // said: the quote is this person's own statement. The quotes above are rules of the house, which nobody says.
+  return { who: i, said: true, ring: [rival >= 0 ? rival : i], quote: cl.text, detail: rival >= 0
     ? `You've put ${people[rival].short} in ${inRoom(rival)}, where the same would be true of them.`
     : `You've put ${people[i].short} in ${inRoom(i)}.` };
 }
@@ -1477,6 +1584,8 @@ function suspectsWithBody() {
 function submitFindings() {
   const { pos, c, people, board: b } = state;
   if (state.solved || pos.some(p => !p)) return;
+  // an accusation is a move: a warning left on the line must not outlast it and hide "Everyone is placed"
+  clearNotices();
   const withBody = suspectsWithBody();
   if (withBody.length !== 1) {
     const scene = roomRef(c.roomNames[b.room(...pos[0])]);
@@ -1504,17 +1613,17 @@ function rejectAccusation(o) {
     <h2>Not quite, Inspector.</h2>
     ${o && o.rule ? `<p>The killer was alone with the body: exactly one suspect is in the victim's room.</p><p>${esc(o.detail)}</p>`
       : o ? `<p>One witness would like a word.</p>
-    <div class="objection"><span class="chip" style="background:${p.color}">${initials(p.name)}</span>
-      <div><p class="quote">“${esc(o.quote)}”</p><p>${esc(o.detail)}</p></div></div>`
+    <div class="objection"><span class="chip" style="background:${p.color}" aria-hidden="true">${initials(p.name)}</span>
+      <div><p class="quote">${o.said ? `<span class="sr-only">${esc(p.short)} says: </span>` : ""}“${esc(o.quote)}”</p><p>${esc(o.detail)}</p></div></div>`
       : `<p>Somebody's story doesn't hold up.</p>`}
     <div class="row">
-      <button class="btn primary" data-back>Back to the board</button>
+      <button class="btn primary" data-back data-dismiss>Back to the board</button>
       <button class="btn" data-reveal>Reveal the killer</button>
     </div>
     <p class="fine">The clock is still running. So, possibly, is the killer.</p>`, m => {
     m.querySelector("[data-back]").onclick = closeModal;
     m.querySelector("[data-reveal]").onclick = () => confirmGiveUp(() => rejectAccusation(o));
-  });
+  }, "alert");
 }
 
 function confirmGiveUp(onCancel) {
@@ -1523,12 +1632,12 @@ function confirmGiveUp(onCancel) {
     <h2>Give up this case?</h2>
     <p>The Inspector will show you where everyone was and who did it. Today's case will be recorded as given up, not solved.</p>
     <div class="row">
-      <button class="btn" data-no>Keep investigating</button>
+      <button class="btn" data-no data-dismiss>Keep investigating</button>
       <button class="btn primary" data-yes>Reveal the killer</button>
     </div>`, m => {
     m.querySelector("[data-no]").onclick = onCancel;
     m.querySelector("[data-yes]").onclick = giveUp;
-  });
+  }, "alert");
 }
 
 // a daily result is the first outcome; replaying a case never changes it
@@ -1570,22 +1679,24 @@ function showVerdict() {
   const next = TIERS.find(t => !store.result(state.day, t.id));
   const role = k.role.replace(/^The\s+/i, "");
   openModal(`
-    <div class="stamp-closed">${state.gaveUp ? "Case abandoned" : "Case closed"} · ${fmtTime(state.elapsed)}</div>
+    <div class="stamp-closed" id="modal-stamp">${state.gaveUp ? "Case abandoned" : "Case closed"} · ${fmtTime(state.elapsed)}</div>
     <div class="kicker">${esc(c.title)} · Verdict</div>
     ${state.gaveUp ? "" : `<div class="solved-check" aria-hidden="true"><i class="seal"></i><span>Solved</span></div>`}
-    ${state.gaveUp ? "" : `<p class="accused">You accused ${esc(k.short)}.</p>`}
+    ${state.gaveUp ? "" : `<p class="accused" id="modal-accused">You accused ${esc(k.short)}.</p>`}
     <h2 class="verdict-head">The ${esc(/^[A-Z][a-z]/.test(role) ? role[0].toLowerCase() + role.slice(1) : role)} did it.</h2>
     <p>${esc(k.short)} was the only soul in ${esc(scene)} with ${esc(c.victim.short)}. <i>${esc(c.motives[c.killer - 1])}</i></p>
-    <div class="stats">
-      <div><b>${fmtTime(state.elapsed)}</b><span>Time</span></div>
-      <div><b>${state.hints ? "Used" : "None"}</b><span>Hint</span></div>
-      <div><b>${state.falseStarts}</b><span>False starts</span></div>
-    </div>
+    <dl class="stats">
+      <div><dt>Time</dt><dd>${fmtTime(state.elapsed)}</dd></div>
+      <div><dt>Hint</dt><dd>${state.hints ? "Used" : "None"}</dd></div>
+      <div><dt>False starts</dt><dd>${state.falseStarts}</dd></div>
+    </dl>
     <div class="row">
       <button class="btn" data-files>All cases</button>
       ${next ? `<button class="btn primary" data-next>Next case: ${esc(next.label)} →</button>` : ""}
     </div>
     <p class="fine">${next ? "" : "That is every case for this day. "}The next body arrives in ${nextCasesIn(new Date())}, at midnight Eastern.</p>`, m => {
+    // focus lands on the heading, below the stamp: without this a solved case and an abandoned one sound the same on opening
+    m.setAttribute("aria-describedby", state.gaveUp ? "modal-stamp" : "modal-stamp modal-accused");
     m.querySelector("[data-files]").onclick = () => { closeModal(); backToDay(); };
     const nx = m.querySelector("[data-next]");
     if (nx) nx.onclick = () => { closeModal(); startCase(puzzleFor(next.id, state.day), state.day); };
