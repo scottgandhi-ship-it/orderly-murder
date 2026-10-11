@@ -9,6 +9,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 :root {
+  /* the screen's insets, named once: a test can set a variable, and nothing else puts an inset in front of one */
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
   --ink: #1a1d2a;
   --ink-2: #232738;
   --ink-3: #2b3044;
@@ -40,8 +45,11 @@ body {
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
   /* viewport-fit=cover lets the page run under a notch when the phone is on its side */
-  padding: 0 env(safe-area-inset-right, 0px) 0 env(safe-area-inset-left, 0px);
+  padding: 0 var(--sar) 0 var(--sal);
 }
+/* In an app the page runs up under the clock, and what scrolls there must not be read through it. Above the
+   Casebook, whose header is paper, and below a dialog, whose backdrop is dark. No height in a browser. */
+body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; height: var(--sat); background: var(--ink); z-index: 45; pointer-events: none; }
 button { font: inherit; color: inherit; cursor: pointer; }
 .screen { display: none; min-height: 100vh; }
 .screen.active { display: block; }
@@ -72,7 +80,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .btn:disabled { opacity: .4; cursor: default; }
 
 /* ---------- title ---------- */
-#title { display: none; text-align: center; padding: 8vh 16px 40px; }
+#title { display: none; text-align: center; padding: calc(8vh + var(--sat)) 16px 40px; }
 #title.active { display: flex; flex-direction: column; align-items: center; }
 .sunburst {
   width: 160px; height: 80px; margin-bottom: 18px;
@@ -88,7 +96,7 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
 .title-buttons { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
 
 /* ---------- case select ---------- */
-#select { padding: 40px 16px 60px; }
+#select { padding: calc(40px + var(--sat)) 16px 60px; }
 .page-head { text-align: center; margin-bottom: 30px; }
 .page-head h2 { font-family: var(--display); font-weight: 400; font-size: clamp(30px, 5vw, 46px); color: var(--gold-2); margin: 8px 0; }
 .day-switch { display: flex; gap: 10px; justify-content: center; margin-top: 16px; }
@@ -118,7 +126,7 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
 .back-row { text-align: center; margin-top: 34px; }
 
 /* ---------- game ---------- */
-#game { padding: 14px 16px 40px; }
+#game { padding: calc(14px + var(--sat)) 16px 40px; }
 .topbar { display: flex; align-items: center; gap: 12px; max-width: 1800px; margin: 0 auto 14px; flex-wrap: wrap; }
 .topbar .case-name { font-family: var(--display); font-weight: 400; font-size: clamp(22px, 3vw, 30px); color: var(--gold-2); flex: 1; min-width: 200px; margin: 0; }
 /* A heading takes focus when its screen or dialog opens. It is not a control and is never reached by Tab, so it draws no ring:
@@ -227,7 +235,9 @@ body.modal-open { overflow: hidden; }
 .legend .note svg { width: 12px; height: 12px; flex: none; }
 
 /* modal */
-.modal-bg { position: fixed; inset: 0; background: rgba(8,9,12,.82); display: none; place-items: center; z-index: 50; padding: 16px; overflow-y: auto; }
+/* the insets are a border, not padding: a scrolled dialog is cut off at the border's inner edge, and the backdrop still fills the screen */
+.modal-bg { position: fixed; inset: 0; background: rgba(8,9,12,.82); display: none; place-items: center; z-index: 50; padding: 16px; overflow-y: auto;
+  border: solid transparent; border-width: var(--sat) var(--sar) var(--sab) var(--sal); }
 .modal-bg.open { display: grid; }
 .modal { background: var(--paper); color: var(--ink); max-width: 640px; width: 100%; padding: 30px 30px 26px; position: relative; box-shadow: 0 30px 60px rgba(0,0,0,.6); }
 .modal::before { content: ""; position: absolute; inset: 8px; border: 1px solid #a8956a; pointer-events: none; }
@@ -288,12 +298,12 @@ body.modal-open { overflow: hidden; }
 /* pinned to the top: left where it falls at the end of the page it would make every screen one pixel taller */
 #announce { top: 0; left: 0; }
 /* the small viewport: it does not change as the browser's bars slide in and out, so the board is not rebuilt mid-scroll */
-#vh-probe { position: fixed; top: 0; left: 0; width: 0; height: 100vh; height: calc(100svh - env(safe-area-inset-bottom, 0px)); visibility: hidden; pointer-events: none; }
+#vh-probe { position: fixed; top: 0; left: 0; width: 0; height: 100vh; height: calc(100svh - var(--sat) - var(--sab)); visibility: hidden; pointer-events: none; }
 @media (max-width: 600px) {
   body { font-size: 17px; }
   body.sheet-open { overflow: hidden; }
   /* the heights and margins in this block are mirrored by PHONE_CHROME, PHONE_FRAME and PHONE_MARGIN in the script */
-  #game { min-height: 100svh; padding: 0 8px calc(60px + env(safe-area-inset-bottom, 0px)); }
+  #game { min-height: 100svh; padding: var(--sat) 8px calc(60px + var(--sab)); }
   /* raised over the board frame's shadow, which was painting across the foot of the Back button's focus ring */
   .topbar { flex-wrap: nowrap; height: 56px; margin: 0; gap: 8px; position: relative; z-index: 1; }
   #btn-back-cases { flex: none; width: 44px; height: 44px; padding: 0; font-size: 0; }
@@ -325,7 +335,7 @@ body.modal-open { overflow: hidden; }
   .statement.warn { color: #e48a7f; border-left-color: #e48a7f; }
   .statement.good { color: #9fcf9f; border-left-color: #9fcf9f; }
 
-  .tools { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; flex-wrap: nowrap; gap: 6px; padding: 7px 8px calc(8px + env(safe-area-inset-bottom, 0px)); background: var(--ink); border-top: 1px solid var(--gold-dim); }
+  .tools { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; flex-wrap: nowrap; gap: 6px; padding: 7px 8px calc(8px + var(--sab)); background: var(--ink); border-top: 1px solid var(--gold-dim); }
   .tools .btn { flex: 0 0 44px; height: 44px; padding: 0; font-size: 0; letter-spacing: 0; display: grid; place-items: center; }
   .tools .btn::before { font-family: var(--serif); font-size: 20px; line-height: 1; }
   #tool-draft::before { content: "\270E"; }
@@ -337,10 +347,12 @@ body.modal-open { overflow: hidden; }
   #tool-submit { font-size: 13px; letter-spacing: .06em; }
 
   /* the testimony panel becomes the Casebook: a sheet over the whole screen */
-  .dossier { display: none; position: fixed; inset: 0; z-index: 40; overflow-y: auto; overscroll-behavior: contain; background: var(--paper); color: var(--wall); border: 0; padding: 0 16px calc(20px + env(safe-area-inset-bottom, 0px)); }
+  .dossier { display: none; position: fixed; inset: 0; z-index: 40; overflow-y: auto; overscroll-behavior: contain; background: var(--paper); color: var(--wall); border: 0; padding: 0 16px calc(20px + var(--sab));
+    /* a row brought into view by focus must clear the sticky header, which is 63px and the top inset tall */
+    scroll-padding-top: calc(63px + var(--sat)); }
   .dossier.open { display: block; }
   .dossier-head { display: none; }
-  .sheet-head { display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 1; background: var(--paper); padding: calc(10px + env(safe-area-inset-top, 0px)) 0 8px; border-bottom: 1px solid rgba(42,36,24,.3); }
+  .sheet-head { display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 1; background: var(--paper); padding: calc(10px + var(--sat)) 0 8px; border-bottom: 1px solid rgba(42,36,24,.3); }
   .sheet-head h3 { flex: 1; margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; line-height: 1; }
   .sheet-head span { font-family: var(--type); font-size: 13px; color: #5c5240; }
   #casebook-close { flex: none; width: 44px; height: 44px; padding: 0; background: none; border: 1px solid var(--wall); color: var(--wall); font-size: 26px; line-height: 1; }
@@ -1064,7 +1076,10 @@ const PHONE_CHROME = 262;
 // around the board: frame padding 4 + frame border 1 on each side, and across the width a page margin of 8 as well
 const PHONE_FRAME = 10, PHONE_MARGIN = 16;
 function cellSize(n) {
-  const vw = document.documentElement.clientWidth || window.innerWidth;
+  // less the body's side padding: a phone on its side keeps the page clear of the notch, and the board must fit what is left
+  const side = getComputedStyle(document.body);
+  const full = document.documentElement.clientWidth || window.innerWidth;
+  const vw = full - parseFloat(side.paddingLeft) - parseFloat(side.paddingRight);
   if (isPhone()) {
     const byWidth = Math.floor((vw - PHONE_MARGIN - PHONE_FRAME) / n);
     const tall = $("vh-probe").offsetHeight || window.innerHeight;
@@ -1073,7 +1088,8 @@ function cellSize(n) {
     return Math.min(byWidth, Math.max(byHeight, 44));
   }
   const vh = window.innerHeight;
-  const stacked = vw <= 900;
+  // the stylesheet's own breakpoint, which reads the whole window
+  const stacked = full <= 900;
   const availW = stacked ? vw - 110 : vw - 400 - 24 - 130;
   const availH = stacked ? Infinity : vh - 200;
   return Math.max(28, Math.min(130, Math.floor(Math.min(availW, availH) / n)));
