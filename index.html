@@ -20,7 +20,7 @@
   --text: #e9dfc6;
   --text-dim: #a99f8a;
   --blood: #a8322a;
-  --ok: #4f8a5b;
+  --ok: #2e6b3f;
   --wall: #2a2418;
   --display: "Abril Fatface", Georgia, "Times New Roman", serif;
   --deco: "Courier Prime", "Courier New", monospace;
@@ -191,6 +191,18 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
 .person .clue { font-size: 14px; color: var(--text); margin-top: 4px; line-height: 1.4; }
 .person .state { font-family: var(--type); font-weight: 700; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim); min-width: 26px; text-align: right; }
 .person .state.placing { color: var(--gold-2); }
+/* A placed person falls back while somebody is still to place, so the people left stand out. With everyone
+   placed nobody is dimmed: that is when all the statements are read through before Accuse. The phone's tray
+   already shows who is placed, so its Casebook sheet is left alone. */
+@media (min-width: 601px) {
+  /* the fill is darkened under the initial, not faded with it: a faded initial cannot be read */
+  .people:has(.person:not(.placed)) .person.placed:not(.selected, :focus-visible) .chip { box-shadow: inset 0 0 0 40px rgba(26,29,42,.55); border-color: rgba(244,236,216,.5); }
+  .people:has(.person:not(.placed)) .person.placed:not(.selected, :focus-visible) :is(.who, .clue) { color: var(--text-dim); }
+}
+@media (min-width: 601px) and (hover: hover) {
+  .people:has(.person:not(.placed)) .person.placed:hover .chip { box-shadow: none; border-color: #f4ecd8; }
+  .people:has(.person:not(.placed)) .person.placed:hover :is(.who, .clue) { color: inherit; }
+}
 .legend { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(143,118,66,.4); font-family: var(--type); font-size: 13px; color: var(--text); }
 .legend h5 { margin: 0 0 6px; font-family: var(--type); font-weight: 700; font-size: 11.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--text-dim); }
 .legend .items { display: flex; flex-wrap: wrap; gap: 6px 12px; }
@@ -217,6 +229,16 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
 .objection .chip { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-family: var(--serif); font-weight: 700; font-size: 13px; color: #f4ecd8; flex: none; }
 .stamp-closed { position: absolute; top: -12px; right: 18px; transform: rotate(-5deg); font-family: var(--type); font-weight: 700; color: var(--blood); border: 2px solid var(--blood); outline: 1px solid var(--blood); outline-offset: 2px; padding: 4px 12px; font-size: 14px; letter-spacing: .2em; text-transform: uppercase; background: var(--paper); }
 .modal h2.verdict-head { font-size: clamp(32px, 7vw, 46px); margin: 10px 0 12px; }
+/* green ink from the same pad as the red stamp; the mark is drawn with borders so it is never a font's glyph */
+.solved-check { display: grid; justify-items: center; gap: 8px; margin: 14px 0 6px; }
+.solved-check .seal { position: relative; width: 64px; height: 64px; border: 3px solid var(--ok); border-radius: 50%; box-shadow: 0 0 0 2px var(--paper), 0 0 0 3px var(--ok); rotate: -5deg; animation: drop .18s ease-out .15s backwards; }
+.solved-check .seal::after { content: ""; position: absolute; top: 50%; left: 50%; width: 18px; height: 32px; border: solid var(--ok); border-width: 0 6px 6px 0; transform: translate(-50%, -58%) rotate(45deg); }
+.solved-check span { font: 700 13px var(--type); letter-spacing: .25em; text-transform: uppercase; color: var(--ok); }
+@media (max-width: 600px) {
+  .solved-check .seal { width: 56px; height: 56px; }
+  .solved-check .seal::after { width: 15px; height: 28px; border-width: 0 5px 5px 0; }
+}
+@media (prefers-reduced-motion: reduce) { .solved-check .seal { animation: none; } }
 .stats { display: flex; gap: 32px; margin: 16px 0 4px; padding: 14px 0; border-top: 1px dashed #a8956a; border-bottom: 1px dashed #a8956a; }
 .stats b { display: block; font-family: var(--display); font-weight: 400; font-size: 24px; line-height: 1.1; }
 .stats span { font-family: var(--type); font-size: 11.5px; letter-spacing: .2em; text-transform: uppercase; color: #5c5240; }
@@ -1428,6 +1450,7 @@ function showVerdict() {
   openModal(`
     <div class="stamp-closed">${state.gaveUp ? "Case abandoned" : "Case closed"} · ${fmtTime(state.elapsed)}</div>
     <div class="kicker">${esc(c.title)} · Verdict</div>
+    ${state.gaveUp ? "" : `<div class="solved-check" aria-hidden="true"><i class="seal"></i><span>Solved</span></div>`}
     ${state.gaveUp ? "" : `<p class="accused">You accused ${esc(k.short)}.</p>`}
     <h2 class="verdict-head">The ${esc(/^[A-Z][a-z]/.test(role) ? role[0].toLowerCase() + role.slice(1) : role)} did it.</h2>
     <p>${esc(k.short)} was the only soul in ${esc(scene)} with ${esc(c.victim.short)}. <i>${esc(c.motives[c.killer - 1])}</i></p>
