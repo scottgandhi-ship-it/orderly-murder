@@ -376,7 +376,7 @@ h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 
         <button class="btn small" id="tool-mark" aria-label="Cross out" aria-pressed="false" title="Cross a square out (X)">× Cross out</button>
         <button class="btn small" id="tool-undo" aria-label="Undo" title="Undo (Z)">Undo</button>
         <button class="btn small" id="tool-lens" aria-pressed="false" title="Dim the squares the selected person's statement rules out (L)">Lens</button>
-        <button class="btn small" id="tool-hint" title="Ask the Inspector, once per case (H)">Hint</button>
+        <button class="btn small" id="tool-hint" title="Ask the Inspector (H)">Hint</button>
         <button class="btn small primary" id="tool-submit" disabled title="Available once everyone is placed">Accuse</button>
       </div>
       <div class="status" id="status"></div>
@@ -682,7 +682,7 @@ const howTo = c => { const set = artSet(c).objects, pic = o => artSvg(set[o].sym
     <li><b>Some cases have a Local rule.</b> It closes a room, or a kind of square such as every chair, to some people or to everyone. It is always stated on the case, and the squares it closes are hatched on the map.</li>
     <li><b>The killer was left alone with the body.</b> Place everyone and press Accuse: the one suspect you have put in the victim's room is the person you accuse.</li>
   </ol>
-  <p class="toolkit"><b>Draft</b> notes where someone might be · <b>Cross out</b> rules a square out · <b>Lens</b> dims every square the selected person's own statement rules out · <b>Hint</b> is the Inspector's help, once per case.</p>
+  <p class="toolkit"><b>Draft</b> notes where someone might be · <b>Cross out</b> rules a square out · <b>Lens</b> dims every square the selected person's own statement rules out · <b>Hint</b> has the Inspector put one person on their correct square.</p>
   <p class="typed">Every case has exactly one solution, and you can reach it by reasoning alone. Nothing is checked until you accuse.</p>
   <div class="row"><button class="btn primary" data-close>Got it. Show me the body.</button></div>`; };
 
@@ -1210,43 +1210,49 @@ function spendHint() {
   updateHintButton();
 }
 
+// The four things the Inspector can say; kept apart from hint() so the longest can be measured without spending a hint.
+function hintMessage(name, moved, oustedName) {
+  return (moved ? `${name} wasn't there. The Inspector moves ${name}.` : `The Inspector places ${name}.`) +
+    (oustedName ? ` ${oustedName} goes back to the tray.` : "");
+}
+
 function hint() {
   if (!state || state.solved) return;
-  if (state.hints >= MAX_HINTS) { flashStatus("The Inspector has already given his one hint for this case.", "warn"); return; }
+  if (state.hints >= MAX_HINTS) { flashStatus("The Inspector has no more hints for this case.", "warn"); return; }
   const { c, pos, people } = state;
-  // 1. point out a misplaced person
-  const wrong = pos.findIndex((p, i) => p && (p[0] !== c.solution[i][0] || p[1] !== c.solution[i][1]));
-  if (wrong >= 0) {
-    spendHint();
-    state.selected = wrong; render();
-    flashStatus(`The Inspector taps the map: "${people[wrong].short} wasn't there. Look again."`, "warn", true);
-    const [r, k] = pos[wrong]; state.cells[r][k].classList.add("hint-flash");
-    setTimeout(() => state.cells[r][k].classList.remove("hint-flash"), 3000);
-    return;
-  }
-  // 2. reveal the next person in logical deduction order
+  // The hint always places someone: the first person in logical deduction order who is not on their own square,
+  // whether unplaced or misplaced. A hint that only said "look again" could be spent and leave the board as it was.
+  const isOff = i => !pos[i] || pos[i][0] !== c.solution[i][0] || pos[i][1] !== c.solution[i][1];
   const { order } = deduce(state.board, people, c.clues);
-  const next = order.find(i => !pos[i]) ?? people.findIndex((_, i) => !pos[i]);
+  let next = order.find(isOff);
+  if (next === undefined) next = people.findIndex((_, i) => isOff(i));
   if (next < 0) return;
-  spendHint();
-  snapshot();
   const [r, k] = c.solution[next];
+  const moved = !!pos[next];
+  // whoever stands on that square is wrong too, and goes back to the tray: a swap would put them on a square known to be wrong
+  const ousted = pos.findIndex((p, i) => i !== next && p && p[0] === r && p[1] === k);
+  clearNotices();
+  spendHint();
+  // Undo restores the board only; the hint count is never part of a snapshot, so a hint cannot be taken back
+  snapshot();
+  if (ousted >= 0) state.pos[ousted] = null;
   state.pos[next] = [r, k];
   state.marks.delete(r + "," + k);
   settleDrafts(next, r, k);
   state.selected = null;
-  render();
-  state.cells[r][k].classList.add("hint-flash");
-  setTimeout(() => state.cells[r][k].classList.remove("hint-flash"), 3000);
-  flashStatus(`The Inspector places ${people[next].short}.`, "good", true);
+  // the cell is held here because the board may be rebuilt, for another case or another size, before the flash ends
+  const cell = state.cells[r][k];
+  cell.classList.add("hint-flash");
+  setTimeout(() => cell.classList.remove("hint-flash"), 3000);
+  flashStatus(hintMessage(people[next].short, moved, ousted >= 0 ? people[ousted].short : null), "good", true);
 }
 
 function askForHint() {
   if (!state || state.solved || state.hints >= MAX_HINTS) { hint(); return; }
   openModal(`
-    <div class="kicker">One per case</div>
+    <div class="kicker">A hint</div>
     <h2>Ask the Inspector?</h2>
-    <p>He will give you one hint for this case, and only one.</p>
+    <p>He will put one person on their correct square.</p>
     <div class="row">
       <button class="btn" data-no>Not now</button>
       <button class="btn primary" data-yes>Ask</button>
