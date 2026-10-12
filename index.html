@@ -293,7 +293,7 @@ body.modal-open { overflow: hidden; }
 .modal.wide { max-width: 860px; }
 .toolkit { font-family: var(--type); font-size: 13.5px; line-height: 1.6; }
 /* ---------- phone ---------- */
-.tray, .clues, .sheet-head, .sheet-tools, .head-count, #tool-casebook, #day-count, #next-phone, .case-card :is(.story, .tile-meta, .tile-rule, .tile-status) { display: none; }
+.tray, .clues, .sheet-head, .sheet-tools, .head-count, #tool-casebook, #date-row, #day-count, #week, #next-phone, #soon-row, #premium-line, .case-card :is(.story, .tile-rule, .file-top, .file-bar) { display: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 /* pinned to the top: left where it falls at the end of the page it would make every screen one pixel taller */
 #announce { top: 0; left: 0; }
@@ -302,54 +302,109 @@ body.modal-open { overflow: hidden; }
 @media (max-width: 600px) {
   body { font-size: 17px; }
   body.sheet-open { overflow: hidden; }
-  /* The day screen is a wall of four case files, two by two, that fills the screen under a short header: no band of it is
-     left empty. The files share the height, and the story in each takes what its file has left. Every height is a minimum:
-     on a screen too short for four files of 160px, or with the text enlarged, the page scrolls. */
+  /* The day screen is the phone's home (features/HomeScreen.md): case files two by two under a short header, sharing the
+     height the screen has left. The story in each takes what its file has left. Every height is a minimum: on a screen too
+     short for its files, with a fifth file, or with the text enlarged, the page scrolls. */
   #select { padding: calc(8px + var(--sat)) 8px calc(8px + var(--sab)); }
   /* on .active: an id rule on #select alone would undo .screen { display: none } */
   #select.active { display: flex; flex-direction: column; min-height: 100svh; }
   #select .page-head { flex: none; margin: 0 0 8px; text-align: left; }
-  #select .kicker { font-size: 12px; letter-spacing: .3em; line-height: 16px; }
-  .head-row { display: flex; align-items: baseline; justify-content: space-between; gap: 4px 12px; flex-wrap: wrap; min-height: 36px; }
+  /* the date and the count share the first row: "Yesterday's Cases" with a count beside it does not fit a 375px screen */
+  #day-kicker { display: none; }
+  /* centred, not set on a baseline: a bold face beside a regular one on a baseline makes the row a pixel taller than its line */
+  #date-row { display: flex; align-items: center; justify-content: space-between; gap: 0 12px; flex-wrap: wrap; min-height: 16px; font-family: var(--type); font-size: 12px; line-height: 16px; }
+  #day-date { font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); }
+  #day-count { display: flex; align-items: center; gap: 4px; color: var(--text-dim); white-space: nowrap; }
+  /* the board's teal is too dark on the page: this is the lighter one */
+  #day-count.all { color: #8cc0b8; }
+  #day-count .mark { width: 12px; height: 12px; }
+  .head-row { display: flex; align-items: baseline; min-height: 36px; }
   #select .page-head h2 { margin: 0; font-size: 28px; line-height: 36px; }
-  #day-count { display: block; font-family: var(--type); font-size: 13px; color: var(--text-dim); white-space: nowrap; }
   #select .deco-rule { display: none; }
-  /* Today and Yesterday as the two halves of one box */
-  #select .day-switch { gap: 0; margin-top: 8px; border: 1px solid var(--gold); }
-  #select .day-switch .btn { flex: 1 1 0; min-height: 44px; padding: 0 8px; border: 0; }
-  /* inside the box, so the ring is drawn inside the half it belongs to */
-  #select .day-switch .btn:focus-visible { outline-offset: -4px; }
-  #select .day-switch .btn[aria-pressed="true"]:focus-visible { outline-color: var(--ink); }
-  .case-grid { flex: 1 1 auto; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(min-content, 1fr)); gap: 8px; max-width: none; margin: 0; }
+  /* yesterday is reached by its cell in the strip of days: the wide screen's switch is not shown */
+  #select .day-switch { display: none; }
+  /* rows as they are needed, each the same height: four files make two rows, a fifth makes a third and the page scrolls */
+  .case-grid { flex: 1 1 auto; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: minmax(min-content, 1fr); gap: 8px; max-width: none; margin: 0; }
   .case-card { min-width: 0; min-height: 160px; box-shadow: none; }
   .case-card:hover { transform: none; }
   /* drawn inside the file, with paper on both sides of it: the files are 8px apart, the outer ones 8px from the screen's
      edge, and an ink ring at the file's own edge would be lost against the page */
   .case-card:focus-visible { outline-offset: -5px; outline-color: var(--ink); }
-  .case-card .tab { padding: 6px 10px; font-size: 12px; }
-  .case-card .body { padding: 10px 10px 8px; gap: 0; min-height: 0; }
+  .case-card .tab { padding: 6px 8px; font-size: 12px; }
+  .case-card.done .tab { background: #d3c39b; }
+  .case-card .body { padding: 10px 8px 8px; gap: 0; min-height: 0; }
+  /* A small picture of the board and, beside it, how the case stands. The four states are told apart by the mark and the
+     words, and the squares filled are a measure of the people placed, never where they stand. */
+  .case-card .file-top { display: flex; align-items: center; gap: 8px; min-height: 36px; }
+  .file-grid { flex: none; width: 36px; height: 36px; overflow: visible; }
+  .file-grid .ground { fill: #f6eeda; }
+  .file-grid .filled { fill: #2f7470; }
+  .file-grid .lines { fill: none; stroke: #a8956a; stroke-width: 1px; vector-effect: non-scaling-stroke; }
+  .file-status { display: flex; align-items: flex-start; gap: 4px; min-width: 0; font-family: var(--type); font-weight: 700; font-size: 12px; line-height: 16px; letter-spacing: .1em; text-transform: uppercase; color: #5c5240; }
+  .file-status .mark { flex: none; width: 12px; height: 12px; margin-top: 2px; }
+  .file-status .when { display: block; }
+  /* gold on paper is too faint for the half disc */
+  .case-card[data-state="going"] .file-status { letter-spacing: 0; text-transform: none; color: #3a3226; }
+  .case-card[data-state="going"] .file-status .mark { color: #6e521c; }
+  .case-card:is([data-state="solved"], [data-state="gaveup"]) .file-status { color: var(--blood); }
   /* two lines at most and never cut: a title too long for that at this width steps down a size (fitTiles) */
-  .case-card h3 { font-size: 21px; overflow-wrap: break-word; }
+  .case-card h3 { margin-top: 4px; font-size: 21px; overflow-wrap: break-word; }
   .case-card h3.smaller { font-size: 18px; }
   .case-card h3.smallest { font-size: 15.5px; }
   .case-card :is(.meta, .blurb, .tags, .in-progress) { display: none; }
-  /* The whole story, cut at a whole line where the file ends; the Briefing has all of it. It is first given all the height
-     the file has left, and fitTiles counts the lines that fit; then it is its own height, of that many lines, because a
-     clamped box held taller than its lines shows part of the next one. */
-  .case-card .story { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; flex: 1 1 0; min-height: 0; margin-top: 6px; font-size: 14.5px; line-height: 20px; overflow-wrap: break-word; color: #3a3226; }
-  .case-card .story.fitted { flex: none; }
+  /* The whole story, cut at a whole line where the file ends; the Briefing has all of it. Its box takes the height the file
+     has left and never asks for any of its own, and fitTiles counts the lines that fit and cuts the words inside to that
+     many. So a count that has gone stale (the room changed and nothing measured again) can only hide part of a line: it
+     can never make a file, and with it the page, taller than the screen. */
+  .case-card .story { display: block; flex: 1 1 0; min-height: 0; overflow: hidden; margin: 4px 0 8px; }
+  .case-card .story-text { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; font-size: 14.5px; line-height: 20px; overflow-wrap: break-word; color: #3a3226; }
   .case-card .story.none { visibility: hidden; }
-  .case-card .tile-meta { display: block; margin-top: auto; padding-top: 6px; font-family: var(--type); font-size: 12px; line-height: 16px; color: #5c5240; }
-  .case-card .tile-rule { display: block; align-self: flex-start; max-width: 100%; margin-top: 2px; padding: 0 5px; border: 1px solid #6d5d3d; font-family: var(--type); font-size: 12px; line-height: 16px; color: #4d4230; }
-  /* one line at the file's foot, the three kinds told apart by shape: a stamp, a dot and a count, or a word and an arrow */
-  .case-card .tile-status { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-family: var(--type); font-weight: 700; font-size: 12px; line-height: 20px; letter-spacing: .1em; text-transform: uppercase; color: var(--wall); white-space: nowrap; }
-  /* gold on paper is too faint for the dot */
-  .case-card .tile-status.going::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: #6e521c; }
-  .case-card .tile-status.going { text-transform: none; letter-spacing: 0; }
+  .case-card .tile-rule { display: block; align-self: flex-start; max-width: 100%; margin-top: 4px; padding: 0 5px; border: 1px solid #6d5d3d; font-family: var(--type); font-size: 12px; line-height: 16px; color: #4d4230; }
+  /* The bar at the file's foot says what a press does. It is drawn, not a button: the whole file is the button. The three
+     differ in fill as well as in words; the gold one has an ink line because gold alone is lost against the paper. */
+  .case-card .file-bar { display: flex; align-items: center; justify-content: center; min-height: 44px; margin-top: auto; padding: 4px 6px; font-family: var(--deco); font-weight: 700; font-size: 13px; line-height: 16px; letter-spacing: .2em; text-transform: uppercase; text-align: center; }
+  .file-bar.play { background: var(--ink); color: var(--gold-2); }
+  .file-bar.resume { background: var(--gold); color: var(--ink); box-shadow: inset 0 0 0 2px var(--ink); }
+  .file-bar.result { color: var(--ink); box-shadow: inset 0 0 0 2px var(--ink); }
   .case-card.done .tags { padding-right: 0; }
-  .stamp { position: static; align-self: flex-start; margin: 0 10px 8px; padding: 1px 6px; transform: rotate(-3deg); border: 1.5px solid var(--blood); background: none; font-size: 12px; font-weight: 700; line-height: 16px; letter-spacing: .08em; white-space: nowrap; }
+  /* the wide card's stamp: on a phone the file's own status says it */
+  .stamp { display: none; }
   #next-cases, #select .back-row { display: none; }
-  #next-phone { display: block; flex: none; margin: 8px 0 0; text-align: center; font-style: italic; font-size: 13px; line-height: 20px; color: var(--text-dim); }
+  /* The last seven days, today first and the days before it after it. A day is told by its mark and its fill together: a check on teal for every
+     case solved, a half disc on paper for some of it done, a ring for none of a day still open, a lock for a day gone by
+     untouched, and a dashed box for a day before the game
+     began. Today's and yesterday's cells are buttons: they are the way from one day's cases to the other's. */
+  #week { display: block; flex: none; margin-top: 8px; padding: 8px 4px; background: var(--ink-2); }
+  .week-head { display: flex; align-items: center; justify-content: space-between; gap: 0 12px; flex-wrap: wrap; min-height: 16px; padding: 0 4px; font-family: var(--type); font-size: 12px; line-height: 16px; }
+  .week-label { font-family: var(--deco); font-weight: 700; letter-spacing: .3em; text-transform: uppercase; color: var(--gold); }
+  #next-phone { display: block; color: var(--text-dim); }
+  .week-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; margin-top: 4px; }
+  .week-day { position: relative; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .week-day .cap { font-family: var(--type); font-size: 12px; line-height: 16px; text-align: center; white-space: nowrap; color: var(--text-dim); }
+  .week-day.today .cap { font-weight: 700; color: var(--gold-2); }
+  /* yesterday's can be pressed too, and says so by its weight */
+  .week-day.open .cap { font-weight: 700; color: var(--text); }
+  .week-cell { display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 0; border: 0; background: none; }
+  .week-cell .mark { width: 18px; height: 18px; }
+  .week-cell[data-look="done"] { background: #2f7470; color: #f4ecd8; }
+  .week-cell[data-look="done"] .mark { width: 30px; height: 30px; }
+  .week-cell[data-look="part"] { background: var(--paper); color: #6e521c; }
+  .week-cell:is([data-look="none"], [data-look="locked"]) { background: #b9ae93; color: #3a3226; }
+  .week-cell[data-look="off"] { border: 1px dashed var(--text-dim); }
+  /* today's line, with a dark line inside it so the gold reads on paper and on teal alike */
+  .week-day.today .week-cell { box-shadow: inset 0 0 0 2px var(--gold-2), inset 0 0 0 4px var(--ink-2); }
+  /* the day whose cases are on the screen: a bar under its cell, in the panel's own padding */
+  .week-day.shown::after { content: ""; position: absolute; left: 0; right: 0; bottom: -5px; height: 3px; background: var(--gold-2); }
+  /* What is coming and is not here yet. These are words to read, not buttons: nothing is behind them, so they take no
+     focus and a press does nothing. The dashed line is the strip's own way of saying "not yet". */
+  #soon-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; flex: none; margin-top: 8px; }
+  .soon-tile { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0 8px; min-height: 44px; padding: 4px 8px; border: 1px dashed var(--text-dim); font-family: var(--deco); font-weight: 700; font-size: 13px; line-height: 16px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-dim); }
+  .soon-tile svg { flex: none; width: 16px; height: 16px; color: var(--gold-dim); }
+  .soon { padding: 0 5px; border: 1px solid var(--text-dim); font-family: var(--type); font-weight: 400; font-size: 12px; letter-spacing: .1em; }
+  /* no arrow and no price: an arrow would promise a screen */
+  #premium-line { display: block; flex: none; margin: 4px 0 0; font-family: var(--type); font-size: 12px; line-height: 20px; text-align: center; color: var(--text-dim); }
+  /* the ring is drawn inside the cell, paper then ink: outside it would run into the next cell */
+  .week-day button.week-cell:focus-visible { outline: 2px solid var(--ink); outline-offset: -4px; box-shadow: inset 0 0 0 2px var(--paper); }
   /* One column that fills the screen: header 52, board, tray 60, clue panel, bar 56, with 8px between them. Only the clue
      panel stretches, so no band of the screen is left empty. The heights and margins here are mirrored by PHONE_FIXED,
      PHONE_PANEL_MIN, PHONE_FRAME and PHONE_MARGIN in the script. Each height is a minimum: with the text enlarged a zone
@@ -504,6 +559,12 @@ body.modal-open { overflow: hidden; }
   .tools { flex-wrap: wrap; }
   #tool-casebook, #tool-submit { flex-basis: 40%; }
 }
+/* after the phone rules, which it changes: a phone with its text at twice the size: two files side by side no longer hold their words */
+@media (max-width: 300px) {
+  .case-grid, #soon-row { grid-template-columns: minmax(0, 1fr); }
+  /* seven days across no longer hold a letter and a date on one line: the date goes under the letter */
+  .week-day .cap { white-space: normal; }
+}
 </style>
 </head>
 <body>
@@ -541,7 +602,8 @@ body.modal-open { overflow: hidden; }
 <section id="select" class="screen">
   <div class="page-head">
     <div class="kicker" id="day-kicker"></div>
-    <div class="head-row"><h2 id="day-heading" tabindex="-1">Today's Cases</h2><span id="day-count"></span></div>
+    <div id="date-row"><span id="day-date"></span><span id="day-count"></span></div>
+    <div class="head-row"><h2 id="day-heading" tabindex="-1">Today's Cases</h2></div>
     <div class="deco-rule">✦</div>
     <div class="day-switch" id="day-switch">
       <button class="btn small" id="btn-day-today" aria-pressed="true">Today</button>
@@ -550,7 +612,15 @@ body.modal-open { overflow: hidden; }
   </div>
   <div class="case-grid" id="case-grid"></div>
   <p class="next-cases" id="next-cases"></p>
-  <p id="next-phone"></p>
+  <div id="week">
+    <div class="week-head"><span class="week-label">Last 7 days</span><span id="next-phone"></span></div>
+    <div class="week-days" id="week-days"></div>
+  </div>
+  <div id="soon-row">
+    <div class="soon-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4h11v9.5h-11zM2.5 7.5h11M5.5 2v3.5M10.5 2v3.5" fill="none" stroke="currentColor" stroke-width="1.6"></path></svg><span>Archive</span><span class="soon">Soon</span></div>
+    <div class="soon-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 13.5V8M8 13.5v-11M12.5 13.5V6" fill="none" stroke="currentColor" stroke-width="2"></path></svg><span>Stats</span><span class="soon">Soon</span></div>
+  </div>
+  <p id="premium-line">Premium · coming soon</p>
   <div class="back-row"><button class="btn small" id="btn-back-title">← Back</button></div>
 </section>
 
@@ -782,6 +852,16 @@ function dayAt(at) {
   return Math.max(1, Math.round((Date.UTC(now.y, now.m - 1, now.d) - Date.UTC(y, m - 1, d)) / DAY_MS) + 1);
 }
 function currentDay() { return TEST_DAY || dayAt(new Date()); }
+// The calendar date of a day of the game, read with the UTC getters: worked out from the day number and never from the
+// clock, so it is right on a test day and across a clock change.
+function dateOfDay(n) {
+  const [y, m, d] = DATA.epoch.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n - 1));
+}
+const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+// only today's and yesterday's cases can be played
+function dayOpen(day, today) { return Number.isInteger(day) && day >= 1 && (day === today || day === today - 1); }
 // milliseconds until the next day begins
 function untilNextDay(at) {
   const zone = resetZoneParts(at);
@@ -795,17 +875,25 @@ function nextCasesIn(at) {
   const mins = Math.max(1, Math.ceil(untilNextDay(at) / 60000));
   return `${Math.floor(mins / 60)}h ${String(mins % 60).padStart(2, "0")}m`;
 }
+// A case of the pool by its id, or nothing.
+function caseOf(id) {
+  // kept on the function itself: a const here would not exist yet for a call made higher up the page
+  const byId = caseOf.byId || (caseOf.byId = new Map(TIERS.flatMap(t => DATA.puzzles[t.id]).map(c => [c.id, c])));
+  return byId.get(id);
+}
 // Which case a day shows is the stored schedule, never the order of the pool. Past its end a tier starts its list again.
 function puzzleFor(tierId, day) {
-  // kept on the function itself: a const here would not exist yet for a call made higher up the page
-  const byId = puzzleFor.byId || (puzzleFor.byId = new Map(TIERS.flatMap(t => DATA.puzzles[t.id]).map(c => [c.id, c])));
   const list = DATA.schedule[tierId];
-  return byId.get(list[(day - 1) % list.length]);
+  return caseOf(list[(day - 1) % list.length]);
 }
 
 // ---------------------------------------------------------------- storage (best-effort)
 // Test days keep their own results so trying out other days never touches real progress.
 const STORE_KEY = TEST_DAY ? "orderly-murder-daily-test" : "orderly-murder-daily";
+// The results of days that have been put away, under a key of their own: every move on a board rewrites the key above,
+// and a history that only grows must not be rewritten with it. The version is raised when the shape changes.
+const LOG_KEY = STORE_KEY + "-log", LOG_VERSION = 1;
+const RESULT_FIGURES = ["time", "hints", "lens", "wrong", "falseStarts"];
 const store = {
   get() {
     let v;
@@ -861,7 +949,49 @@ const store = {
     delete v.open;
     this.set(v);
   },
-  // only today and yesterday can be played, so nothing else is kept
+  // a log that does not parse, or is of another version, reads as empty
+  getLog() {
+    let v;
+    try { v = JSON.parse(localStorage.getItem(LOG_KEY) || "null"); } catch { v = null; }
+    const sound = v && typeof v === "object" && v.v === LOG_VERSION && v.days && typeof v.days === "object" && !Array.isArray(v.days);
+    return sound ? v : { v: LOG_VERSION, days: {} };
+  },
+  // A log of a later version was written by a newer page than this one, and this one cannot read it:
+  // it must not be written over, and no day is deleted on its account.
+  logIsNewer() {
+    try { const v = JSON.parse(localStorage.getItem(LOG_KEY) || "null"); return !!v && typeof v === "object" && Number.isFinite(v.v) && v.v > LOG_VERSION; } catch { return false; }
+  },
+  // a tier's result is in a day of the log only as outcomes() would read it: a result, of a case of that tier
+  logHas(entry, t) { return !!entry && !!entry[t.id] && typeof entry[t.id] === "object" && caseOf(entry["case:" + t.id])?.tier === t.id; },
+  // says whether the write took: a day is deleted only once its results are known to be in the log
+  setLog(v) { try { localStorage.setItem(LOG_KEY, JSON.stringify(v)); return true; } catch { return false; } },
+  // Whether this device has been here before: the day screen has been drawn (which writes maxDay), or something is kept.
+  // The log's key is only looked for, not read.
+  seen() {
+    const v = this.get();
+    let logged = false;
+    try { logged = localStorage.getItem(LOG_KEY) !== null; } catch {}
+    return Number.isInteger(v.maxDay) || Object.keys(v.days).length > 0 || logged;
+  },
+  wipe() { try { localStorage.removeItem(STORE_KEY); localStorage.removeItem(LOG_KEY); } catch {} },
+  // What the log keeps of a day: the results of the cases the schedule shows for it, and how many cases it offered, which
+  // could not be worked out later once a day can offer more. Boards in progress and hint counts are not kept.
+  fold(day, d) {
+    const out = { n: TIERS.length };
+    TIERS.forEach(t => {
+      const r = d && d[t.id], id = puzzleFor(t.id, day)?.id;
+      // a result of another case than the day's own is not this day's: the test entry() makes for a day still held
+      if (!r || typeof r !== "object" || !id || (d["case:" + t.id] && d["case:" + t.id] !== id)) return;
+      const kept = {};
+      RESULT_FIGURES.forEach(k => { if (Number.isInteger(r[k]) && r[k] >= 0) kept[k] = r[k]; });
+      if (r.gaveUp === true) kept.gaveUp = true;
+      if (r.late === true) kept.late = true;
+      out["case:" + t.id] = id;
+      out[t.id] = kept;
+    });
+    return TIERS.some(t => out[t.id]) ? out : null;
+  },
+  // Only today and yesterday can be played, so no other day's board is kept. The results of a day put away go to the log.
   prune(today) {
     const v = this.get();
     // A clock set backwards must not cost the player their results and boards in progress:
@@ -872,10 +1002,47 @@ const store = {
     // east of the reset zone could already have solved cases that are now tomorrow's
     const stale = Object.keys(v.days).filter(k => +k !== today && +k !== today - 1 && +k !== today + 1);
     if (!stale.length && latest === today) return;
-    stale.forEach(k => delete v.days[k]);
+    // a day of the game that is behind us; any other key (a later day, or no day at all) is deleted with nothing kept
+    const folds = {};
+    stale.forEach(k => { const f = String(+k) === k && +k >= 1 && +k < today - 1 ? this.fold(+k, v.days[k]) : null; if (f) folds[k] = f; });
+    let logged = null;
+    if (Object.keys(folds).length && this.logIsNewer()) logged = {};
+    else if (Object.keys(folds).length) {
+      const log = this.getLog();
+      Object.keys(folds).forEach(k => {
+        const f = folds[k], have = log.days[k] && typeof log.days[k] === "object" ? log.days[k] : (log.days[k] = {});
+        if (!Number.isInteger(have.n)) have.n = f.n;
+        // the first outcome of a case is its result: a page left open on an old case can record one after the day was put away
+        TIERS.forEach(t => { if (f[t.id] && !this.logHas(have, t)) { have[t.id] = f[t.id]; have["case:" + t.id] = f["case:" + t.id]; } });
+      });
+      this.setLog(log);
+      // read back, not taken on trust: a write that did not take must not cost the day
+      logged = this.getLog().days;
+    }
+    const safe = k => !folds[k] || TIERS.every(t => !folds[k][t.id] || this.logHas(logged[k], t));
+    stale.filter(safe).forEach(k => delete v.days[k]);
     v.maxDay = today;
     this.set(v);
   },
+  // Every result there is, of days held and days put away, one for each day and case, oldest day first. Where a case has
+  // a result in both places the log's is given: it is the first outcome, so what is shown for a case never changes.
+  // A logged result belongs to the case it names, wherever the schedule has since put that case.
+  outcomes() {
+    const v = this.get(), log = this.getLog().days, out = [];
+    const days = [...new Set([...Object.keys(v.days), ...Object.keys(log)])].filter(k => String(+k) === k && Number.isInteger(+k) && +k >= 1).map(Number).sort((a, b) => a - b);
+    days.forEach(day => {
+      const held = v.days[day], past = log[day] && typeof log[day] === "object" ? log[day] : null;
+      const n = past && Number.isInteger(past.n) ? past.n : TIERS.length;
+      TIERS.forEach(t => {
+        const was = past && past[t.id], its = was && typeof was === "object" ? caseOf(past["case:" + t.id]) : null;
+        if (its && its.tier === t.id) { out.push({ day, tier: t.id, caseId: its.id, result: was, n }); return; }
+        const now = held && held[t.id], id = puzzleFor(t.id, day)?.id;
+        if (now && typeof now === "object" && id && (!held["case:" + t.id] || held["case:" + t.id] === id)) out.push({ day, tier: t.id, caseId: id, result: now, n });
+      });
+    });
+    return out;
+  },
+  outcome(day, tierId) { return this.outcomes().find(o => o.day === day && o.tier === tierId)?.result || null; },
 };
 
 // ---------------------------------------------------------------- helpers
@@ -884,6 +1051,24 @@ const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls)
 const esc = s => String(s).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
 const initials = name => name.replace(/^(Lord|Lady|Mr\.|Mrs\.|Miss|Dr\.|Colonel|Countess|Father|Sir|Signora|Captain|Detective Sgt\.)\s+/, "")
   .replace(/'[^']*'\s*/g, "").split(/\s+/).filter(Boolean).map(w => w[0]).slice(0, 2).join("").toUpperCase();
+// the marks a case file and its status are told apart by; each is drawn in the colour of the words beside it
+const MARKS = {
+  ring: '<circle cx="8" cy="8" r="5.5" fill="none" stroke="currentColor" stroke-width="2"></circle>',
+  half: '<circle cx="8" cy="8" r="5.5" fill="none" stroke="currentColor" stroke-width="2"></circle><path d="M8 2.5a5.5 5.5 0 0 0 0 11z" fill="currentColor"></path>',
+  check: '<path d="M2.5 8.5l3.5 3.5 7.5-8" fill="none" stroke="currentColor" stroke-width="2.4"></path>',
+  dash: '<rect x="3" y="7" width="10" height="2" fill="currentColor"></rect>',
+  lock: '<rect x="3.5" y="7.5" width="9" height="6.5" fill="currentColor"></rect><path d="M5.6 7.5V5.2a2.4 2.4 0 0 1 4.8 0v2.3" fill="none" stroke="currentColor" stroke-width="1.7"></path>',
+};
+const mark = kind => `<svg class="mark" viewBox="0 0 16 16" aria-hidden="true">${MARKS[kind]}</svg>`;
+// a case file's picture of its board: n by n squares, the first few filled, in reading order
+function fileGrid(n, filled) {
+  let squares = "", lines = "";
+  for (let i = 0; i < filled; i++) squares += `<rect x="${i % n}" y="${Math.floor(i / n)}" width="1" height="1"></rect>`;
+  for (let i = 1; i < n; i++) lines += `M${i} 0V${n}M0 ${i}H${n}`;
+  return `<svg class="file-grid" viewBox="0 0 ${n} ${n}" aria-hidden="true"><rect class="ground" width="${n}" height="${n}"></rect><g class="filled">${squares}</g><path class="lines" d="${lines}M0 0H${n}V${n}H0Z"></path></svg>`;
+}
+// a stored figure as a count: older results differ in shape, and one that is missing or is not a whole number reads as none
+function asCount(x) { return Number.isInteger(x) && x >= 0 ? x : 0; }
 const fmtTime = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 // the one test for the phone layout; the stylesheet's media query uses the same width
 const PHONE = window.matchMedia("(max-width: 600px)");
@@ -999,8 +1184,45 @@ let viewOffset = 0;  // 0 = today, 1 = yesterday
 let shownDay = 0;
 function showNextCases() {
   $("next-cases").textContent = TEST_DAY ? "" : `New cases in ${nextCasesIn(new Date())}. The day turns at midnight Eastern for everyone.`;
-  // the phone's one line under the wall: the only notice of when yesterday's cases go
-  $("next-phone").textContent = TEST_DAY ? "" : `New cases in ${nextCasesIn(new Date())} · midnight Eastern`;
+  // on a phone, at the head of the strip of days: the only notice of when yesterday's cases go
+  $("next-phone").textContent = TEST_DAY ? "" : `New cases in ${nextCasesIn(new Date())}`;
+}
+// A day in the strip is named by its letter and its date: "M 12".
+function weekCaption(n) { const date = dateOfDay(n); return `${WEEKDAYS[date.getUTCDay()][0]} ${date.getUTCDate()}`; }
+// The last seven days: today first, at the left, and the days before it following in order, since a row is read from
+// the left and the day the player is on is where it starts (Scott, 2026-10-12). The cells are built when the day changes and brought up to date in place
+// every other time, so a cell that was pressed is still there to hold focus. Only classes and attributes are set.
+function renderWeek(today, shown) {
+  const box = $("week-days");
+  if (+box.dataset.today !== today) {
+    box.innerHTML = "";
+    for (let n = today; n > today - 7; n--) {
+      const open = dayOpen(n, today), wrap = el("div", "week-day");
+      wrap.dataset.day = n;
+      wrap.appendChild(el("span", "cap", weekCaption(n)));
+      const cell = wrap.appendChild(el(open ? "button" : "span", "week-cell"));
+      if (open) cell.onclick = () => { viewOffset = today - n; renderDay(); };
+      box.appendChild(wrap);
+    }
+    box.dataset.today = today;
+  }
+  // one reading of everything stored serves all seven cells
+  const all = store.outcomes();
+  [...box.children].forEach(wrap => {
+    const n = +wrap.dataset.day, cell = wrap.lastChild, open = dayOpen(n, today), date = dateOfDay(n);
+    const got = all.filter(o => o.day === n), solved = got.filter(o => !o.result.gaveUp).length, cases = got.length ? got[0].n : TIERS.length;
+    // a board in progress counts for a day that can still be played; of an older day nothing of it is kept
+    const begun = got.length > 0 || (open && TIERS.some(t => store.progress(n, t.id) != null));
+    // A day that can no longer be played and was never touched is locked, not merely missed: the Archive is where its
+    // cases will be offered (Scott, 2026-10-12). Today and yesterday, untouched, are still there to be played.
+    const look = n < 1 ? "off" : solved === cases ? "done" : begun ? "part" : open ? "none" : "locked";
+    wrap.className = "week-day" + (n === today ? " today" : open ? " open" : "") + (n === shown ? " shown" : "");
+    if (cell.dataset.look !== look) { cell.dataset.look = look; cell.innerHTML = { done: mark("check"), part: mark("half"), none: mark("ring"), locked: mark("lock"), off: "" }[look]; }
+    if (open) {
+      cell.setAttribute("aria-pressed", String(n === shown));
+      cell.setAttribute("aria-label", `${WEEKDAYS[date.getUTCDay()]} ${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]}, ${n === today ? "today" : "yesterday"}, ${solved} of ${cases} solved`);
+    }
+  });
 }
 // A tab left on this screen keeps its countdown honest and brings in the new cases when the day turns.
 // The cards are only rebuilt when the day has changed, so a keyboard user's place on them is not lost.
@@ -1018,6 +1240,8 @@ function renderDay() {
   if (today === 1) viewOffset = 0;
   const day = today - viewOffset;
   $("day-kicker").textContent = `The Inspector's Desk · Day ${day}${TEST_DAY ? " · test day" : ""}`;
+  const date = dateOfDay(day);
+  $("day-date").textContent = `${WEEKDAYS[date.getUTCDay()]}, ${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]}${TEST_DAY ? " · test day" : ""}`;
   $("day-heading").textContent = viewOffset ? "Yesterday's Cases" : "Today's Cases";
   pageTitle();
   shownDay = today;
@@ -1027,7 +1251,8 @@ function renderDay() {
   $("btn-day-yesterday").setAttribute("aria-pressed", String(viewOffset === 1));
   const grid = $("case-grid"); grid.innerHTML = "";
   // Each card is written in both its forms, the wide card's and the phone's case file, and the stylesheet shows one:
-  // nothing here asks which screen it is.
+  // nothing here asks which screen it is. The phone's file is a picture of the board with its status, the title, the story
+  // and a bar that says what a press does (features/HomeScreen.md, 4.2).
   let solved = 0;
   TIERS.forEach(t => {
     const c = puzzleFor(t.id, day);
@@ -1036,27 +1261,37 @@ function renderDay() {
     // the row is shown only when opening the case would really bring a board back
     const going = done ? null : readProgress(c, new Board(c), day);
     const card = el("button", "case-card" + (done ? " done" : ""));
+    const kind = done ? (done.gaveUp ? "gaveup" : "solved") : going ? "going" : "new";
+    const placed = going ? going.pos.filter(Boolean).length : 0, people = c.suspects.length + 1;
+    const filled = kind === "solved" ? c.n * c.n : Math.round(c.n * c.n * placed / people);
+    const status = { new: mark("ring") + "<span>Unsolved</span>", going: mark("half") + `<span>${placed} of ${people} placed</span>`, gaveup: mark("dash") + "<span>Given up</span>" }[kind] ||
+      mark("check") + `<span>Solved <span class="when">${fmtTime(asCount(done.time))}</span></span>`;
+    const bar = { new: ["play", "Play"], going: ["resume", "Resume"] }[kind] || ["result", "View result"];
+    card.dataset.state = kind;
     const tags = [`${c.suspects.length} suspects`];
     if (c.twist) tags.push(`Local rule: ${c.twist.title}`);
     const blurb = c.intro.split(". ").slice(0, 2).join(". ").replace(/\.$/, "") + ".";
     card.innerHTML = `
       <div class="tab"><span>${esc(t.label)}</span><span>${c.n}×${c.n}</span></div>
       <div class="body">
+        <div class="file-top">${fileGrid(c.n, filled)}<div class="file-status">${status}</div></div>
+        ${c.twist ? `<div class="tile-rule">${esc(c.twist.title)}</div>` : ""}
         <h3>${esc(c.title)}</h3>
         <div class="meta">${esc(c.date)}</div>
         <div class="blurb">${esc(blurb)}</div>
-        <div class="story">${esc(c.intro)}</div>
+        <div class="story"><div class="story-text">${esc(c.intro)}</div></div>
         <div class="tags">${tags.map(tag => `<span class="tag">${esc(tag)}</span>`).join("")}</div>
-        <div class="tile-meta">${c.suspects.length} suspects</div>
-        ${c.twist ? `<div class="tile-rule">${esc(c.twist.title)}</div>` : ""}
         ${going ? `<div class="in-progress">In progress · ${fmtTime(going.elapsed)}</div>` : ""}
-        ${done ? "" : `<div class="tile-status${going ? " going" : ""}">${going ? `${going.pos.filter(Boolean).length} of ${c.suspects.length + 1} placed` : "Open →"}</div>`}
+        <span class="file-bar ${bar[0]}">${bar[1]}</span>
       </div>
-      ${done ? `<div class="stamp">${done.gaveUp ? "GIVEN UP" : "SOLVED · " + fmtTime(done.time)}</div>` : ""}`;
-    card.onclick = () => startCase(c, day);
+      ${done ? `<div class="stamp">${done.gaveUp ? "GIVEN UP" : "SOLVED · " + fmtTime(asCount(done.time))}</div>` : ""}`;
+    // what a press does is decided when it happens: a case finished meanwhile, in another tab, shows its result
+    card.onclick = () => store.result(day, t.id) ? showResult(day, t.id) : startCase(c, day);
     grid.appendChild(card);
   });
-  $("day-count").textContent = `${solved} of ${TIERS.length} solved`;
+  $("day-count").innerHTML = (solved === TIERS.length ? mark("check") : "") + `${solved} of ${TIERS.length} solved`;
+  $("day-count").classList.toggle("all", solved === TIERS.length);
+  renderWeek(today, day);
   fitTiles();
 }
 
@@ -1066,8 +1301,8 @@ const TITLE_STEPS = ["smaller", "smallest"];
 function fitTiles() {
   const stories = [...document.querySelectorAll("#case-grid .story")];
   stories.forEach(story => {
-    story.style.webkitLineClamp = "";
-    story.classList.remove("none", "fitted");
+    story.firstChild.style.webkitLineClamp = "";
+    story.classList.remove("none");
     story.parentNode.querySelector("h3").classList.remove(...TITLE_STEPS);
   });
   if (!stories.length || !stories[0].offsetParent) return;
@@ -1077,10 +1312,10 @@ function fitTiles() {
     TITLE_STEPS.forEach(step => { if (!twoLines()) { title.classList.remove(...TITLE_STEPS); title.classList.add(step); } });
   });
   // read every file before any is written, so the four are measured in one layout
-  const lines = stories.map(story => Math.floor(story.clientHeight / parseFloat(getComputedStyle(story).lineHeight)));
+  const lines = stories.map(story => Math.floor(story.clientHeight / parseFloat(getComputedStyle(story.firstChild).lineHeight)));
   stories.forEach((story, at) => {
     // a single line of a story says nothing: under two lines the room is left empty
-    if (lines[at] < 2) story.classList.add("none"); else { story.style.webkitLineClamp = lines[at]; story.classList.add("fitted"); }
+    if (lines[at] < 2) story.classList.add("none"); else story.firstChild.style.webkitLineClamp = lines[at];
   });
 }
 
@@ -1088,9 +1323,10 @@ function fitTiles() {
 function backToDay() {
   // leaving by Back is an ordinary way to go: the clock is kept to the second
   saveProgress(true);
+  // only a case being kept can be the open case: a result looked at here must not forget a case open in another tab
+  if (state.keep) store.clearOpen();
   // the player has left the case: a late clock write, as the page is hidden, must not name it the open case again
   state.keep = false;
-  store.clearOpen();
   viewOffset = Math.min(1, Math.max(0, currentDay() - state.day));
   renderDay();
   show("select");
@@ -1165,15 +1401,13 @@ function readProgress(c, b, day) {
 document.addEventListener("visibilitychange", () => { if (document.hidden) saveProgress(true); });
 window.addEventListener("pagehide", () => saveProgress(true));
 
-function startCase(c, day) {
+// How a case reaches the screen. A case to be played (startCase) and a result to be looked at (showResult) both come
+// through here, so the two are set up by the same lines and cannot drift apart.
+function enterCase(c, day, kept, keep) {
   const people = [{ ...c.victim, victim: true }, ...c.suspects];
   // shown victim first, then suspects A to Z; everything else keeps the stored order the statements and solution use
   const order = [0, ...people.map((_, i) => i).slice(1).sort((a, b) => people[a].name.localeCompare(people[b].name, "en"))];
   const board = new Board(c);
-  // A board is kept only for the case the schedule shows that day, only until it has a result (a replay is never saved),
-  // and only until the player leaves the case by Back.
-  const keep = !store.result(day, c.tier) && puzzleFor(c.tier, day)?.id === c.id;
-  const kept = keep ? readProgress(c, board, day) : null;
   state = {
     day, c, board, people, order,
     pos: kept ? kept.pos : people.map(() => null),   // [r,c] per person
@@ -1202,6 +1436,18 @@ function startCase(c, day) {
   buildBoard(); buildPeople(); buildTray(); buildLegend(); updateHintButton();
   show("game");
   render();
+}
+
+function startCase(c, day) {
+  // Only today's and yesterday's cases can be played, and every way into a case to be played comes through here: a
+  // verdict left open over midnight, say, must not start the next case of a day that has been put away.
+  if (!dayOpen(day, currentDay())) { renderDay(); show("select"); return; }
+  // A board is kept only for the case the schedule shows that day, only until it has a result (a replay is never saved),
+  // and only until the player leaves the case by Back.
+  const keep = !store.result(day, c.tier) && puzzleFor(c.tier, day)?.id === c.id;
+  const kept = keep ? readProgress(c, new Board(c), day) : null;
+  enterCase(c, day, kept, keep);
+  const { people } = state;
   // the Starter is where new players arrive, so it opens with the briefing; bigger cases begin at once
   // a player picking a Starter up again has already begun: the briefing's button is what starts the clock on a first visit
   if (c.n < 5 && !kept) showBriefing(true);
@@ -1221,6 +1467,23 @@ function startCase(c, day) {
     $("announce").textContent = "";
     setTimeout(() => { if (state === mine && mine.keep && !$("announce").textContent) $("announce").textContent = line; }, RESTORE_ANNOUNCE_MS);
   }
+}
+
+// A finished case, looked at again: everybody on their square and the verdict over it, from the stored result.
+// No clock runs and nothing is written: the state is solved from the start, and it is not a case being kept.
+function showResult(day, tierId) {
+  const c = puzzleFor(tierId, day), result = store.result(day, tierId);
+  if (!c || !result) { renderDay(); return; }
+  stopTimer();
+  enterCase(c, day, null, false);
+  state.pos = c.solution.map(p => [...p]);
+  state.solved = true; state.gaveUp = result.gaveUp === true; state.viewing = true;
+  state.elapsed = asCount(result.time); state.hints = asCount(result.hints); state.falseStarts = asCount(result.falseStarts);
+  $("timer").textContent = fmtTime(state.elapsed);
+  $("announce").textContent = "";
+  updateHintButton();
+  render();
+  showVerdict();
 }
 
 function showBriefing(first) {
@@ -1518,6 +1781,8 @@ $("tool-lens").onclick = () => {
   state.lens = !state.lens; if (state.lens) state.lensUses++; $("tool-lens").setAttribute("aria-pressed", state.lens); render();
 };
 $("tool-reset").onclick = () => {
+  // a finished board is the record of the case: emptied, it would sit under "Case closed" with nobody on it
+  if (state.solved) return;
   closeCasebook();
   openModal(`<h2>Start over?</h2><p>Everyone you have placed, and every draft mark and cross, will be cleared. A hint you have used stays used.</p>
     <div class="row"><button class="btn" data-no data-dismiss>Keep investigating</button><button class="btn primary" data-yes>Clear the board</button></div>`, m => {
@@ -1680,6 +1945,8 @@ function render() {
 // ---------------------------------------------------------------- hints
 // One hint per case: pressing Hint repeatedly would otherwise solve the board on its own.
 const MAX_HINTS = 1;
+// Giving a case up is offered only from this many rejected accusations: the player is asked to work for it first.
+const REVEAL_AFTER = 2;
 function updateHintButton() {
   const spent = state.hints >= MAX_HINTS;
   // a button switched off while it holds focus would leave the keyboard nowhere
@@ -1837,8 +2104,10 @@ function submitFindings() {
 }
 
 // Never names the accused: "you accuse X, not quite" would read as clearing X, who may well be the killer.
+// The count of rejections is the case's falseStarts, raised before this is called and kept with the board, so it
+// survives a reload; every rejection counts, one on the rule alone included.
 function rejectAccusation(o) {
-  const p = o && !o.rule ? state.people[o.who] : null;
+  const p = o && !o.rule ? state.people[o.who] : null, reveal = state.falseStarts >= REVEAL_AFTER;
   // with no square names to quote, the tokens in question are ringed on the board instead
   state.ringed = o ? o.ring : null;
   render();
@@ -1852,11 +2121,11 @@ function rejectAccusation(o) {
       : `<p>Somebody's story doesn't hold up.</p>`}
     <div class="row">
       <button class="btn primary" data-back data-dismiss>Back to the board</button>
-      <button class="btn" data-reveal>Reveal the killer</button>
+      ${reveal ? `<button class="btn" data-reveal>Reveal the killer</button>` : ""}
     </div>
     <p class="fine">The clock is still running. So, possibly, is the killer.</p>`, m => {
     m.querySelector("[data-back]").onclick = closeModal;
-    m.querySelector("[data-reveal]").onclick = () => confirmGiveUp(() => rejectAccusation(o));
+    if (reveal) m.querySelector("[data-reveal]").onclick = () => confirmGiveUp(() => rejectAccusation(o));
   }, "alert");
 }
 
@@ -1877,10 +2146,14 @@ function confirmGiveUp(onCancel) {
 // a daily result is the first outcome; replaying a case never changes it
 function recordResult(gaveUp) {
   const { c } = state;
-  if (store.result(state.day, c.tier)) return;
+  // a result being looked at is never recorded again
+  if (state.viewing || store.result(state.day, c.tier)) return;
   // wrong: the count of wrong names from when the killer was picked from a list; kept so older results read the same
   const result = { time: state.elapsed, hints: state.hints, lens: state.lensUses, wrong: 0, falseStarts: state.falseStarts };
   if (gaveUp) result.gaveUp = true;
+  // A case left open until its day had closed and finished after it: the result is the player's, but it was not made
+  // on its day, and anything that counts days played in turn must be able to tell.
+  if (!dayOpen(state.day, currentDay())) result.late = true;
   store.record(state.day, c.tier, result);
 }
 
@@ -1910,7 +2183,11 @@ function showVerdict() {
   const { c, people } = state;
   const k = people[c.killer];
   const scene = roomRef(c.roomNames[state.board.room(...c.solution[0])]);
-  const next = TIERS.find(t => !store.result(state.day, t.id));
+  // A result being looked at offers no next case: the way on is back to the cases, or the case again while its day is open.
+  const next = state.viewing ? null : TIERS.find(t => !store.result(state.day, t.id));
+  const today = currentDay(), again = !!state.viewing && dayOpen(state.day, today), arrives = `${nextCasesIn(new Date())}, at midnight Eastern.`;
+  const fine = !state.viewing ? `${next ? "" : "That is every case for this day. "}The next body arrives in ${arrives}`
+    : state.day === today ? `The next body arrives in ${arrives}` : again ? `Yesterday's cases close in ${arrives}` : "This day's cases are closed.";
   const role = k.role.replace(/^The\s+/i, "");
   openModal(`
     <div class="stamp-closed" id="modal-stamp">${state.gaveUp ? "Case abandoned" : "Case closed"} · ${fmtTime(state.elapsed)}</div>
@@ -1925,25 +2202,36 @@ function showVerdict() {
       <div><dt>False starts</dt><dd>${state.falseStarts}</dd></div>
     </dl>
     <div class="row">
-      <button class="btn" data-files>All cases</button>
+      <button class="btn${state.viewing ? " primary" : ""}" data-files>All cases</button>
       ${next ? `<button class="btn primary" data-next>Next case: ${esc(next.label)} →</button>` : ""}
+      ${again ? `<button class="btn" data-again>Play again</button>` : ""}
     </div>
-    <p class="fine">${next ? "" : "That is every case for this day. "}The next body arrives in ${nextCasesIn(new Date())}, at midnight Eastern.</p>`, m => {
+    <p class="fine">${fine}</p>`, m => {
     // focus lands on the heading, below the stamp: without this a solved case and an abandoned one sound the same on opening
     m.setAttribute("aria-describedby", state.gaveUp ? "modal-stamp" : "modal-stamp modal-accused");
     m.querySelector("[data-files]").onclick = () => { closeModal(); backToDay(); };
     const nx = m.querySelector("[data-next]");
     if (nx) nx.onclick = () => { closeModal(); startCase(puzzleFor(next.id, state.day), state.day); };
+    // a replay, which is never saved and never changes the result; a sheet left open past its day goes back to the cases
+    const ag = m.querySelector("[data-again]");
+    if (ag) ag.onclick = () => { closeModal(); if (dayOpen(state.day, currentDay())) startCase(state.c, state.day); else backToDay(); };
   });
 }
 
-window.addEventListener("resize", () => {
+// What is measured against the room the screen has: the stories of the day's case files, and a case's board and clue panel.
+function refit() {
   if ($("select").classList.contains("active")) fitTiles();
   if (!state || !$("game").classList.contains("active")) return;
   if (cellSize(state.board.n) !== state.cellSize) { buildBoard(); render(); }
   // the height can change and leave the square as it was: the clue panel's room has changed with it
   else sizePanel();
-});
+}
+window.addEventListener("resize", refit);
+// The room can change with no resize at all. In the app the page is first laid out before the phone has told it its
+// insets, and a screen that opens as the page loads (the day's cases, or a case that was open) is measured in that
+// moment, for more room than there is. A story's box cannot outgrow its file, so nothing runs off the screen meanwhile,
+// but its words would be cut part way down a line. The probe's height is the room: when it changes, all is measured again.
+if (window.ResizeObserver) new ResizeObserver(refit).observe($("vh-probe"));
 // the game's faces arrive after the first drawing and set wider than the fallback: a title may then take another line
 document.fonts.ready.then(() => { if ($("select").classList.contains("active")) fitTiles(); }).catch(() => {});
 // crossing the phone width, by rotating for instance: an open Casebook would otherwise leave the page shut off
@@ -1956,21 +2244,34 @@ placeControls();
 
 // ---------------------------------------------------------------- start-up
 // A page reloaded, or discarded by the phone and loaded again, lands back in the case that was open.
-// Anything that does not check out stays on the title screen. The only way into a case is startCase.
+// Anything that does not check out stays on the title screen. The only way into a case to be played is startCase; a
+// result is looked at through showResult, and is never the open case.
 function boot() {
   const o = store.open();
   if (!o) return false;
   const today = currentDay(), tier = TIERS.find(t => t.id === o.tier);
-  const playable = !!tier && Number.isInteger(o.day) && o.day >= 1 && (o.day === today || o.day === today - 1) && !store.result(o.day, tier.id);
-  const c = playable ? puzzleFor(tier.id, o.day) : null;
+  const resumable = !!tier && dayOpen(o.day, today) && !store.result(o.day, tier.id);
+  const c = resumable ? puzzleFor(tier.id, o.day) : null;
   if (!c || !readProgress(c, new Board(c), o.day)) { store.clearOpen(); return false; }
   startCase(c, o.day);
   return true;
 }
-// Kept as the last statement of the script: startCase reads variables declared above. A call placed higher up
-// would either throw, silently killing every listener below it, or be taken inside readProgress for a bad
-// record and delete the player's board.
-try { boot(); } catch { stopTimer(); state = null; store.clearOpen(); show("title"); }
+// On a phone the game opens on the day's cases once the device has been here before; a new device sees the title screen
+// until the day's cases are first drawn. It is decided once, as the page loads: turning the phone later moves nobody.
+function arrive() {
+  if (!isPhone() || !store.seen()) return false;
+  viewOffset = 0;
+  renderDay();
+  show("select");
+  return true;
+}
+// Kept as the last statements of the script: startCase and renderDay read variables declared above. A call placed
+// higher up would either throw, silently killing every listener below it, or be taken inside readProgress for a bad
+// record and delete the player's board. A case that was open comes back first; only where there is none is the
+// opening screen chosen, and anything that goes wrong there leaves the title screen.
+let reopened = true;
+try { reopened = boot(); } catch { stopTimer(); state = null; store.clearOpen(); show("title"); }
+if (!reopened) { try { arrive(); } catch { show("title"); } }
 </script>
 </body>
 </html>
