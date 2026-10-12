@@ -293,7 +293,7 @@ body.modal-open { overflow: hidden; }
 .modal.wide { max-width: 860px; }
 .toolkit { font-family: var(--type); font-size: 13.5px; line-height: 1.6; }
 /* ---------- phone ---------- */
-.tray, .statement, .sheet-head, .sheet-tools, .head-count, #tool-casebook { display: none; }
+.tray, .clues, .sheet-head, .sheet-tools, .head-count, #tool-casebook, #day-count, #next-phone, .case-card :is(.story, .tile-meta, .tile-rule, .tile-status) { display: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 /* pinned to the top: left where it falls at the end of the page it would make every screen one pixel taller */
 #announce { top: 0; left: 0; }
@@ -302,25 +302,82 @@ body.modal-open { overflow: hidden; }
 @media (max-width: 600px) {
   body { font-size: 17px; }
   body.sheet-open { overflow: hidden; }
-  /* the heights and margins in this block are mirrored by PHONE_CHROME, PHONE_FRAME and PHONE_MARGIN in the script */
-  #game { min-height: 100svh; padding: var(--sat) 8px calc(60px + var(--sab)); }
-  /* raised over the board frame's shadow, which was painting across the foot of the Back button's focus ring */
-  .topbar { flex-wrap: nowrap; height: 56px; margin: 0; gap: 8px; position: relative; z-index: 1; }
+  /* The day screen is a wall of four case files, two by two, that fills the screen under a short header: no band of it is
+     left empty. The files share the height, and the story in each takes what its file has left. Every height is a minimum:
+     on a screen too short for four files of 160px, or with the text enlarged, the page scrolls. */
+  #select { padding: calc(8px + var(--sat)) 8px calc(8px + var(--sab)); }
+  /* on .active: an id rule on #select alone would undo .screen { display: none } */
+  #select.active { display: flex; flex-direction: column; min-height: 100svh; }
+  #select .page-head { flex: none; margin: 0 0 8px; text-align: left; }
+  #select .kicker { font-size: 12px; letter-spacing: .3em; line-height: 16px; }
+  .head-row { display: flex; align-items: baseline; justify-content: space-between; gap: 4px 12px; flex-wrap: wrap; min-height: 36px; }
+  #select .page-head h2 { margin: 0; font-size: 28px; line-height: 36px; }
+  #day-count { display: block; font-family: var(--type); font-size: 13px; color: var(--text-dim); white-space: nowrap; }
+  #select .deco-rule { display: none; }
+  /* Today and Yesterday as the two halves of one box */
+  #select .day-switch { gap: 0; margin-top: 8px; border: 1px solid var(--gold); }
+  #select .day-switch .btn { flex: 1 1 0; min-height: 44px; padding: 0 8px; border: 0; }
+  /* inside the box, so the ring is drawn inside the half it belongs to */
+  #select .day-switch .btn:focus-visible { outline-offset: -4px; }
+  #select .day-switch .btn[aria-pressed="true"]:focus-visible { outline-color: var(--ink); }
+  .case-grid { flex: 1 1 auto; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(min-content, 1fr)); gap: 8px; max-width: none; margin: 0; }
+  .case-card { min-width: 0; min-height: 160px; box-shadow: none; }
+  .case-card:hover { transform: none; }
+  /* drawn inside the file, with paper on both sides of it: the files are 8px apart, the outer ones 8px from the screen's
+     edge, and an ink ring at the file's own edge would be lost against the page */
+  .case-card:focus-visible { outline-offset: -5px; outline-color: var(--ink); }
+  .case-card .tab { padding: 6px 10px; font-size: 12px; }
+  .case-card .body { padding: 10px 10px 8px; gap: 0; min-height: 0; }
+  /* two lines at most and never cut: a title too long for that at this width steps down a size (fitTiles) */
+  .case-card h3 { font-size: 21px; overflow-wrap: break-word; }
+  .case-card h3.smaller { font-size: 18px; }
+  .case-card h3.smallest { font-size: 15.5px; }
+  .case-card :is(.meta, .blurb, .tags, .in-progress) { display: none; }
+  /* The whole story, cut at a whole line where the file ends; the Briefing has all of it. It is first given all the height
+     the file has left, and fitTiles counts the lines that fit; then it is its own height, of that many lines, because a
+     clamped box held taller than its lines shows part of the next one. */
+  .case-card .story { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; flex: 1 1 0; min-height: 0; margin-top: 6px; font-size: 14.5px; line-height: 20px; overflow-wrap: break-word; color: #3a3226; }
+  .case-card .story.fitted { flex: none; }
+  .case-card .story.none { visibility: hidden; }
+  .case-card .tile-meta { display: block; margin-top: auto; padding-top: 6px; font-family: var(--type); font-size: 12px; line-height: 16px; color: #5c5240; }
+  .case-card .tile-rule { display: block; align-self: flex-start; max-width: 100%; margin-top: 2px; padding: 0 5px; border: 1px solid #6d5d3d; font-family: var(--type); font-size: 12px; line-height: 16px; color: #4d4230; }
+  /* one line at the file's foot, the three kinds told apart by shape: a stamp, a dot and a count, or a word and an arrow */
+  .case-card .tile-status { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-family: var(--type); font-weight: 700; font-size: 12px; line-height: 20px; letter-spacing: .1em; text-transform: uppercase; color: var(--wall); white-space: nowrap; }
+  /* gold on paper is too faint for the dot */
+  .case-card .tile-status.going::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: #6e521c; }
+  .case-card .tile-status.going { text-transform: none; letter-spacing: 0; }
+  .case-card.done .tags { padding-right: 0; }
+  .stamp { position: static; align-self: flex-start; margin: 0 10px 8px; padding: 1px 6px; transform: rotate(-3deg); border: 1.5px solid var(--blood); background: none; font-size: 12px; font-weight: 700; line-height: 16px; letter-spacing: .08em; white-space: nowrap; }
+  #next-cases, #select .back-row { display: none; }
+  #next-phone { display: block; flex: none; margin: 8px 0 0; text-align: center; font-style: italic; font-size: 13px; line-height: 20px; color: var(--text-dim); }
+  /* One column that fills the screen: header 52, board, tray 60, clue panel, bar 56, with 8px between them. Only the clue
+     panel stretches, so no band of the screen is left empty. The heights and margins here are mirrored by PHONE_FIXED,
+     PHONE_PANEL_MIN, PHONE_FRAME and PHONE_MARGIN in the script. Each height is a minimum: with the text enlarged a zone
+     grows and the page scrolls. Nothing here may take a transform, a filter or contain: the Casebook is fixed inside it. */
+  #game { padding: var(--sat) 8px 0; }
+  /* on .active: an id rule on #game alone would undo .screen { display: none } */
+  #game.active { display: flex; flex-direction: column; min-height: 100svh; }
+  /* raised over the board, so the foot of the Back button's focus ring is never painted across */
+  .topbar { flex: none; flex-wrap: nowrap; min-height: 52px; margin: 0 0 8px; gap: 8px; position: relative; z-index: 1; }
   #btn-back-cases { flex: none; width: 44px; height: 44px; padding: 0; font-size: 0; }
+  /* 44px of button and 4px of ring each side fill the header's 52, clear of the strip over the top inset */
+  #btn-back-cases:focus-visible { outline-offset: 1px; }
   #btn-back-cases::before { content: "\2190"; font-size: 18px; }
   .topbar .case-name { min-width: 0; font-size: 20px; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .topbar .case-name small { font-size: 12px; letter-spacing: 0; overflow: hidden; text-overflow: ellipsis; }
   .head-count { display: inline; }
   .top-links { display: none; }
   .timer { flex: none; min-width: 0; font-size: 18px; }
-  .layout { display: block; }
-  .board-wrap { gap: 10px; }
-  .board-frame { padding: 4px; box-shadow: 0 0 0 3px var(--ink), 0 0 0 4px var(--gold-dim); }
+  /* the wide grid's centring is undone: in a column it would shrink the board's column to its content */
+  .layout { display: flex; flex-direction: column; flex: 1 1 auto; margin: 0; align-items: stretch; justify-content: flex-start; }
+  .board-wrap { flex: 1 1 auto; gap: 8px; }
+  /* the gold line is the whole frame: every other pixel of the width goes to the squares */
+  .board-frame { flex: none; padding: 1px; border-color: var(--gold); box-shadow: none; }
   .status { display: none; }
 
-  .tray { display: flex; justify-content: center; align-items: center; gap: 6px; width: 100%; height: 56px; }
-  .tray-btn { flex: 0 1 52px; min-width: 44px; height: 50px; padding: 0; background: none; border: 0; display: grid; place-items: center; position: relative; }
-  .tray-btn .chip { position: relative; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-family: var(--serif); font-weight: 700; font-size: 16px; line-height: 1; color: #f4ecd8; border: 2px solid #f4ecd8; }
+  .tray { display: flex; flex: none; justify-content: center; align-items: center; gap: 6px; width: 100%; min-height: 60px; }
+  .tray-btn { flex: 0 1 52px; min-width: 44px; height: 54px; padding: 0; background: none; border: 0; display: grid; place-items: center; position: relative; }
+  .tray-btn .chip { position: relative; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-family: var(--serif); font-weight: 700; font-size: 17px; line-height: 1; color: #f4ecd8; border: 2px solid #f4ecd8; }
   .tray-btn.victim .chip::after { content: "\2020"; position: absolute; top: -5px; right: -5px; width: 16px; height: 16px; border-radius: 50%; background: var(--blood); border: 1px solid #f4ecd8; display: grid; place-items: center; font-size: 10px; }
   /* placed: the fill is darkened under the initial, not faded with it, and only while somebody is still to place */
   .tray:has(.tray-btn:not(.placed)) .tray-btn.placed:not(.selected) .chip { box-shadow: inset 0 0 0 40px rgba(26,29,42,.55); border-color: rgba(244,236,216,.5); }
@@ -328,14 +385,74 @@ body.modal-open { overflow: hidden; }
   .tray-btn.placed::after { content: ""; position: absolute; right: 0; bottom: 0; width: 18px; height: 18px; border-radius: 50%; background: var(--ink); border: 1px solid var(--gold); }
   .tray-btn.placed::before { content: ""; position: absolute; z-index: 1; right: 6.5px; bottom: 5.5px; width: 5px; height: 9px; border: solid var(--gold-2); border-width: 0 2px 2px 0; transform: rotate(45deg); }
   .tray-btn.selected .chip { box-shadow: 0 0 0 2px var(--ink), 0 0 0 4px var(--gold); }
-  /* a square ring against the round ring that means selected; 50px of button and 3px of ring each side fill the tray's 56 */
+  /* a square ring against the round ring that means selected; 54px of button and 3px of ring each side fill the tray's 60 */
   .tray-btn:focus-visible { outline: 3px solid var(--gold-2); }
 
-  .statement { display: flex; align-items: center; width: 100%; height: 60px; padding: 0 12px; overflow: hidden; background: var(--ink-2); border-left: 3px solid var(--gold); font-size: 15px; line-height: 1.3; color: var(--text); }
-  .statement.warn { color: #e48a7f; border-left-color: #e48a7f; }
-  .statement.good { color: #9fcf9f; border-left-color: #9fcf9f; }
+  /* The clue panel: the one zone that stretches, and it never scrolls. It shows one thing at a time, as the old statement
+     line did: a message, a prompt, or the selected person's card. Its form follows its own room (data-size, set by
+     sizePanel), so a tall panel holds one statement in large type and reads as full. Each state (data-show, set by render)
+     shows its own parts and the rest are off. Nothing here is clamped, clipped or given a height: with the text enlarged
+     the panel grows and the page scrolls. No fill of its own for a selection: the dim text would be too faint on it. */
+  .clues { display: flex; flex-direction: column; flex: 1 0 auto; min-height: 88px; width: 100%; padding: 12px 14px; background: var(--ink-2); border: 1px solid var(--gold-dim); }
+  .clues[data-size="xl"] { padding: 16px; }
+  .clues > * { display: none; margin: 0; }
+  /* the prompt is a heading with a line under it; a message is the same paragraph in a plainer voice */
+  .statement { color: var(--gold-2); }
+  .statement .lead { display: block; font-family: var(--display); font-size: 24px; line-height: 1.1; }
+  .clues[data-size="l"] .statement .lead { font-size: 28px; }
+  .clues[data-size="xl"] .statement .lead { font-size: 32px; }
+  .statement .rest, .clue-sub { margin-top: 4px; font-style: italic; font-size: 15px; line-height: 1.35; color: var(--text-dim); }
+  .statement .rest { display: block; }
+  .clues:is([data-show="told"], [data-show="told-card"]) .statement { font-style: italic; font-size: 17px; line-height: 1.35; }
+  .statement.warn { color: #e48a7f; }
+  .statement.good { color: #9fcf9f; }
+  .clues:is([data-show="told"], [data-show="told-card"], [data-show="over"], [data-show="ready"], [data-show="cross"], [data-show="choose"]) .statement,
+  .clues[data-show="choose"] .clue-sub { display: block; }
+  /* a message with nobody selected stands alone, in the middle: the hint always speaks with nobody selected */
+  .clues[data-show="told"] { justify-content: center; }
+  /* the card: who it is, then what they said, in the middle of the height that is left */
+  .clues:is([data-show="card"], [data-show="told-card"]) .clue-head { display: grid; grid-template-columns: 44px 1fr auto; column-gap: 10px; align-items: center; }
+  .clue-head .chip { grid-row: 1 / 3; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-family: var(--serif); font-weight: 700; font-size: 17px; line-height: 1; color: #f4ecd8; border: 2px solid #f4ecd8; }
+  .clue-name { margin: 0; align-self: end; font-family: var(--display); font-weight: 400; font-size: 22px; line-height: 1.1; color: var(--text); }
+  .clue-mode { align-self: end; font-family: var(--type); font-weight: 700; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--gold-2); }
+  .clue-role { grid-column: 2 / 4; align-self: start; font-style: italic; font-size: 13px; line-height: 1.3; color: var(--text-dim); }
+  .clues[data-show="card"] .clue-text, .clues[data-show="told-card"] .statement { display: grid; align-content: center; flex: 1 0 auto; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--gold-dim); }
+  .clue-text { font-size: 20px; line-height: 1.25; color: var(--text); }
+  .clues[data-size="l"] .clue-text { font-size: 22px; }
+  .clues[data-size="xl"] .clue-text { font-size: 24px; }
+  /* the foot, with nobody selected: the case's Local rule, or the three rules every case has. Never under a card or a message. */
+  .clue-rule { margin: auto -4px 0; padding: 8px 10px; border: 1px dashed var(--blood); background: rgba(158,43,37,.12); font-size: 14.5px; line-height: 1.35; color: var(--text); }
+  .clue-rule b { display: block; font-family: var(--deco); font-size: 13px; letter-spacing: .15em; text-transform: uppercase; color: #e48a7f; }
+  .clue-rules { margin-top: auto; padding-top: 8px; border-top: 1px solid var(--gold-dim); font-size: 15px; line-height: 1.35; color: var(--text-dim); }
+  .clue-rules span { display: block; }
+  .clue-rules b { display: none; margin-bottom: 2px; font-family: var(--type); font-size: 12px; letter-spacing: .15em; text-transform: uppercase; }
+  .clues:is([data-size="l"], [data-size="xl"]) .clue-rules b { display: block; }
+  .clues[data-rule]:not([data-size="s"]):is([data-show="over"], [data-show="ready"], [data-show="cross"], [data-show="choose"]) .clue-rule,
+  .clues:not([data-rule], [data-size="s"]):is([data-show="over"], [data-show="ready"], [data-show="cross"], [data-show="choose"]) .clue-rules { display: block; }
+  /* the smallest tall panel holds a heading and the longest rule's box, and not a second line as well */
+  .clues[data-size="m"][data-rule] :is(.statement .rest, .clue-sub) { display: none; }
+  /* A short panel (an iPhone SE's 88px) has room for one thing: the chip and the statement side by side, or a message in
+     their place, or a prompt. No name, no word for the mode (the bar's pressed button and the tray's ring say it), no foot. */
+  .clues[data-size="s"] { padding: 6px 12px; justify-content: center; }
+  .clues[data-size="s"] .statement .lead { font-size: 22px; }
+  .clues[data-size="s"]:is([data-show="told"], [data-show="told-card"]) .statement { font-size: 15px; line-height: 1.3; }
+  .clues[data-size="s"][data-show="told-card"] .statement { flex: none; margin-top: 0; padding-top: 0; border-top: 0; }
+  .clues[data-size="s"][data-show="told-card"] .clue-head { display: none; }
+  .clues[data-size="s"][data-show="card"] { flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; }
+  .clues[data-size="s"][data-show="card"] .clue-head { display: block; flex: none; }
+  .clues[data-size="s"] .clue-head .chip { width: 28px; height: 28px; font-size: 11.5px; border-width: 1.5px; }
+  .clues[data-size="s"] :is(.clue-name, .clue-mode, .clue-role) { display: none; }
+  .clues[data-size="s"][data-show="card"] .clue-text { display: block; flex: 1 1 0; margin-top: 0; padding-top: 0; border-top: 0; font-size: 16px; line-height: 1.3; }
+  /* on a short panel the rule and "Choose someone." do not both fit, and the rule is the one the player cannot guess:
+     it takes the prompt's place, whole, until someone is selected */
+  .clues[data-size="s"][data-rule][data-show="choose"] :is(.statement, .clue-sub) { display: none; }
+  .clues[data-size="s"][data-rule][data-show="choose"] .clue-rule { display: block; margin: 0; padding: 0; border: 0; background: none; font-style: italic; font-size: 15px; line-height: 1.3; }
+  .clues[data-size="s"] .clue-rule b { display: inline; font: inherit; font-weight: 700; letter-spacing: 0; text-transform: none; }
+  .clues[data-size="s"] .clue-rule b::after { content: ". "; }
 
-  .tools { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; flex-wrap: nowrap; gap: 6px; padding: 7px 8px calc(8px + var(--sab)); background: var(--ink); border-top: 1px solid var(--gold-dim); }
+  /* The column's last child, in the flow: it sits above the home indicator when the stack fits, and stays on screen when
+     the page scrolls, so Draft, Cross out and Accuse are never below the fold. It keeps the foot inset in its own padding. */
+  .tools { position: sticky; bottom: 0; z-index: 30; flex: none; align-self: stretch; margin: 0 -8px; flex-wrap: nowrap; gap: 6px; padding: 5px 8px calc(6px + var(--sab)); background: var(--ink); border-top: 1px solid var(--gold-dim); }
   .tools .btn { flex: 0 0 44px; height: 44px; padding: 0; font-size: 0; letter-spacing: 0; display: grid; place-items: center; }
   .tools .btn::before { font-family: var(--serif); font-size: 20px; line-height: 1; }
   #tool-draft::before { content: "\270E"; }
@@ -382,6 +499,11 @@ body.modal-open { overflow: hidden; }
   .tray-btn:last-child { margin-right: auto; }
   .tray-btn:focus-visible { outline-offset: -3px; }
 }
+/* a page zoomed to twice its size on a phone: six controls no longer fit one row, and the bar takes two before the page scrolls sideways */
+@media (max-width: 299px) {
+  .tools { flex-wrap: wrap; }
+  #tool-casebook, #tool-submit { flex-basis: 40%; }
+}
 </style>
 </head>
 <body>
@@ -419,7 +541,7 @@ body.modal-open { overflow: hidden; }
 <section id="select" class="screen">
   <div class="page-head">
     <div class="kicker" id="day-kicker"></div>
-    <h2 id="day-heading" tabindex="-1">Today's Cases</h2>
+    <div class="head-row"><h2 id="day-heading" tabindex="-1">Today's Cases</h2><span id="day-count"></span></div>
     <div class="deco-rule">✦</div>
     <div class="day-switch" id="day-switch">
       <button class="btn small" id="btn-day-today" aria-pressed="true">Today</button>
@@ -428,6 +550,7 @@ body.modal-open { overflow: hidden; }
   </div>
   <div class="case-grid" id="case-grid"></div>
   <p class="next-cases" id="next-cases"></p>
+  <p id="next-phone"></p>
   <div class="back-row"><button class="btn small" id="btn-back-title">← Back</button></div>
 </section>
 
@@ -447,7 +570,14 @@ body.modal-open { overflow: hidden; }
     <div class="board-wrap">
       <div class="board-frame" id="board-frame"></div>
       <div class="tray" id="tray"></div>
-      <div class="statement" id="statement"></div>
+      <section class="clues" id="clues" aria-label="Statement">
+        <div class="clue-head"><span class="chip" id="clue-chip" aria-hidden="true"></span><h3 class="clue-name" id="clue-name"></h3><span class="clue-mode" id="clue-mode"></span><span class="clue-role" id="clue-role"></span></div>
+        <p class="statement" id="statement"></p>
+        <p class="clue-sub">Tap a person for their statement.</p>
+        <p class="clue-text" id="clue-text"></p>
+        <div class="clue-rule" id="clue-rule"></div>
+        <div class="clue-rules"><b>The rules</b><span>One person to every row.</span><span>One person to every column.</span><span>One killer alone with the body.</span></div>
+      </section>
       <div class="tools" id="tools">
         <button class="btn small" id="tool-casebook" aria-haspopup="dialog">Casebook</button>
         <button class="btn small" id="tool-draft" aria-label="Draft" aria-pressed="false" title="Note where the selected person might be (D)">✎ Draft</button>
@@ -773,6 +903,8 @@ function focusHeading() { $(HEADINGS[document.querySelector(".screen.active").id
 function show(id) {
   document.querySelectorAll(".screen").forEach(s => s.classList.toggle("active", s.id === id));
   window.scrollTo(0, 0);
+  // the case files can only be measured once their screen is showing
+  if (id === "select") fitTiles();
   pageTitle();
   // focus left on a control of the screen just hidden would be nowhere
   focusHeading();
@@ -867,6 +999,8 @@ let viewOffset = 0;  // 0 = today, 1 = yesterday
 let shownDay = 0;
 function showNextCases() {
   $("next-cases").textContent = TEST_DAY ? "" : `New cases in ${nextCasesIn(new Date())}. The day turns at midnight Eastern for everyone.`;
+  // the phone's one line under the wall: the only notice of when yesterday's cases go
+  $("next-phone").textContent = TEST_DAY ? "" : `New cases in ${nextCasesIn(new Date())} · midnight Eastern`;
 }
 // A tab left on this screen keeps its countdown honest and brings in the new cases when the day turns.
 // The cards are only rebuilt when the day has changed, so a keyboard user's place on them is not lost.
@@ -892,9 +1026,13 @@ function renderDay() {
   $("btn-day-today").setAttribute("aria-pressed", String(viewOffset === 0));
   $("btn-day-yesterday").setAttribute("aria-pressed", String(viewOffset === 1));
   const grid = $("case-grid"); grid.innerHTML = "";
+  // Each card is written in both its forms, the wide card's and the phone's case file, and the stylesheet shows one:
+  // nothing here asks which screen it is.
+  let solved = 0;
   TIERS.forEach(t => {
     const c = puzzleFor(t.id, day);
     const done = store.result(day, t.id);
+    if (done && !done.gaveUp) solved++;
     // the row is shown only when opening the case would really bring a board back
     const going = done ? null : readProgress(c, new Board(c), day);
     const card = el("button", "case-card" + (done ? " done" : ""));
@@ -907,12 +1045,42 @@ function renderDay() {
         <h3>${esc(c.title)}</h3>
         <div class="meta">${esc(c.date)}</div>
         <div class="blurb">${esc(blurb)}</div>
+        <div class="story">${esc(c.intro)}</div>
         <div class="tags">${tags.map(tag => `<span class="tag">${esc(tag)}</span>`).join("")}</div>
+        <div class="tile-meta">${c.suspects.length} suspects</div>
+        ${c.twist ? `<div class="tile-rule">${esc(c.twist.title)}</div>` : ""}
         ${going ? `<div class="in-progress">In progress · ${fmtTime(going.elapsed)}</div>` : ""}
+        ${done ? "" : `<div class="tile-status${going ? " going" : ""}">${going ? `${going.pos.filter(Boolean).length} of ${c.suspects.length + 1} placed` : "Open →"}</div>`}
       </div>
       ${done ? `<div class="stamp">${done.gaveUp ? "GIVEN UP" : "SOLVED · " + fmtTime(done.time)}</div>` : ""}`;
     card.onclick = () => startCase(c, day);
     grid.appendChild(card);
+  });
+  $("day-count").textContent = `${solved} of ${TIERS.length} solved`;
+  fitTiles();
+}
+
+// On a phone a case file's title is two lines at most and its story ends at a whole line, and both depend on the size the
+// file was given: they are measured here, once the files are laid out. On a wide screen neither is shown and nothing is done.
+const TITLE_STEPS = ["smaller", "smallest"];
+function fitTiles() {
+  const stories = [...document.querySelectorAll("#case-grid .story")];
+  stories.forEach(story => {
+    story.style.webkitLineClamp = "";
+    story.classList.remove("none", "fitted");
+    story.parentNode.querySelector("h3").classList.remove(...TITLE_STEPS);
+  });
+  if (!stories.length || !stories[0].offsetParent) return;
+  stories.forEach(story => {
+    const title = story.parentNode.querySelector("h3");
+    const twoLines = () => title.offsetHeight <= 2 * parseFloat(getComputedStyle(title).lineHeight) + 1;
+    TITLE_STEPS.forEach(step => { if (!twoLines()) { title.classList.remove(...TITLE_STEPS); title.classList.add(step); } });
+  });
+  // read every file before any is written, so the four are measured in one layout
+  const lines = stories.map(story => Math.floor(story.clientHeight / parseFloat(getComputedStyle(story).lineHeight)));
+  stories.forEach((story, at) => {
+    // a single line of a story says nothing: under two lines the room is left empty
+    if (lines[at] < 2) story.classList.add("none"); else { story.style.webkitLineClamp = lines[at]; story.classList.add("fitted"); }
   });
 }
 
@@ -1028,6 +1196,9 @@ function startCase(c, day) {
   $("tool-draft").setAttribute("aria-pressed", "false");
   $("tool-lens").setAttribute("aria-pressed", "false");
   $("twist-box").innerHTML = c.twist ? `<div class="twist"><b>Local rule: ${esc(c.twist.title)}</b>${esc(c.twist.text)}</div>` : "";
+  // the phone's clue panel shows the rule too, with nobody selected: the same words, filled once for the case
+  $("clue-rule").innerHTML = c.twist ? `<b>Local rule: ${esc(c.twist.title)}</b>${esc(c.twist.text)}` : "";
+  $("clues").toggleAttribute("data-rule", !!c.twist);
   buildBoard(); buildPeople(); buildTray(); buildLegend(); updateHintButton();
   show("game");
   render();
@@ -1036,8 +1207,8 @@ function startCase(c, day) {
   if (c.n < 5 && !kept) showBriefing(true);
   else {
     startTimer();
-    // bigger cases have no briefing, and on a phone the Local rule box is inside the Casebook:
-    // the rule holds the message line until the player's first move
+    // bigger cases have no briefing: the rule holds the wide screen's message line until the player's first move.
+    // A phone's clue panel shows the rule in a place of its own while nobody is selected, so there it is not a message.
     if (c.twist) { state.flash = { msg: `Local rule: ${c.twist.text}`, kind: "", rule: true }; $("announce").textContent = kept ? "" : state.flash.msg; render(); }
   }
   if (kept) {
@@ -1070,11 +1241,16 @@ function showBriefing(first) {
 }
 
 // ---------------------------------------------------------------- board
-// header 56 + tray 56 + statement 60 + bar 60 + two 10px gaps, as the phone stylesheet sets them, + 10px of air above the bar.
+// header 52 + tray 60 + bar 56 + four 8px gaps, as the phone stylesheet sets them, and the least the clue panel may be given.
 // They are constants because the board is built before the game screen is shown and can be measured.
-const PHONE_CHROME = 262;
-// around the board: frame padding 4 + frame border 1 on each side, and across the width a page margin of 8 as well
-const PHONE_FRAME = 10, PHONE_MARGIN = 16;
+const PHONE_FIXED = 200, PHONE_PANEL_MIN = 88;
+// The clue panel's form follows its own room, largest first: the least height, border and all, that holds each form with the
+// longest statement, rule and message in the pool. Under the last of them the panel is short ("s").
+const PHONE_PANEL_STEPS = [["xl", 220], ["l", 190], ["m", 162]];
+// around the board: frame padding 1 + frame border 1 on each side, and across the width a page margin of 8 each side
+const PHONE_FRAME = 4, PHONE_MARGIN = 16;
+// the least a square is shrunk to for the sake of height; the width may still make it smaller, or the page would scroll sideways
+const PHONE_CELL_FLOOR = 45;
 function cellSize(n) {
   // less the body's side padding: a phone on its side keeps the page clear of the notch, and the board must fit what is left
   const side = getComputedStyle(document.body);
@@ -1083,9 +1259,9 @@ function cellSize(n) {
   if (isPhone()) {
     const byWidth = Math.floor((vw - PHONE_MARGIN - PHONE_FRAME) / n);
     const tall = $("vh-probe").offsetHeight || window.innerHeight;
-    const byHeight = Math.floor((tall - PHONE_CHROME - PHONE_FRAME) / n);
+    const byHeight = Math.floor((tall - PHONE_FIXED - PHONE_PANEL_MIN - PHONE_FRAME) / n);
     // shrink to keep the game on one screen, but not below a comfortable tap; past that the page scrolls
-    return Math.min(byWidth, Math.max(byHeight, 44));
+    return Math.min(byWidth, Math.max(byHeight, PHONE_CELL_FLOOR));
   }
   const vh = window.innerHeight;
   // the stylesheet's own breakpoint, which reads the whole window
@@ -1093,6 +1269,14 @@ function cellSize(n) {
   const availW = stacked ? vw - 110 : vw - 400 - 24 - 130;
   const availH = stacked ? Infinity : vh - 200;
   return Math.max(28, Math.min(130, Math.floor(Math.min(availW, availH) / n)));
+}
+
+// The room the layout will give the clue panel, worked out from what the board was sized from. The panel itself is never
+// measured: it grows with what it holds, so its own height would only say what it was showing.
+function sizePanel() {
+  const tall = $("vh-probe").offsetHeight || window.innerHeight;
+  const room = tall - PHONE_FIXED - (state.board.n * state.cellSize + PHONE_FRAME);
+  $("clues").dataset.size = (PHONE_PANEL_STEPS.find(step => room >= step[1]) || ["s"])[0];
 }
 
 function buildBoard() {
@@ -1164,11 +1348,22 @@ function buildBoard() {
     }
   }
   frame.appendChild(grid);
+  sizePanel();
+}
+
+// A row of the Casebook always picks its person and never deselects; once the case is over it does nothing.
+function pick(i) {
+  if (state.solved) return;
+  clearNotices(); state.selected = i;
+}
+
+// A person's role as the Casebook words it, with what a Local rule makes of them; the phone's clue panel shows the same line.
+function roleLine(p) {
+  return p.victim ? "The deceased · " + p.role : p.role + (p.staff ? " · " + staffWord(state.c).toLowerCase() : "") + (p.key ? " · holds the key" : "");
 }
 
 function buildPeople() {
   const list = $("people"); list.innerHTML = "";
-  const staffTag = " · " + staffWord(state.c).toLowerCase();
   state.cards = [];
   state.order.forEach((i, at) => {
     const p = state.people[i];
@@ -1177,15 +1372,13 @@ function buildPeople() {
     b.innerHTML = `
       <div class="chip" style="background:${p.color}">${initials(p.name)}</div>
       <div>
-        <div class="who">${esc(p.name)}<small>${p.victim ? "The deceased · " + esc(p.role) : esc(p.role) + (p.staff ? staffTag : "") + (p.key ? " · holds the key" : "")}</small></div>
+        <div class="who">${esc(p.name)}<small>${esc(roleLine(p))}</small></div>
         <div class="clue">${esc(state.c.clues[i].text)}</div>
       </div>
       <div class="state"></div>`;
     b.onclick = () => {
       if (!sheetOpen()) { select(i); return; }
-      // in the Casebook a tap always picks the person; it never deselects
-      if (!state.solved) { clearNotices(); state.selected = i; }
-      closeCasebook(); render();
+      pick(i); closeCasebook(); render();
     };
     list.appendChild(b);
     state.cards[i] = b;
@@ -1233,7 +1426,7 @@ function clearNotices() {
 
 function select(i) {
   if (state.solved) return;
-  // A message stays until the next move, and on a phone it sits over the selected person's statement:
+  // A message stays until the next move, and on a phone it sits in place of the selected person's statement:
   // the tap that dismisses it keeps the person selected, so their statement appears instead of the selection toggling off.
   const dismissed = !!state.flash;
   clearNotices();
@@ -1446,15 +1639,40 @@ function render() {
   const kind = f && f.kind ? " " + f.kind : "";
   const s = $("status");
   s.className = "status" + kind;
-  s.textContent = f ? f.msg : over || ready || (state.markMode ? "Crossing out. Tap a square to rule it out."
-    : sel == null ? "Choose someone from the testimony."
+  const prompt = choose => over || ready || (state.markMode ? "Crossing out. Tap a square to rule it out."
+    : sel == null ? choose
     : state.draftMode ? `Drafting ${people[sel].short}. Draft marks are just for you.`
     : `Placing ${people[sel].short}. Tap a square to put them there.`);
-  // the phone has no room for a status line: the selected person's statement sits here, and messages borrow the space
-  const line = f ? f.msg : over || (sel != null ? c.clues[sel].text : ready || (state.markMode ? "Crossing out. Tap a square to rule it out." : "Choose someone."));
+  s.textContent = f ? f.msg : prompt("Choose someone from the testimony.");
+  // The phone's clue panel shows one thing at a time, in the old statement line's order: a message, the case's end, the
+  // selected person's card, then the prompts. The Local rule at opening is not a message here: the panel shows the rule
+  // itself while nobody is selected. Everything is written every time and the stylesheet shows what the state calls for.
+  const told = f && !f.rule ? f : null;
+  const show = told ? (sel == null ? "told" : "told-card") : over ? "over" : sel != null ? "card" : ready ? "ready" : state.markMode ? "cross" : "choose";
+  const line = told ? told.msg : over || (sel != null ? "" : ready || (state.markMode ? "Crossing out. Tap a square to rule it out." : "Choose someone."));
   const st = $("statement");
-  st.className = "statement" + kind;
-  if (st.textContent !== line) st.textContent = line;
+  st.className = "statement" + (told ? kind : "");
+  if (st.textContent !== line) {
+    // a prompt is a heading and, where it has one, a second sentence under it; a message is plain
+    const cutAt = told ? -1 : line.indexOf(". ");
+    st.textContent = "";
+    if (told || !line) st.textContent = line;
+    else {
+      st.appendChild(el("span", "lead")).textContent = cutAt < 0 ? line : line.slice(0, cutAt + 1);
+      if (cutAt >= 0) { st.append(" "); st.appendChild(el("span", "rest")).textContent = line.slice(cutAt + 2); }
+    }
+  }
+  // the card keeps its head under a message, so the player still sees who is selected; with nobody selected it is emptied
+  const who = sel != null && !over ? people[sel] : null;
+  const fill = (id, text) => { if ($(id).textContent !== text) $(id).textContent = text; };
+  fill("clue-chip", who ? initials(who.name) : "");
+  $("clue-chip").style.background = who ? who.color : "";
+  fill("clue-name", who ? who.name : "");
+  fill("clue-role", who ? roleLine(who) : "");
+  // the word says what a tap on a square will do, so it is never "Placing" while a tap would cross out
+  fill("clue-mode", who ? (state.markMode ? "Crossing out" : state.draftMode ? "Drafting" : "Placing") : "");
+  fill("clue-text", show === "card" ? c.clues[sel].text : "");
+  $("clues").dataset.show = show;
   // kept last: everything that changes the board ends in a render
   saveProgress();
 }
@@ -1720,8 +1938,14 @@ function showVerdict() {
 }
 
 window.addEventListener("resize", () => {
-  if (state && $("game").classList.contains("active") && cellSize(state.board.n) !== state.cellSize) { buildBoard(); render(); }
+  if ($("select").classList.contains("active")) fitTiles();
+  if (!state || !$("game").classList.contains("active")) return;
+  if (cellSize(state.board.n) !== state.cellSize) { buildBoard(); render(); }
+  // the height can change and leave the square as it was: the clue panel's room has changed with it
+  else sizePanel();
 });
+// the game's faces arrive after the first drawing and set wider than the fallback: a title may then take another line
+document.fonts.ready.then(() => { if ($("select").classList.contains("active")) fitTiles(); }).catch(() => {});
 // crossing the phone width, by rotating for instance: an open Casebook would otherwise leave the page shut off
 PHONE.addEventListener("change", () => {
   closeCasebook();
