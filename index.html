@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>A Most Orderly Murder</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <style>
 :root {
   /* the screen's insets, named once: a test can set a variable, and nothing else puts an inset in front of one */
@@ -14,145 +14,123 @@
   --sar: env(safe-area-inset-right, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
   --sal: env(safe-area-inset-left, 0px);
-  --ink: #1a1d2a;
-  --ink-2: #232738;
-  --ink-3: #2b3044;
-  --gold: #c9a34e;
-  --gold-2: #e0c47a;
-  --gold-dim: #8f7642;
-  --paper: #efe4c8;
-  --paper-2: #e2d3ae;
-  --text: #e9dfc6;
-  --text-dim: #a99f8a;
-  --blood: #a8322a;
-  --ok: #2e6b3f;
-  --wall: #2a2418;
-  --display: "Abril Fatface", Georgia, "Times New Roman", serif;
-  --deco: "Courier Prime", "Courier New", monospace;
-  --serif: "Libre Baskerville", Georgia, "Times New Roman", serif;
-  --type: "Courier Prime", "Courier New", monospace;
+  /* The page's colours and faces, named by role (features/Visuals.md, 9.1). */
+  --bg: #f7f4ee;
+  --card: #ffffff;
+  --fg: #1b1b1b;
+  --fg-body: #4a463f;
+  --fg-2: #6b665e;
+  --line: #ece7dd;
+  --chip: #f2ecdf;
+  --fill-grey: #e3ded4;
+  --line-grey: #8a8479;
+  --good: #27704f;
+  --good-fill: #2e7d5b;
+  --bad: #c8102e;
+  --tier-starter: #f2c14e;
+  --tier-easy: #7cc4a4;
+  --tier-medium: #f08a6c;
+  --tier-hard: #8f86e0;
+  /* the cream of a board token's ring and initial, for a person's chip wherever it is drawn off the board */
+  --cream: #f4ecd8;
+  --title: "Instrument Serif", Georgia, "Times New Roman", serif;
+  --ui: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  --t-label: 12px;
+  --t-status: 13px;
+  --t-btn: 14px;
+  --t-body: 17px;
+  --t-h2: 30px;
+  --t-h1: 40px;
+  /* The icons the bar, the header and the badges draw: currentColor through a mask of an SVG, never a font's glyph, which
+     neither new family carries and would fall back to each device's own (features/Visuals.md, section 3). The dagger is a
+     white drawing on the red badge, not a mask. */
+  --icon-back: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M10 3L5 8l5 5' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --icon-close: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 4l8 8M12 4l-8 8' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  --icon-pencil: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 13l.8-3.2L10.6 3l2.4 2.4-6.8 6.8z M9.6 4l2.4 2.4' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --icon-cross: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 3.5l9 9M12.5 3.5l-9 9' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E");
+  --icon-undo: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M6 4L3 7l3 3M3.5 7H10a3 3 0 0 1 0 6H7' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --icon-help: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M5.5 6a2.5 2.5 0 1 1 3.6 2.2C8.4 8.6 8 9 8 10' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round'/%3E%3Ccircle cx='8' cy='12.6' r='1.1' fill='black'/%3E%3C/svg%3E");
+  --icon-dagger: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 2v12M5 5.5h6' fill='none' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  /* the focus ring's colour */
+  --ring: var(--fg);
+  color-scheme: light;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; }
 body {
-  background: var(--ink);
-  background-image:
-    radial-gradient(ellipse at top, rgba(201,162,74,.10), transparent 60%),
-    repeating-linear-gradient(135deg, rgba(255,255,255,.012) 0 2px, transparent 2px 14px);
-  color: var(--text);
-  font-family: var(--serif);
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--ui);
   font-size: 16px;
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
+  /* Instrument Serif has no bold: a miss must show as a miss, not as a browser's thickened strokes */
+  font-synthesis: none;
   /* viewport-fit=cover lets the page run under a notch when the phone is on its side */
   padding: 0 var(--sar) 0 var(--sal);
 }
 /* In an app the page runs up under the clock, and what scrolls there must not be read through it. Above the
-   Casebook, whose header is paper, and below a dialog, whose backdrop is dark. No height in a browser. */
-body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; height: var(--sat); background: var(--ink); z-index: 45; pointer-events: none; }
+   Casebook, and below a dialog, whose ground on a phone is the page's own, or dimmed over it. No height in a browser. */
+body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; height: var(--sat); background: var(--bg); z-index: 45; pointer-events: none; }
 button { font: inherit; color: inherit; cursor: pointer; }
 .screen { display: none; min-height: 100vh; }
 .screen.active { display: block; }
 
-/* ---------- deco frame bits ---------- */
-.deco-rule { display: flex; align-items: center; gap: 12px; color: var(--gold); justify-content: center; }
-.deco-rule::before, .deco-rule::after { content: ""; height: 1px; flex: 1; max-width: 160px;
-  background: linear-gradient(90deg, transparent, var(--gold)); }
-.deco-rule::after { background: linear-gradient(90deg, var(--gold), transparent); }
-.btn {
-  background: transparent; border: 1px solid var(--gold); color: var(--gold-2);
-  font-family: var(--deco); font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
-  padding: 11px 20px; font-size: 14px; transition: background .15s, color .15s;
-  position: relative;
-}
-/* focus is a detached, square-cornered ring and never a fill: a fill means pressed, a flush edge means selected */
-.btn:focus-visible, .case-card:focus-visible { outline: 3px solid var(--gold-2); outline-offset: 3px; }
 /* a control the browser scrolls to must not sit flush with the screen edge, or the far side of its ring is off screen */
 .btn, .case-card { scroll-margin: 8px; }
-.btn.primary { background: var(--gold); color: var(--ink); }
-/* a touch screen keeps :hover on the last button tapped, which would look the same as a pressed Draft or Cross out */
-@media (hover: hover) {
-  .btn:hover { background: var(--gold); color: var(--ink); }
-  .btn.primary:hover { background: var(--gold-2); }
-}
-.btn.small { padding: 6px 12px; font-size: 13px; letter-spacing: .1em; }
-.btn[aria-pressed="true"] { background: var(--gold); color: var(--ink); }
-.btn:disabled { opacity: .4; cursor: default; }
 
 /* ---------- title ---------- */
 #title { display: none; text-align: center; padding: calc(8vh + var(--sat)) 16px 40px; }
 #title.active { display: flex; flex-direction: column; align-items: center; }
-.sunburst {
-  width: 160px; height: 80px; margin-bottom: 18px;
-  background: repeating-conic-gradient(from 270deg at 50% 100%, var(--gold) 0 6deg, transparent 6deg 15deg);
-  -webkit-mask: radial-gradient(circle at 50% 100%, transparent 22px, #000 23px, #000 78px, transparent 79px);
-          mask: radial-gradient(circle at 50% 100%, transparent 22px, #000 23px, #000 78px, transparent 79px);
-  opacity: .9;
-}
-.kicker { font-family: var(--deco); letter-spacing: .4em; text-transform: uppercase; color: var(--gold); font-size: 14px; font-weight: 700; }
-h1.logo { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 8vw, 84px); line-height: 1; margin: 14px 0 6px;
-  color: var(--gold-2); text-shadow: 0 2px 0 #000; }
-.tagline { font-style: italic; color: var(--text-dim); font-size: 17px; max-width: 560px; margin: 12px auto 30px; }
+h1.logo { font-family: var(--title); font-weight: 400; font-size: clamp(44px, 9vw, 96px); line-height: 1; margin: 14px 0 6px; color: var(--fg); }
+.tagline { font-family: var(--title); font-style: italic; color: var(--fg-body); font-size: 20px; line-height: 1.35; max-width: 640px; margin: 12px auto 30px; }
 .title-buttons { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
 
 /* ---------- case select ---------- */
 #select { padding: calc(40px + var(--sat)) 16px 60px; }
-.page-head { text-align: center; margin-bottom: 30px; }
-.page-head h2 { font-family: var(--display); font-weight: 400; font-size: clamp(30px, 5vw, 46px); color: var(--gold-2); margin: 8px 0; }
-.day-switch { display: flex; gap: 10px; justify-content: center; margin-top: 16px; }
-.day-switch[hidden] { display: none; }
-.case-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 22px; max-width: 1100px; margin: 0 auto; }
-.case-card {
-  background: var(--paper); color: var(--ink); text-align: left; border: none; padding: 0;
-  box-shadow: 0 10px 30px rgba(0,0,0,.45); position: relative; transition: transform .15s;
-  display: flex; flex-direction: column;
-}
-.case-card:hover { transform: translateY(-4px) rotate(-.4deg); }
-.case-card .tab { background: var(--paper-2); padding: 10px 16px; font-family: var(--type); font-size: 14px; display: flex; justify-content: space-between; border-bottom: 1px dashed #a8956a; }
-.case-card .body { padding: 16px 18px 20px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
-.case-card h3 { font-family: var(--display); font-weight: 400; font-size: 25px; margin: 0; line-height: 1.1; }
-.case-card .meta { font-family: var(--type); font-size: 13px; color: #5c5240; }
-.case-card .blurb { font-size: 14.5px; line-height: 1.45; margin-top: 6px; color: #3a3226; }
-.case-card.done .tags { padding-right: 120px; }
-.case-card .tags { margin-top: auto; padding-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
-.tag { font-family: var(--type); font-size: 12px; border: 1px solid #6d5d3d; padding: 2px 6px; color: #4d4230; }
-/* a row of its own in the card's flow: it must share nothing with the SOLVED and GIVEN UP stamps */
-.case-card .in-progress { margin-top: 6px; padding-top: 8px; border-top: 1px dashed #a8956a; font-family: var(--type); font-weight: 700; font-size: 13px; color: #3a3226; }
-.stamp {
-  position: absolute; bottom: 14px; right: 12px; transform: rotate(-8deg);
-  font-family: var(--type); color: var(--blood); border: 3px double var(--blood); padding: 4px 10px;
-  font-size: 18px; letter-spacing: .1em; background: rgba(241,230,207,.6);
-}
-.back-row { text-align: center; margin-top: 34px; }
 
 /* ---------- game ---------- */
 #game { padding: calc(14px + var(--sat)) 16px 40px; }
 .topbar { display: flex; align-items: center; gap: 12px; max-width: 1800px; margin: 0 auto 14px; flex-wrap: wrap; }
-.topbar .case-name { font-family: var(--display); font-weight: 400; font-size: clamp(22px, 3vw, 30px); color: var(--gold-2); flex: 1; min-width: 200px; margin: 0; }
+.topbar .case-name { font-family: var(--title); font-weight: 400; font-size: clamp(24px, 3vw, 30px); line-height: 1.05; color: var(--fg); flex: 1; min-width: 200px; margin: 0; }
 /* A heading takes focus when its screen or dialog opens. It is not a control and is never reached by Tab, so it draws no ring:
    left to the browser, a ring appears round the case name whenever a case is reopened by a reload. */
 .screen :is(h1, h2):focus, .modal h2:focus { outline: none; }
 body.modal-open { overflow: hidden; }
-.topbar .case-name small { display: block; font-family: var(--type); font-size: 14px; color: var(--text-dim); letter-spacing: .05em; }
+/* the second line keeps what it says and gains the tier's 10px colour square */
+.topbar .case-name small { display: block; margin-top: 4px; font-family: var(--ui); font-size: var(--t-status); line-height: 16px; color: var(--fg-2); }
+.topbar .case-name small::before { content: ""; display: inline-block; vertical-align: -1px; margin-right: 6px; width: 10px; height: 10px; border-radius: 2px; background: var(--tier, var(--fg)); }
+#game[data-tier="starter"] { --tier: var(--tier-starter); }
+#game[data-tier="easy"] { --tier: var(--tier-easy); }
+#game[data-tier="medium"] { --tier: var(--tier-medium); }
+#game[data-tier="hard"] { --tier: var(--tier-hard); }
+/* the way back: a white circle with the chevron, as the handoff's screen 05 has it */
+#btn-back-cases { flex: none; width: 44px; height: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 50%; background: var(--card); color: var(--fg); font-size: 0; box-shadow: none; display: grid; place-items: center; }
+#btn-back-cases::before { content: ""; width: 18px; height: 18px; background: currentColor; -webkit-mask: var(--icon-back) center / contain no-repeat; mask: var(--icon-back) center / contain no-repeat; }
+/* on a phone 44px of button and 4px of ring each side fill the header's 52, clear of the strip over the top inset */
+#btn-back-cases:focus-visible { outline: 3px solid var(--ring); outline-offset: 1px; }
 .top-links { display: flex; gap: 2px; flex-wrap: wrap; }
-.link { background: none; border: none; font-family: var(--type); font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-dim); padding: 12px 8px; }
-.link:hover, .link:focus-visible { color: var(--gold-2); text-decoration: underline; text-underline-offset: 4px; }
-/* the links sit 2px apart, so their ring is drawn inside */
-.link:focus-visible { outline: 2px solid var(--gold-2); outline-offset: -2px; }
-.timer { font-family: var(--type); font-weight: 700; color: var(--gold-2); font-size: 20px; min-width: 64px; text-align: right; }
+.timer { font-family: var(--ui); font-weight: 600; font-variant-numeric: tabular-nums; color: var(--fg); font-size: 20px; min-width: 64px; text-align: right; }
 .layout { display: grid; grid-template-columns: minmax(0, auto) minmax(300px, 400px); gap: 24px; max-width: 1800px; margin: 0 auto; align-items: start; justify-content: center; }
 @media (max-width: 900px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+/* in one column Testimony and the key are a column of 720px at most, centred under the board, which keeps its own size (9.4) */
+@media (min-width: 601px) and (max-width: 900px) { .dossier { width: 100%; max-width: 720px; justify-self: center; } }
 
 .board-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-.board-frame { padding: 14px; background: #14161f; border: 1px solid var(--gold-dim); box-shadow: 0 0 0 6px var(--ink), 0 0 0 7px rgba(201,163,78,.45), 0 18px 40px rgba(0,0,0,.6); position: relative; }
-.board { display: grid; position: relative; background: var(--wall); user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+/* The frame is 3px of ink with 14px corners outside and a square inside edge. The frame's box is transparent and 2px a
+   side at every width (1px of border and 1px of padding on a wide screen, 2px of border on a phone, PHONE_FRAME being
+   both sides); the only ink is the rounded shape 1px wider drawn behind the board, so no square changes size and the
+   board's corners, which land on the arc, cut nothing (features/Visuals.md, section 3). */
+.board-frame { padding: 1px; background: transparent; border: 1px solid transparent; position: relative; }
+.board-frame::before { content: ""; position: absolute; inset: -1px; border-radius: 14px; background: var(--fg); }
+.board { display: grid; position: relative; background: var(--fg); user-select: none; -webkit-user-select: none; touch-action: manipulation; }
 /* layers in a square, bottom to top: floor tint and staff hatch, object, window, brass corner,
    claimed wash, cross-out and draft marks, lens and hint overlay, token, room label */
 .cell { position: relative; border: 1px solid rgba(42,36,24,.16); cursor: pointer; }
-.cell.wt { border-top: 3px solid var(--wall); }
-.cell.wb { border-bottom: 3px solid var(--wall); }
-.cell.wl { border-left: 3px solid var(--wall); }
-.cell.wr { border-right: 3px solid var(--wall); }
+.cell.wt { border-top: 3px solid var(--fg); }
+.cell.wb { border-bottom: 3px solid var(--fg); }
+.cell.wl { border-left: 3px solid var(--fg); }
+.cell.wr { border-right: 3px solid var(--fg); }
 .cell.staff::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(45deg, rgba(120,40,30,.16) 0 4px, transparent 4px 10px); pointer-events: none; }
 .cell.blocked { cursor: not-allowed; }
 .cell .obj { position: absolute; left: 8%; top: 8%; width: 84%; height: 84%; z-index: 1; pointer-events: none; }
@@ -162,325 +140,466 @@ body.modal-open { overflow: hidden; }
 .cell.win-left .win { transform: rotate(270deg); }
 .cell .corner { position: absolute; top: 0; right: 0; width: 24%; height: 24%; z-index: 2; pointer-events: none; }
 .cell.claimed::after { content: ""; position: absolute; inset: 0; background: rgba(26,29,42,.2); z-index: 2; pointer-events: none; }
-.cell .mark { position: absolute; inset: 0; display: grid; place-items: center; z-index: 3; color: #a35f43; font-family: var(--type); font-weight: 700; font-size: calc(var(--cell) * .62); line-height: 1; pointer-events: none; }
+.cell .mark { position: absolute; inset: 0; display: grid; place-items: center; z-index: 3; color: #a35f43; font-family: var(--ui); font-weight: 600; font-size: calc(var(--cell) * .62); line-height: 1; pointer-events: none; }
 .drafts { position: absolute; left: 4%; right: 4%; bottom: 3%; display: flex; flex-wrap: wrap; gap: 0 calc(var(--cell) * .04); z-index: 3; pointer-events: none; }
-.draft { font-family: var(--type); font-style: italic; font-weight: 700; font-size: max(10px, calc(var(--cell) * .19)); line-height: 1.05; color: var(--who, #4a3f2c); background: #f4ecd8; padding: 0 .16em; }
-/* the token colours are too weak on gold, so the selected person's drafts reverse into a small copy of their token, cream ring included: without it the chip has no edge on teal art */
+.draft { font-family: var(--ui); font-weight: 600; font-size: max(10px, calc(var(--cell) * .19)); line-height: 1.05; color: var(--who, #4a3f2c); background: #f4ecd8; padding: 0 .16em; }
+/* the token colours are too weak as letters on the cream chip, so the selected person's drafts reverse into a small copy of their token, cream ring included: without it the chip has no edge on teal art */
 .draft.focus { color: #f4ecd8; background: var(--who, #4a3f2c); box-shadow: 0 0 0 1px #f4ecd8; }
 .cell .fx { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
-.cell.lens .fx { box-shadow: inset 0 0 0 2px rgba(201,163,78,.95); }
+.cell.lens .fx { box-shadow: inset 0 0 0 2px var(--fg); }
 .cell.lens-off .fx { background: rgba(26,29,42,.5); }
 .cell.away .fx { background: rgba(26,29,42,.5); }
 .cell.hint-flash .fx { animation: flash 1s ease-in-out 3; }
-@keyframes flash { 50% { box-shadow: inset 0 0 0 4px var(--blood); } }
-.cell .room-label { position: absolute; top: 1px; left: 2px; z-index: 6; padding: 0 2px; background: rgba(244,236,216,.78); overflow: hidden; text-overflow: ellipsis; font-family: var(--type); font-weight: 700; font-size: clamp(8px, calc(var(--cell) * .15), 12px); letter-spacing: .06em; text-transform: uppercase; color: #4a3f2c; white-space: nowrap; pointer-events: none; line-height: 1.25; }
+@keyframes flash { 50% { box-shadow: inset 0 0 0 4px var(--bad); } }
+.cell .room-label { position: absolute; top: 1px; left: 2px; z-index: 6; padding: 0 2px; background: rgba(244,236,216,.78); overflow: hidden; text-overflow: ellipsis; font-family: var(--ui); font-weight: 600; font-size: clamp(8px, calc(var(--cell) * .15), 12px); letter-spacing: .06em; text-transform: uppercase; color: var(--fg-body); white-space: nowrap; pointer-events: none; line-height: 1.25; }
 /* a Local rule's word must never be cut off, so a label that carries one may take a second line */
 .cell .room-label.ruled { white-space: normal; line-height: 1.15; }
 .cell .room-label.vertical { writing-mode: vertical-rl; top: 2px; left: 1px; padding: 2px 0; }
 
 /* centred with inset, not a transform: the drop animation below animates transform */
-.token { position: absolute; inset: 24%; border-radius: 50%; display: grid; place-items: center; font-family: var(--serif); font-weight: 700;
+.token { position: absolute; inset: 24%; border-radius: 50%; display: grid; place-items: center; font-family: var(--ui); font-weight: 600;
   font-size: calc(var(--cell) * .26); line-height: 1; color: #f4ecd8; border: max(1.5px, calc(var(--cell) * .028)) solid #f4ecd8;
   box-shadow: 0 calc(var(--cell) * .02) calc(var(--cell) * .05) rgba(0,0,0,.45); z-index: 4; pointer-events: none; animation: drop .18s ease-out; }
-.token.victim::after { content: "\2020"; position: absolute; top: -22%; right: -22%; width: 46%; height: 46%; border-radius: 50%; background: var(--blood); border: 1px solid #f4ecd8;
-  display: grid; place-items: center; font-size: calc(var(--cell) * .14); }
-.token.selected { outline: max(2px, calc(var(--cell) * .03)) solid var(--gold); outline-offset: 2px; }
-.token.flagged { outline: max(3px, calc(var(--cell) * .05)) solid var(--blood); outline-offset: 2px; }
+.token.victim::after { content: ""; position: absolute; top: -22%; right: -22%; width: 46%; height: 46%; border-radius: 50%; background: var(--bad) var(--icon-dagger) center / 70% no-repeat; border: 1px solid #f4ecd8; }
+.token.selected { outline: max(2px, calc(var(--cell) * .03)) solid var(--fg); outline-offset: 2px; }
+.token.flagged { outline: max(3px, calc(var(--cell) * .05)) solid var(--bad); outline-offset: 2px; }
 @keyframes drop { from { transform: scale(1.4); opacity: 0; } }
 
 .tools { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
-.status { font-family: var(--serif); font-size: 14.5px; color: var(--text-dim); text-align: center; min-height: 1.3em; max-width: 560px; }
-.status.warn { color: #e48a7f; }
-.status.good { color: #9fcf9f; }
+/* the page's messages, under the tools on a wide screen (9.5): a warning in the red, good news in the green for text */
+.status { font-family: var(--ui); font-size: 14px; line-height: 1.4; color: var(--fg-2); text-align: center; min-height: 1.4em; max-width: 560px; }
+.status.warn { color: var(--bad); }
+.status.good { color: var(--good); }
 
-/* dossier */
-.dossier { background: var(--ink-2); border: 1px solid var(--gold-dim); padding: 16px; }
-.dossier h4 { font-family: var(--deco); font-weight: 700; letter-spacing: .25em; text-transform: uppercase; color: var(--gold); font-size: 13px; margin: 0; }
-.dossier-head { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 10px; font-family: var(--type); font-size: 13px; color: var(--text-dim); }
-.twist { border: 1px dashed var(--blood); background: rgba(158,43,37,.12); padding: 10px 12px; margin-bottom: 14px; font-size: 14.5px; }
-.twist b { font-family: var(--deco); letter-spacing: .15em; text-transform: uppercase; color: #e48a7f; font-size: 13px; display: block; }
+/* Testimony and the Casebook. A person is a card in one style at every width (D13): the chip, the name with the role
+   beside it, the room once placed, and the statement across the card's full width. On a wide screen the cards are rows
+   of one white card with a line between and the key is a card under it (9.4); on a phone they are the Casebook's sheet. */
+.dossier h4 { margin: 0; font-family: var(--ui); font-weight: 600; font-size: var(--t-label); line-height: 16px; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); }
+.dossier-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 0; padding: 0 4px; font-family: var(--ui); font-size: var(--t-status); line-height: 16px; color: var(--fg-2); }
+.twist { margin: 0 0 8px; padding: 10px 12px; border-radius: 12px; background: var(--chip); font-family: var(--ui); font-size: 15px; color: var(--fg); }
+.twist b { display: block; font-family: var(--ui); font-weight: 600; font-size: var(--t-label); letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); }
 .people { display: flex; flex-direction: column; gap: 8px; }
-.person { display: grid; grid-template-columns: 44px 1fr auto; gap: 10px; align-items: center; text-align: left; background: var(--ink-3); border: 1px solid transparent; padding: 8px 10px; color: var(--text); width: 100%; }
-.person:hover { border-color: var(--gold-dim); }
-.person.selected { border-color: var(--gold-2); background: #343a49; box-shadow: 0 0 0 1px var(--gold-2); }
-.person.victim-card { background: #261a1a; }
-/* stands off the card, clear of the flush edge that means selected */
-.person:focus-visible { outline: 3px solid var(--gold-2); outline-offset: 3px; }
-.person .chip { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-family: var(--serif); font-weight: 700; font-size: 16px; color: #f4ecd8; border: 2px solid #f4ecd8; }
-.person .who { font-weight: 700; font-size: 15.5px; line-height: 1.2; }
-.person .who small { font-weight: 400; font-style: italic; color: var(--text-dim); font-size: 12.5px; display: block; }
-.person .clue { font-size: 14px; color: var(--text); margin-top: 4px; line-height: 1.4; }
-.person .state { font-family: var(--type); font-weight: 700; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim); min-width: 26px; text-align: right; }
-.person .state.placing { color: var(--gold-2); }
-/* A placed person falls back while somebody is still to place, so the people left stand out. With everyone
-   placed nobody is dimmed: that is when all the statements are read through before Accuse. The phone's tray
-   already shows who is placed, so its Casebook sheet is left alone. */
-@media (min-width: 601px) {
-  /* the fill is darkened under the initial, not faded with it: a faded initial cannot be read */
-  .people:has(.person:not(.placed)) .person.placed:not(.selected, :focus-visible) .chip { box-shadow: inset 0 0 0 40px rgba(26,29,42,.55); border-color: rgba(244,236,216,.5); }
-  .people:has(.person:not(.placed)) .person.placed:not(.selected, :focus-visible) :is(.who, .clue) { color: var(--text-dim); }
-}
-/* the dim text is too faint on the lighter fill of a selected card; on the phone's paper sheet it has its own colour */
-@media (min-width: 601px) { .person.selected .who small, .person.selected .state:not(.placing) { color: #b3a994; } }
-@media (min-width: 601px) and (hover: hover) {
-  .people:has(.person:not(.placed)) .person.placed:hover .chip { box-shadow: none; border-color: #f4ecd8; }
-  .people:has(.person:not(.placed)) .person.placed:hover :is(.who, .clue) { color: inherit; }
-}
-.legend { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(143,118,66,.4); font-family: var(--type); font-size: 13px; color: var(--text); }
-.legend h5 { margin: 0 0 6px; font-family: var(--type); font-weight: 700; font-size: 11.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--text-dim); }
+.person { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 6px 12px; align-items: center; width: 100%; padding: 14px 16px; background: var(--card); color: var(--fg); border: 0; border-radius: 16px; text-align: left; }
+/* the name and the statement share a box in the markup; the statement runs the card's full width under the name */
+.person > div:not(.chip, .state) { display: contents; }
+.person .chip { grid-column: 1; grid-row: 1; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-family: var(--ui); font-weight: 600; font-size: 17px; color: var(--cream); border: 2px solid var(--cream); }
+.person .who { grid-column: 2; grid-row: 1; font-family: var(--title); font-weight: 400; font-size: 24px; line-height: 1.1; color: var(--fg); }
+.person .who small { display: inline; margin-left: 8px; font-family: var(--title); font-style: italic; font-weight: 400; font-size: 15px; color: var(--fg-2); }
+.person .state { grid-column: 3; grid-row: 1; min-width: 26px; text-align: right; font-family: var(--ui); font-weight: 500; font-size: var(--t-status); color: var(--fg-2); }
+.person .state.placing { color: var(--fg); font-weight: 600; }
+.person .clue { grid-column: 1 / -1; grid-row: 2; margin-top: 2px; font-family: var(--title); font-size: 19px; line-height: 1.3; color: var(--fg); }
+/* the chosen person's outline is flush; the focus ring stands off it */
+.person.selected { box-shadow: inset 0 0 0 2px var(--fg); }
+.person:focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }
+.legend { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); font-family: var(--ui); font-size: 13px; color: var(--fg); }
+.legend h5 { margin: 0 0 6px; font-family: var(--ui); font-weight: 600; font-size: var(--t-label); letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); }
 .legend .items { display: flex; flex-wrap: wrap; gap: 6px 12px; }
 .legend .items span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
-.legend-art { width: 26px; height: 26px; background: var(--swatch, #ecdcb8); flex: none; }
-.legend .note { grid-column: 1 / -1; color: var(--text-dim); font-size: 12.5px; display: flex; align-items: center; gap: 6px; }
+/* the picture's ground is the first floor tint of the case's art set, given by whoever draws it */
+.legend-art { width: 26px; height: 26px; background: var(--swatch); flex: none; }
+.legend .note { grid-column: 1 / -1; color: var(--fg-2); font-size: 12.5px; display: flex; align-items: center; gap: 6px; }
 .legend .note svg { width: 12px; height: 12px; flex: none; }
+@media (min-width: 601px) {
+  .dossier { display: flex; flex-direction: column; gap: 12px; }
+  .dossier .twist { margin: 0; }
+  /* one white card: the rows are clear, with a line between, and the card's corners are the first and last rows' */
+  .people { gap: 0; background: var(--card); border-radius: 16px; }
+  .person { padding: 12px 16px; background: none; border-radius: 0; }
+  .person + .person { border-top: 1px solid var(--line); }
+  .person:first-child { border-top-left-radius: 16px; border-top-right-radius: 16px; }
+  .person:last-child { border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; }
+  .legend { margin-top: 0; padding: 16px; border-top: 0; border-radius: 16px; background: var(--card); }
+  /* A placed person falls back while somebody is still to place, so the people left stand out. With everyone placed
+     nobody is dimmed: that is when all the statements are read through before Accuse. The phone's tray already shows
+     who is placed, so its Casebook sheet is left alone. The fill is darkened under the initial, not faded with it, and
+     the name and the statement take secondary ink, which is 4.5 to 1 on the card. */
+  .people:has(.person:not(.placed)) .person.placed:not(.selected, :focus-visible) .chip { box-shadow: inset 0 0 0 40px rgba(26,29,42,.55); border-color: rgba(244,236,216,.5); }
+  .people:has(.person:not(.placed)) .person.placed:not(.selected, :focus-visible) :is(.who, .clue) { color: var(--fg-2); }
+}
+@media (min-width: 601px) and (hover: hover) {
+  .people:has(.person:not(.placed)) .person.placed:hover .chip { box-shadow: none; border-color: var(--cream); }
+  .people:has(.person:not(.placed)) .person.placed:hover :is(.who, .clue) { color: var(--fg); }
+}
+
+/* The shared rules (features/Visuals.md, 9.1). A button is a pill: filled is ink with white words, outlined an inset ring
+   of ink, plain has no ring; a disabled one is secondary ink on the line colour at full opacity; nothing fades or moves. */
+.btn {
+  background: transparent; border: none; box-shadow: inset 0 0 0 1.5px var(--fg); color: var(--fg); border-radius: 999px;
+  font-family: var(--ui); font-weight: 600; font-size: var(--t-btn); min-height: 44px; padding: 0 22px;
+}
+.btn.primary { background: var(--fg); color: var(--card); box-shadow: none; }
+.btn.full { font-size: 16px; min-height: 52px; padding: 0 28px; }
+.btn.plain { box-shadow: none; }
+/* a pill among several in a row: the same height, less at its sides */
+.btn.small { padding: 0 16px; }
+.btn.icon { width: 44px; height: 44px; min-height: 44px; padding: 0; background: var(--card); box-shadow: none; display: inline-grid; place-items: center; }
+.btn.icon svg { width: 18px; height: 18px; }
+.btn[aria-pressed="true"] { background: var(--fg); color: var(--card); box-shadow: none; }
+/* on the line colour, not the handoff's disabled fill: secondary ink is 4.62 to 1 on the line and 4.25 on the fill (section 10 over D14) */
+.btn:disabled { background: var(--line); color: var(--fg-2); box-shadow: none; opacity: 1; cursor: default; }
+/* a touch screen keeps :hover on the last button tapped, which would look the same as a pressed Draft or Cross out */
+@media (hover: hover) {
+  .btn:hover { background: var(--chip); color: var(--fg); }
+  .btn.primary:hover, .btn[aria-pressed="true"]:hover { background: var(--fg); color: var(--card); }
+  .btn:disabled:hover { background: var(--line); color: var(--fg-2); }
+}
+/* the ring follows the pill's corners, 3px off; focus is never a fill */
+.btn:focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }
+.link { padding: 12px 8px; background: none; border: none; font-family: var(--ui); font-weight: 500; font-size: var(--t-btn); color: var(--fg); }
+.link:hover, .link:focus-visible { text-decoration: underline; text-underline-offset: 4px; }
+/* links sit side by side, so their ring is drawn inside, 3px as every ring is */
+.link:focus-visible { outline: 3px solid var(--ring); outline-offset: -3px; }
+.kicker { font-family: var(--ui); font-weight: 600; font-size: var(--t-label); letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); line-height: 1.2; }
 
 /* modal */
 /* the insets are a border, not padding: a scrolled dialog is cut off at the border's inner edge, and the backdrop still fills the screen */
-.modal-bg { position: fixed; inset: 0; background: rgba(8,9,12,.82); display: none; place-items: center; z-index: 50; padding: 16px; overflow-y: auto;
+/* The dialogs in the new look (features/Visuals.md, batch 4; D21). A sheet (a verdict, the Scorecard, the briefing, How to
+   Play) is a full-height page on the opaque ground on a phone and a centred white card on a wide screen; a confirm dialog
+   (hint, Reveal, Start over) is a small card over a dimmed ground at every width. One element, one script: the form is a
+   class on the ground, set by openModal. The element that scrolls is the ground. */
+.modal-bg { position: fixed; inset: 0; background: var(--bg); display: none; place-items: center; z-index: 50; padding: 0; overflow-y: auto; font-family: var(--ui); color: var(--fg);
   border: solid transparent; border-width: var(--sat) var(--sar) var(--sab) var(--sal); }
 .modal-bg.open { display: grid; }
-.modal { background: var(--paper); color: var(--ink); max-width: 640px; width: 100%; padding: 30px 30px 26px; position: relative; box-shadow: 0 30px 60px rgba(0,0,0,.6); }
-.modal::before { content: ""; position: absolute; inset: 8px; border: 1px solid #a8956a; pointer-events: none; }
-.modal h2 { font-family: var(--display); font-weight: 400; font-size: clamp(28px, 6vw, 38px); margin: 4px 0 8px; line-height: 1.05; }
-.modal .kicker { color: #6f5a2b; }
-.modal p { font-size: 15.5px; line-height: 1.55; margin: 10px 0; }
-.modal .typed { font-family: var(--type); font-size: 15px; background: rgba(0,0,0,.04); border-left: 3px solid #7d6531; padding: 10px 12px; }
-.modal .btn { color: var(--ink); border-color: var(--ink); }
-.modal .btn:hover { background: var(--ink); color: var(--paper); }
-.modal .btn.primary { background: var(--ink); color: var(--paper); }
-/* gold on paper would be 1.3:1 */
-.modal .btn:focus-visible { outline-color: var(--ink); }
-.modal .row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; margin-top: 18px; }
+.modal-bg.card { background: rgba(27,27,27,.5); padding: 16px; }
+.modal { position: relative; width: 100%; min-height: 100%; max-width: none; padding: 20px 16px 20px; background: var(--bg); color: var(--fg); display: flex; flex-direction: column; }
+.modal-bg.card .modal { min-height: 0; max-width: 420px; padding: 24px 20px 20px; background: var(--card); border-radius: 16px; display: block; }
+/* a sheet's close X, top right: it does what the dismiss button does, or what Escape does where there is none */
+.sheet-close { position: absolute; top: 12px; right: 12px; }
+/* the first words under the X keep clear of it: the X reaches 40px into the column, and 8px of air */
+.modal .sheet-close + .kicker, .modal .sheet-close + .kicker + h2, .modal .sheet-close + h2 { padding-right: 48px; }
+.modal h2 { font-family: var(--title); font-weight: 400; font-size: var(--t-h2); margin: 4px 0 8px; line-height: 1.05; color: var(--fg); }
+.modal .kicker { margin-top: 2px; }
+.modal p { font-size: var(--t-body); line-height: 1.5; margin: 10px 0; color: var(--fg); }
+/* a verdict's motive: the serif italic, the one italic the page loads; the sans has none and nothing is synthesised */
+.modal p i { font-family: var(--title); font-style: italic; font-size: 19px; }
+.modal .typed { padding: 10px 14px; border-radius: 12px; background: var(--chip); font-size: 15px; line-height: 1.45; }
+.modal .row { display: flex; flex-direction: column; gap: 10px; margin-top: auto; padding-top: 18px; }
+.modal .row .btn { width: 100%; font-size: 16px; min-height: 52px; }
+.modal-bg.card .modal .row { flex-direction: row; justify-content: flex-end; flex-wrap: wrap; margin-top: 18px; padding-top: 0; }
+.modal-bg.card .modal .row .btn { width: auto; flex: 1 1 auto; font-size: var(--t-btn); min-height: 44px; }
 .modal ol, .modal ul { font-size: 15px; line-height: 1.5; padding-left: 22px; }
 .modal li { margin: 4px 0; }
-.objection .chip { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-family: var(--serif); font-weight: 700; font-size: 13px; color: #f4ecd8; flex: none; }
-.stamp-closed { position: absolute; top: -12px; right: 18px; transform: rotate(-5deg); font-family: var(--type); font-weight: 700; color: var(--blood); border: 2px solid var(--blood); outline: 1px solid var(--blood); outline-offset: 2px; padding: 4px 12px; font-size: 14px; letter-spacing: .2em; text-transform: uppercase; background: var(--paper); }
-.modal h2.verdict-head { font-size: clamp(32px, 7vw, 46px); margin: 10px 0 12px; }
-/* green ink from the same pad as the red stamp; the mark is drawn with borders so it is never a font's glyph */
-.solved-check { display: grid; justify-items: center; gap: 8px; margin: 14px 0 6px; }
-.solved-check .seal { position: relative; width: 64px; height: 64px; border: 3px solid var(--ok); border-radius: 50%; box-shadow: 0 0 0 2px var(--paper), 0 0 0 3px var(--ok); rotate: -5deg; animation: drop .18s ease-out .15s backwards; }
-.solved-check .seal::after { content: ""; position: absolute; top: 50%; left: 50%; width: 18px; height: 32px; border: solid var(--ok); border-width: 0 6px 6px 0; transform: translate(-50%, -58%) rotate(45deg); }
-.solved-check span { font: 700 13px var(--type); letter-spacing: .25em; text-transform: uppercase; color: var(--ok); }
-@media (max-width: 600px) {
-  .solved-check .seal { width: 56px; height: 56px; }
-  .solved-check .seal::after { width: 15px; height: 28px; border-width: 0 5px 5px 0; }
+/* the sheet's label, with the case's title: a verdict's, the Scorecard's */
+.stamp-closed { display: block; font-family: var(--ui); font-weight: 600; font-size: var(--t-label); line-height: 1.2; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); }
+.modal h2.verdict-head { font-size: clamp(38px, 12vw, 48px); line-height: 1; margin: 12px 0 10px; }
+/* the tier's tile with a picture of the board and, on a solved case, the green badge with its drawn check (D6, D10) */
+.verdict-tile { position: relative; width: 76px; height: 76px; margin: 8px 0 20px; border-radius: 16px; background: var(--tile, var(--line)); display: grid; place-items: center; }
+.verdict-tile .file-grid { width: 58%; height: 58%; display: block; }
+.verdict-tile .file-grid .ground { fill: none; }
+.verdict-tile .file-grid .lines { fill: none; stroke: var(--fg); stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
+.verdict-tile .file-grid .filled { fill: none; }
+.verdict-tile[data-tier="starter"] { --tile: var(--tier-starter); }
+.verdict-tile[data-tier="easy"] { --tile: var(--tier-easy); }
+.verdict-tile[data-tier="medium"] { --tile: var(--tier-medium); }
+.verdict-tile[data-tier="hard"] { --tile: var(--tier-hard); }
+.solved-check { position: absolute; right: -12px; bottom: -12px; display: block; margin: 0; }
+.solved-check .seal { position: relative; display: block; width: 36px; height: 36px; border-radius: 50%; background: var(--good-fill); box-shadow: 0 0 0 3px var(--bg); }
+.solved-check .seal::after { content: ""; position: absolute; top: 50%; left: 50%; width: 8px; height: 14px; border: solid var(--card); border-width: 0 3px 3px 0; transform: translate(-50%, -60%) rotate(45deg); }
+.solved-check span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* the rejected sheet's mark: a ring with the red cross */
+.rejected-mark { width: 76px; height: 76px; margin: 8px 0 20px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--fg); display: grid; place-items: center; color: var(--bad); }
+.rejected-mark::before { content: ""; width: 26px; height: 26px; background: currentColor; -webkit-mask: var(--icon-cross) center / contain no-repeat; mask: var(--icon-cross) center / contain no-repeat; }
+.modal .accused { color: var(--fg-2); }
+@media (min-width: 601px) {
+  .modal-bg { background: rgba(27,27,27,.5); padding: 24px 16px; }
+  .modal { min-height: 0; max-width: 640px; padding: 28px 28px 24px; background: var(--card); border-radius: 24px; }
+  .modal.scorecard-sheet { max-width: 425px; }
+  .modal .row { margin-top: 18px; padding-top: 0; }
+  .verdict-tile { margin-top: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .token, .solved-check .seal { animation: none; }
-  .btn, .case-card { transition: none; }
-  .case-card:hover { transform: none; }
+  .token { animation: none; }
   /* the hint must not be lost with its flash: a still ring for the same three seconds */
-  .cell.hint-flash .fx { animation: none; box-shadow: inset 0 0 0 4px var(--blood); }
+  .cell.hint-flash .fx { animation: none; box-shadow: inset 0 0 0 4px var(--bad); }
 }
 /* small buttons and links are finger-sized wherever a finger is likely: a touch screen of any width, and every phone */
 @media (pointer: coarse), (max-width: 600px) { .btn.small, .link { min-height: 44px; min-width: 44px; } }
-.stats { display: flex; gap: 32px; margin: 16px 0 4px; padding: 14px 0; border-top: 1px dashed #a8956a; border-bottom: 1px dashed #a8956a; }
+/* the three cells of a verdict (D6): white cells in one row that wraps where it must, never scrolling sideways */
+.stats { display: flex; flex-wrap: wrap; gap: 2px; margin: 16px 0 4px; padding: 0; border: 0; border-radius: 16px; overflow: hidden; background: var(--line); }
 /* a description list, so each label is read before its figure; drawn figure first, as before */
-.stats div { display: flex; flex-direction: column-reverse; }
-.stats dd { margin: 0; font-family: var(--display); font-weight: 400; font-size: 24px; line-height: 1.1; }
-.stats dt { font-family: var(--type); font-size: 11.5px; letter-spacing: .2em; text-transform: uppercase; color: #5c5240; }
-.next-cases { text-align: center; font-style: italic; color: var(--text-dim); font-size: 14px; margin: 18px 0 0; }
-.modal .fine { font-style: italic; font-size: 13.5px; color: #5c5240; }
-.objection { display: flex; gap: 12px; align-items: flex-start; background: #fff8e8; border: 1px solid #a8956a; padding: 12px 14px; margin: 12px 0; }
-.objection p { margin: 0 0 4px; }
-.objection .quote { font-weight: 700; }
-.rules { counter-reset: rule; list-style: none; padding-left: 0 !important; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
-.rules li { counter-increment: rule; background: #fff8e8; border: 1px solid #a8956a; padding: 10px 12px; margin: 0; }
-.rules li::before { content: "0" counter(rule); display: block; font-family: var(--type); font-weight: 700; font-size: 12px; letter-spacing: .2em; color: #6f5a2b; }
-.rules li b { display: block; font-family: var(--display); font-weight: 400; font-size: 18px; line-height: 1.15; margin: 2px 0 4px; }
-.rules .art-row { display: flex; align-items: center; gap: 4px; margin-top: 6px; flex-wrap: wrap; font-family: var(--type); font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: #5c5240; }
+.stats div { flex: 1 1 90px; display: flex; flex-direction: column-reverse; align-items: center; gap: 4px; padding: 16px 8px; background: var(--card); }
+.stats dd { margin: 0; font-family: var(--title); font-weight: 400; font-size: 34px; line-height: 1; color: var(--fg); white-space: nowrap; }
+.stats dt { font-size: var(--t-status); line-height: 1.2; color: var(--fg-2); }
+.modal .fine { font-size: var(--t-status); line-height: 1.4; color: var(--fg-2); text-align: center; margin: 12px 0 0; }
+/* The day's Scorecard (features/Visuals.md, section 5): a white card, a row a case with a hairline between, told by a mark
+   and a word, never by colour alone; the big day circle above the label; the lead as the sheet's heading. */
+/* 12px under the circle, not the verdict tile's 20: a sheet's button is 52px tall (9.1), and the card is held to one screen at 375 by 721 */
+.day-circle { width: 76px; height: 76px; margin: 8px 0 12px; border-radius: 50%; background: var(--fill-grey); display: grid; place-items: center; color: var(--card); }
+.day-circle.done { background: var(--fg); }
+.day-circle .mark { width: 32px; height: 32px; }
+.day-circle:not(.done) .mark { display: none; }
+.modal .scorecard { list-style: none; padding: 0 16px; margin: 16px 0 4px; background: var(--card); border-radius: 16px; }
+.scorecard li { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 12px; min-height: 64px; margin: 0; padding: 10px 0; }
+.scorecard li + li { border-top: 1px solid var(--line); }
+.scorecard .row-tile { flex: none; width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center; }
+.scorecard .row-tile .file-grid { width: 60%; height: 60%; display: block; }
+.scorecard .row-tile .file-grid .ground, .scorecard .row-tile .file-grid .filled { fill: none; }
+.scorecard .row-tile .file-grid .lines { fill: none; stroke: var(--fg); stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
+.scorecard li[data-tier="starter"] .row-tile { background: var(--tier-starter); }
+.scorecard li[data-tier="easy"] .row-tile { background: var(--tier-easy); }
+.scorecard li[data-tier="medium"] .row-tile { background: var(--tier-medium); }
+.scorecard li[data-tier="hard"] .row-tile { background: var(--tier-hard); }
+.scorecard .tier { flex: 1 1 auto; min-width: 0; font-family: var(--title); font-size: 21px; line-height: 1.05; color: var(--fg); }
+.scorecard .tier small { display: block; font-family: var(--ui); font-size: var(--t-label); line-height: 16px; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); }
+.scorecard .mark { flex: none; width: 14px; height: 14px; color: var(--fg-2); }
+.scorecard .word { font-weight: 500; font-size: var(--t-status); color: var(--fg-2); white-space: nowrap; }
+.scorecard li.solved .mark, .scorecard li.solved .word { color: var(--good); }
+/* a time pushed to a line of its own, on the narrowest screens, stays at the right */
+.scorecard .time { min-width: 3.4em; margin-left: auto; text-align: right; font-family: var(--title); font-size: 24px; line-height: 1; color: var(--fg); white-space: nowrap; }
+.modal .streak-line { font-size: var(--t-body); }
+/* on a phone under 700px tall the Scorecard takes the handoff's smaller sizes (D19): 52px rows and a 56px circle; if it still does not fit, the ground scrolls with All cases in reach */
+@media (max-height: 699px) {
+  .modal .day-circle { width: 56px; height: 56px; margin: 0 0 12px; }
+  .modal .day-circle .mark { width: 24px; height: 24px; }
+  .scorecard li { min-height: 52px; padding: 6px 0; }
+  .scorecard .row-tile { width: 36px; height: 36px; border-radius: 8px; }
+  .scorecard .tier { font-size: 19px; }
+  .modal h2.verdict-head { margin: 8px 0 6px; }
+}
+.modal .streak-line b { font-weight: 600; }
+/* at twice the text size the heading's longest word is wider than the sheet */
+@media (max-width: 240px) { .modal .card-head { font-size: 20px; overflow-wrap: anywhere; } }
+/* the verdict's buttons on a phone: halves on one line, each a full target, and "All cases" under a pair it follows */
+/* two buttons that share a line are halves of it, each a full target; a third goes under them, full width */
+.modal .verdict-row { flex-direction: row; flex-wrap: wrap; }
+.modal .verdict-row .btn { flex: 1 1 0; min-width: 0; width: auto; min-height: 52px; padding-left: 8px; padding-right: 8px; }
+.modal .verdict-row .btn.under { flex-basis: 100%; }
+/* the witness's card on the rejected sheet: who, what they said, and where they were put (screen 08) */
+.objection { display: grid; grid-template-columns: 44px 1fr; gap: 6px 12px; align-items: center; background: var(--card); border-radius: 16px; padding: 16px; margin: 12px 0; }
+.objection .chip { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-family: var(--ui); font-weight: 600; font-size: 17px; color: var(--cream); flex: none; }
+.objection > div { display: contents; }
+.objection p { margin: 0; }
+.objection .quote { grid-column: 1 / -1; font-family: var(--title); font-size: 22px; line-height: 1.25; }
+.objection .quote + p { grid-column: 1 / -1; padding-top: 10px; border-top: 1px solid var(--line); font-weight: 500; color: var(--bad); }
+.rules { counter-reset: rule; list-style: none; padding-left: 0 !important; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 10px; }
+.rules li { counter-increment: rule; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin: 0; }
+.rules li::before { content: "0" counter(rule); display: block; font-family: var(--ui); font-weight: 600; font-size: var(--t-label); letter-spacing: .1em; color: var(--fg-2); }
+.rules li b { display: block; font-family: var(--title); font-weight: 400; font-size: 20px; line-height: 1.15; margin: 2px 0 4px; }
+.rules .art-row { display: flex; align-items: center; gap: 4px; margin-top: 6px; flex-wrap: wrap; font-family: var(--ui); font-weight: 600; font-size: var(--t-label); letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); }
 .rules .art-row .legend-art { width: 30px; height: 30px; }
-.modal.wide { max-width: 860px; }
-.toolkit { font-family: var(--type); font-size: 13.5px; line-height: 1.6; }
+@media (min-width: 601px) { .modal.wide { max-width: 860px; } }
+.toolkit { font-size: 15px; line-height: 1.6; }
 /* ---------- phone ---------- */
-.tray, .clues, .sheet-head, .sheet-tools, .head-count, #tool-casebook, #date-row, #day-count, #week, #next-phone, #soon-row, #premium-line, .case-card :is(.story, .tile-rule, .file-top, .file-bar) { display: none; }
+.tray, .clues, .sheet-head, .sheet-tools, .head-count, #tool-casebook { display: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 /* pinned to the top: left where it falls at the end of the page it would make every screen one pixel taller */
 #announce { top: 0; left: 0; }
 /* the small viewport: it does not change as the browser's bars slide in and out, so the board is not rebuilt mid-scroll */
 #vh-probe { position: fixed; top: 0; left: 0; width: 0; height: 100vh; height: calc(100svh - var(--sat) - var(--sab)); visibility: hidden; pointer-events: none; }
+/* The day screen is Home, in the new look (features/Visuals.md, batch 2; D1 to D5, D12, D16 to D19, D22): a short header,
+   a case row a tier in a white card, the strip of the last seven days, the two tiles and the Premium line. On a phone
+   they share the height the screen has left (the phone's block); on a wide screen they are the same Home in one centred
+   column of 560px at most, each row its own height (9.4). Every height is a minimum: on a screen too short, with a
+   fifth case or with the text enlarged, the page scrolls. The screen's ground, colour and face are the body's. */
+/* on .active: an id rule on #select alone would undo .screen { display: none } */
+#select.active { display: flex; flex-direction: column; }
+@media (min-width: 601px) {
+  #select { max-width: 592px; margin: 0 auto; }
+  #select.active { min-height: 0; }
+}
+#select .page-head { flex: none; margin: 0 0 8px; text-align: left; }
+#date-row { display: block; min-height: 16px; font-family: var(--ui); font-weight: 600; font-size: var(--t-label); line-height: 16px; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); }
+/* the title at the left and, when there is one, the streak at the right (D1): nothing is drawn there at zero */
+.head-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 0 12px; min-height: 44px; }
+#select .page-head h2 { margin: 0; font-family: var(--title); font-weight: 400; font-size: var(--t-h1); line-height: 44px; color: var(--fg); }
+#streak-figure { display: flex; flex-direction: column; align-items: flex-end; flex: none; text-align: right; }
+#streak-figure[hidden] { display: none; }
+#streak-figure b { font-family: var(--title); font-weight: 400; font-size: 34px; line-height: 36px; color: var(--fg); }
+#streak-figure span { font-family: var(--ui); font-size: var(--t-status); line-height: 16px; color: var(--fg-2); white-space: nowrap; }
+/* Four segments, one a case, filled in ink as the cases are solved, and the count beside them. On a finished day that is
+   still open the whole line is the button to the day's Scorecard, 44px tall, with a chevron at its end (D2). */
+#progress-row { display: block; flex: none; margin: 4px 0 0; }
+.progress { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 24px; margin: 0; padding: 0; border: 0; background: none; text-align: left; font: inherit; color: inherit; }
+button.progress { min-height: 44px; border-radius: 8px; }
+button.progress:focus-visible { outline: 3px solid var(--ring); outline-offset: 1px; }
+.progress .segments { display: flex; flex: 1 1 auto; gap: 8px; min-width: 0; }
+.progress .segments i { flex: 1 1 0; height: 5px; border-radius: 3px; background: var(--line); }
+.progress .segments i.on { background: var(--fg); }
+#day-count { display: flex; align-items: center; gap: 4px; flex: none; font-family: var(--ui); font-size: var(--t-status); line-height: 16px; color: var(--fg-2); white-space: nowrap; }
+#day-count.all { color: var(--good); }
+#day-count .mark { width: 12px; height: 12px; }
+.progress .chevron { flex: none; width: 14px; height: 14px; color: var(--fg); }
+/* A row a case: the tier's tile with a picture of the board, the label, the title, how the case stands (D3) and, at
+   the right, what a press does, drawn and not a second control: the whole row is the button (D12). Rows share the
+   height the screen has left; a fifth makes the page scroll. */
+.case-grid { flex: 1 1 auto; display: flex; flex-direction: column; gap: 8px; margin: 4px 0 0; }
+/* rows share the height the screen has left equally, from nothing; a row's own words are its least (min-height auto) */
+.case-card { display: flex; flex-direction: column; flex: 1 1 0; min-width: 0; min-height: auto; padding: 0; border: 0; border-radius: 16px; background: var(--card); color: var(--fg); text-align: left; }
+.case-card:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
+.case-card .body {
+  display: grid; grid-template-columns: var(--tile) minmax(0, 1fr) auto; grid-template-areas: "tile label pill" "tile title pill" "tile status pill";
+  grid-template-rows: auto auto auto; align-items: center; align-content: center; column-gap: 12px; row-gap: 0; padding: 10px 14px; min-height: 84px; flex: 1;
+  --tile: 64px;
+}
+.case-card .row-tile { grid-area: tile; display: grid; place-items: center; align-self: center; width: var(--tile); height: var(--tile); border-radius: 12px; }
+.case-card[data-tier="starter"] .row-tile { background: var(--tier-starter); }
+.case-card[data-tier="easy"] .row-tile { background: var(--tier-easy); }
+.case-card[data-tier="medium"] .row-tile { background: var(--tier-medium); }
+.case-card[data-tier="hard"] .row-tile { background: var(--tier-hard); }
+/* the picture of the board: the tier's own colour shows through its ground, its lines and the squares filled are ink,
+   and the squares filled are a measure of the people placed, never where they stand */
+.file-grid { width: 62.5%; height: 62.5%; overflow: visible; }
+.file-grid .ground { fill: none; }
+.file-grid .filled { fill: var(--fg); }
+.file-grid .lines { fill: none; stroke: var(--fg); stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
+.case-card .row-label { grid-area: label; display: block; font-family: var(--ui); font-weight: 600; font-size: var(--t-label); line-height: 16px; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); overflow-wrap: break-word; }
+/* two lines at most and never cut: a title too long for that at this width steps down a size (fitTiles) */
+.case-card h3 { grid-area: title; margin: 0; font-family: var(--title); font-weight: 400; font-size: 21px; line-height: 1.05; overflow-wrap: break-word; }
+.case-card h3.smaller { font-size: 18px; }
+.case-card h3.smallest { font-size: 15.5px; }
+/* the four states, told apart by the mark and the words (D3): Unsolved, n of m placed, Solved and its time in green, Given up */
+.case-card .file-status { grid-area: status; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 5px; min-width: 0; margin-top: 2px; font-family: var(--ui); font-weight: 500; font-size: var(--t-status); line-height: 16px; color: var(--fg-2); }
+.case-card .file-status .mark { flex: none; width: 12px; height: 12px; }
+.case-card .file-status .when { display: inline; }
+.case-card[data-state="going"] .file-status { color: var(--fg); }
+.case-card[data-state="solved"] .file-status { color: var(--good); }
+/* the Local rule's name as a small chip on the status line (D12); where the line is short the chip drops under the words */
+.case-card .file-status .tile-rule { display: inline-block; max-width: 100%; margin-left: 3px; padding: 1px 8px; border-radius: 999px; background: var(--chip); font-weight: 500; font-size: var(--t-label); line-height: 16px; color: var(--fg); overflow-wrap: break-word; }
+/* What a press does, drawn at the row's right: the first case still to play carries the one filled Play on the screen,
+   every other Play and a Resume are outlined, a solved case shows the green check (D3, D10), a case given up an outlined
+   Result. The row is the 44px target; the pill is 36 (9.1). */
+.case-card .file-bar { grid-area: pill; display: inline-flex; align-items: center; justify-content: center; align-self: center; min-height: 36px; padding: 0 16px; border-radius: 999px; box-shadow: inset 0 0 0 1.5px var(--fg); font-family: var(--ui); font-weight: 600; font-size: var(--t-btn); line-height: 1; color: var(--fg); text-align: center; white-space: nowrap; }
+.file-bar.primary { background: var(--fg); color: var(--card); box-shadow: none; }
+.file-bar.check { width: 44px; min-height: 44px; padding: 0; background: var(--good-fill); color: var(--card); box-shadow: none; }
+.file-bar.check .mark { width: 18px; height: 18px; }
+/* under 300px of width (text at twice its size) the pill drops under the words */
+@media (max-width: 299px) {
+  .case-card .body { grid-template-columns: var(--tile) minmax(0, 1fr); grid-template-areas: "tile label" "tile title" "tile status" "pill pill"; }
+  .case-card .file-bar { justify-self: start; margin-top: 8px; }
+}
+/* The last seven days in a white card, today first (D4). A day is told by its mark and its fill together (D16): ink with
+   a white check for every case solved; an ink ring with a dot for a day begun (a day finished late among them, D22);
+   grey with a grey ring for a day still open and untouched; grey with a dash for a day finished with a case given up;
+   a lock for a day gone by untouched; a dashed ring for a day before the game began. Today has a dot beneath, and
+   the day whose cases are on screen a bar under its cell. Today's and yesterday's cells are the buttons. */
+#week { display: block; flex: none; margin-top: 8px; padding: 10px 4px 12px; background: var(--card); border-radius: 16px; }
+.week-head { display: flex; align-items: center; justify-content: space-between; gap: 0 12px; flex-wrap: wrap; min-height: 16px; padding: 0 8px; font-family: var(--ui); font-size: var(--t-label); line-height: 16px; }
+.week-label { font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); }
+#next-phone { display: block; color: var(--fg-2); }
+.week-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; margin-top: 4px; }
+.week-day { position: relative; display: flex; flex-direction: column; gap: 2px; min-width: 0; padding-bottom: 8px; }
+.week-day .cap { font-family: var(--ui); font-size: var(--t-label); line-height: 16px; text-align: center; white-space: nowrap; color: var(--fg-2); }
+.week-day:is(.today, .open) .cap { font-weight: 600; color: var(--fg); }
+.week-cell { position: relative; display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 0; border: 0; background: none; color: var(--fg); border-radius: 10px; }
+.week-cell::before { content: ""; width: 32px; height: 32px; border-radius: 50%; box-sizing: border-box; }
+.week-cell .mark { position: absolute; width: 14px; height: 14px; }
+.week-cell[data-look="done"]::before { background: var(--fg); }
+.week-cell[data-look="done"] { color: var(--card); }
+.week-cell[data-look="part"]::before { border: 2px solid var(--fg); }
+.week-cell[data-look="part"] .mark { width: 12px; height: 12px; }
+.week-cell:is([data-look="none"], [data-look="gaveup"])::before { background: var(--fill-grey); border: 1.5px solid var(--line-grey); }
+.week-cell[data-look="locked"] { color: var(--fg-2); }
+.week-cell[data-look="off"]::before { border: 1.5px dashed var(--line-grey); }
+/* today's dot, beneath its circle */
+.week-day.today::before { content: ""; position: absolute; left: 50%; bottom: 0; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: var(--fg); }
+/* the day whose cases are on the screen: a bar under its cell */
+.week-day.shown::after { content: ""; position: absolute; left: 4px; right: 4px; bottom: -6px; height: 3px; border-radius: 2px; background: var(--fg); }
+.week-day button.week-cell:focus-visible { outline: 3px solid var(--ring); outline-offset: -2px; }
+/* What is coming and is not here yet (D5): the handoff's tile with a SOON chip, so that it does not read as live. The
+   rule serves a tile that is words alone and, once its screen is built, the same tile as a button. */
+#soon-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; flex: none; margin-top: 8px; }
+.soon-tile { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0 8px; min-height: 44px; margin: 0; padding: 4px 8px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; font-family: var(--ui); font-weight: 600; font-size: var(--t-btn); line-height: 16px; color: var(--fg); text-align: center; }
+.soon-tile svg { flex: none; width: 16px; height: 16px; color: var(--fg); }
+.soon { padding: 0 6px; border: 1px solid var(--fg-2); border-radius: 999px; font-weight: 600; font-size: var(--t-label); line-height: 16px; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); }
+/* no arrow and no price: an arrow would promise a screen */
+#premium-line { display: block; flex: none; margin: 4px 0 0; font-family: var(--ui); font-size: var(--t-label); line-height: 20px; text-align: center; color: var(--fg-2); }
+/* on a phone under 700px tall the rows are the handoff's smaller ones (D19): a 50px tile in a 66px row. A phone only:
+   a wide screen's rows do not share the screen's height, so a short window has nothing to make room for */
+@media (max-width: 600px) and (max-height: 699px) {
+  .case-card .body { --tile: 50px; min-height: 66px; padding: 6px 12px; }
+  .case-card .row-tile { border-radius: 10px; }
+}
 @media (max-width: 600px) {
   body { font-size: 17px; }
   body.sheet-open { overflow: hidden; }
-  /* The day screen is the phone's home (features/HomeScreen.md): case files two by two under a short header, sharing the
-     height the screen has left. The story in each takes what its file has left. Every height is a minimum: on a screen too
-     short for its files, with a fifth file, or with the text enlarged, the page scrolls. */
-  #select { padding: calc(8px + var(--sat)) 8px calc(8px + var(--sab)); }
-  /* on .active: an id rule on #select alone would undo .screen { display: none } */
-  #select.active { display: flex; flex-direction: column; min-height: 100svh; }
-  #select .page-head { flex: none; margin: 0 0 8px; text-align: left; }
-  /* the date and the count share the first row: "Yesterday's Cases" with a count beside it does not fit a 375px screen */
-  #day-kicker { display: none; }
-  /* centred, not set on a baseline: a bold face beside a regular one on a baseline makes the row a pixel taller than its line */
-  #date-row { display: flex; align-items: center; justify-content: space-between; gap: 0 12px; flex-wrap: wrap; min-height: 16px; font-family: var(--type); font-size: 12px; line-height: 16px; }
-  #day-date { font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); }
-  #day-count { display: flex; align-items: center; gap: 4px; color: var(--text-dim); white-space: nowrap; }
-  /* the board's teal is too dark on the page: this is the lighter one */
-  #day-count.all { color: #8cc0b8; }
-  #day-count .mark { width: 12px; height: 12px; }
-  .head-row { display: flex; align-items: baseline; min-height: 36px; }
-  #select .page-head h2 { margin: 0; font-size: 28px; line-height: 36px; }
-  #select .deco-rule { display: none; }
-  /* yesterday is reached by its cell in the strip of days: the wide screen's switch is not shown */
-  #select .day-switch { display: none; }
-  /* rows as they are needed, each the same height: four files make two rows, a fifth makes a third and the page scrolls */
-  .case-grid { flex: 1 1 auto; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: minmax(min-content, 1fr); gap: 8px; max-width: none; margin: 0; }
-  .case-card { min-width: 0; min-height: 160px; box-shadow: none; }
-  .case-card:hover { transform: none; }
-  /* drawn inside the file, with paper on both sides of it: the files are 8px apart, the outer ones 8px from the screen's
-     edge, and an ink ring at the file's own edge would be lost against the page */
-  .case-card:focus-visible { outline-offset: -5px; outline-color: var(--ink); }
-  .case-card .tab { padding: 6px 8px; font-size: 12px; }
-  .case-card.done .tab { background: #d3c39b; }
-  .case-card .body { padding: 10px 8px 8px; gap: 0; min-height: 0; }
-  /* A small picture of the board and, beside it, how the case stands. The four states are told apart by the mark and the
-     words, and the squares filled are a measure of the people placed, never where they stand. */
-  .case-card .file-top { display: flex; align-items: center; gap: 8px; min-height: 36px; }
-  .file-grid { flex: none; width: 36px; height: 36px; overflow: visible; }
-  .file-grid .ground { fill: #f6eeda; }
-  .file-grid .filled { fill: #2f7470; }
-  .file-grid .lines { fill: none; stroke: #a8956a; stroke-width: 1px; vector-effect: non-scaling-stroke; }
-  .file-status { display: flex; align-items: flex-start; gap: 4px; min-width: 0; font-family: var(--type); font-weight: 700; font-size: 12px; line-height: 16px; letter-spacing: .1em; text-transform: uppercase; color: #5c5240; }
-  .file-status .mark { flex: none; width: 12px; height: 12px; margin-top: 2px; }
-  .file-status .when { display: block; }
-  /* gold on paper is too faint for the half disc */
-  .case-card[data-state="going"] .file-status { letter-spacing: 0; text-transform: none; color: #3a3226; }
-  .case-card[data-state="going"] .file-status .mark { color: #6e521c; }
-  .case-card:is([data-state="solved"], [data-state="gaveup"]) .file-status { color: var(--blood); }
-  /* two lines at most and never cut: a title too long for that at this width steps down a size (fitTiles) */
-  .case-card h3 { margin-top: 4px; font-size: 21px; overflow-wrap: break-word; }
-  .case-card h3.smaller { font-size: 18px; }
-  .case-card h3.smallest { font-size: 15.5px; }
-  .case-card :is(.meta, .blurb, .tags, .in-progress) { display: none; }
-  /* The whole story, cut at a whole line where the file ends; the Briefing has all of it. Its box takes the height the file
-     has left and never asks for any of its own, and fitTiles counts the lines that fit and cuts the words inside to that
-     many. So a count that has gone stale (the room changed and nothing measured again) can only hide part of a line: it
-     can never make a file, and with it the page, taller than the screen. */
-  .case-card .story { display: block; flex: 1 1 0; min-height: 0; overflow: hidden; margin: 4px 0 8px; }
-  .case-card .story-text { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; font-size: 14.5px; line-height: 20px; overflow-wrap: break-word; color: #3a3226; }
-  .case-card .story.none { visibility: hidden; }
-  .case-card .tile-rule { display: block; align-self: flex-start; max-width: 100%; margin-top: 4px; padding: 0 5px; border: 1px solid #6d5d3d; font-family: var(--type); font-size: 12px; line-height: 16px; color: #4d4230; }
-  /* The bar at the file's foot says what a press does. It is drawn, not a button: the whole file is the button. The three
-     differ in fill as well as in words; the gold one has an ink line because gold alone is lost against the paper. */
-  .case-card .file-bar { display: flex; align-items: center; justify-content: center; min-height: 44px; margin-top: auto; padding: 4px 6px; font-family: var(--deco); font-weight: 700; font-size: 13px; line-height: 16px; letter-spacing: .2em; text-transform: uppercase; text-align: center; }
-  .file-bar.play { background: var(--ink); color: var(--gold-2); }
-  .file-bar.resume { background: var(--gold); color: var(--ink); box-shadow: inset 0 0 0 2px var(--ink); }
-  .file-bar.result { color: var(--ink); box-shadow: inset 0 0 0 2px var(--ink); }
-  .case-card.done .tags { padding-right: 0; }
-  /* the wide card's stamp: on a phone the file's own status says it */
-  .stamp { display: none; }
-  #next-cases, #select .back-row { display: none; }
-  /* The last seven days, today first and the days before it after it. A day is told by its mark and its fill together: a check on teal for every
-     case solved, a half disc on paper for some of it done, a ring for none of a day still open, a lock for a day gone by
-     untouched, and a dashed box for a day before the game
-     began. Today's and yesterday's cells are buttons: they are the way from one day's cases to the other's. */
-  #week { display: block; flex: none; margin-top: 8px; padding: 8px 4px; background: var(--ink-2); }
-  .week-head { display: flex; align-items: center; justify-content: space-between; gap: 0 12px; flex-wrap: wrap; min-height: 16px; padding: 0 4px; font-family: var(--type); font-size: 12px; line-height: 16px; }
-  .week-label { font-family: var(--deco); font-weight: 700; letter-spacing: .3em; text-transform: uppercase; color: var(--gold); }
-  #next-phone { display: block; color: var(--text-dim); }
-  .week-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; margin-top: 4px; }
-  .week-day { position: relative; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-  .week-day .cap { font-family: var(--type); font-size: 12px; line-height: 16px; text-align: center; white-space: nowrap; color: var(--text-dim); }
-  .week-day.today .cap { font-weight: 700; color: var(--gold-2); }
-  /* yesterday's can be pressed too, and says so by its weight */
-  .week-day.open .cap { font-weight: 700; color: var(--text); }
-  .week-cell { display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 0; border: 0; background: none; }
-  .week-cell .mark { width: 18px; height: 18px; }
-  .week-cell[data-look="done"] { background: #2f7470; color: #f4ecd8; }
-  .week-cell[data-look="done"] .mark { width: 30px; height: 30px; }
-  .week-cell[data-look="part"] { background: var(--paper); color: #6e521c; }
-  .week-cell:is([data-look="none"], [data-look="locked"]) { background: #b9ae93; color: #3a3226; }
-  .week-cell[data-look="off"] { border: 1px dashed var(--text-dim); }
-  /* today's line, with a dark line inside it so the gold reads on paper and on teal alike */
-  .week-day.today .week-cell { box-shadow: inset 0 0 0 2px var(--gold-2), inset 0 0 0 4px var(--ink-2); }
-  /* the day whose cases are on the screen: a bar under its cell, in the panel's own padding */
-  .week-day.shown::after { content: ""; position: absolute; left: 0; right: 0; bottom: -5px; height: 3px; background: var(--gold-2); }
-  /* What is coming and is not here yet. These are words to read, not buttons: nothing is behind them, so they take no
-     focus and a press does nothing. The dashed line is the strip's own way of saying "not yet". */
-  #soon-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; flex: none; margin-top: 8px; }
-  .soon-tile { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0 8px; min-height: 44px; padding: 4px 8px; border: 1px dashed var(--text-dim); font-family: var(--deco); font-weight: 700; font-size: 13px; line-height: 16px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-dim); }
-  .soon-tile svg { flex: none; width: 16px; height: 16px; color: var(--gold-dim); }
-  .soon { padding: 0 5px; border: 1px solid var(--text-dim); font-family: var(--type); font-weight: 400; font-size: 12px; letter-spacing: .1em; }
-  /* no arrow and no price: an arrow would promise a screen */
-  #premium-line { display: block; flex: none; margin: 4px 0 0; font-family: var(--type); font-size: 12px; line-height: 20px; text-align: center; color: var(--text-dim); }
-  /* the ring is drawn inside the cell, paper then ink: outside it would run into the next cell */
-  .week-day button.week-cell:focus-visible { outline: 2px solid var(--ink); outline-offset: -4px; box-shadow: inset 0 0 0 2px var(--paper); }
+  /* Home fills the phone's screen: the rows share the height the header, the strip and the tiles leave */
+  #select { padding: calc(8px + var(--sat)) 16px calc(8px + var(--sab)); }
+  #select.active { min-height: 100svh; }
   /* One column that fills the screen: header 52, board, tray 60, clue panel, bar 56, with 8px between them. Only the clue
      panel stretches, so no band of the screen is left empty. The heights and margins here are mirrored by PHONE_FIXED,
      PHONE_PANEL_MIN, PHONE_FRAME and PHONE_MARGIN in the script. Each height is a minimum: with the text enlarged a zone
      grows and the page scrolls. Nothing here may take a transform, a filter or contain: the Casebook is fixed inside it. */
+  /* The game screen on a phone, in the new look (features/Visuals.md, batch 3; D13, D17, D20, D21). One column that fills
+     the screen: header 52, board, tray 60, clue card, bar 56, with 8px between them, as before: the heights and margins
+     are mirrored by PHONE_FIXED, PHONE_PANEL_MIN, PHONE_FRAME and PHONE_MARGIN in the script and none of them moves. Only
+     the clue card stretches. Each height is a minimum: with the text enlarged a zone grows and the page scrolls. Nothing
+     here may take a transform, a filter or contain: the Casebook is fixed inside it. The ground, colour and face are the
+     body's from batch 1. */
   #game { padding: var(--sat) 8px 0; }
   /* on .active: an id rule on #game alone would undo .screen { display: none } */
   #game.active { display: flex; flex-direction: column; min-height: 100svh; }
   /* raised over the board, so the foot of the Back button's focus ring is never painted across */
-  .topbar { flex: none; flex-wrap: nowrap; min-height: 52px; margin: 0 0 8px; gap: 8px; position: relative; z-index: 1; }
-  #btn-back-cases { flex: none; width: 44px; height: 44px; padding: 0; font-size: 0; }
-  /* 44px of button and 4px of ring each side fill the header's 52, clear of the strip over the top inset */
-  #btn-back-cases:focus-visible { outline-offset: 1px; }
-  #btn-back-cases::before { content: "\2190"; font-size: 18px; }
-  .topbar .case-name { min-width: 0; font-size: 20px; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .topbar .case-name small { font-size: 12px; letter-spacing: 0; overflow: hidden; text-overflow: ellipsis; }
+  .topbar { flex: none; flex-wrap: nowrap; align-items: center; min-height: 52px; margin: 0 0 8px; gap: 10px; position: relative; z-index: 1; }
+  .topbar .case-name { min-width: 0; font-family: var(--title); font-weight: 400; font-size: 24px; line-height: 1; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* the second line is one line here, cut with an ellipsis, as the title is */
+  .topbar .case-name small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .head-count { display: inline; }
   .top-links { display: none; }
-  .timer { flex: none; min-width: 0; font-size: 18px; }
+  .timer { flex: none; min-width: 0; }
   /* the wide grid's centring is undone: in a column it would shrink the board's column to its content */
   .layout { display: flex; flex-direction: column; flex: 1 1 auto; margin: 0; align-items: stretch; justify-content: flex-start; }
   .board-wrap { flex: 1 1 auto; gap: 8px; }
-  /* the gold line is the whole frame: every other pixel of the width goes to the squares */
-  .board-frame { flex: none; padding: 1px; border-color: var(--gold); box-shadow: none; }
+  /* the ink line is the whole frame: every other pixel of the width goes to the squares */
+  .board-frame { flex: none; padding: 0; border-width: 2px; }
   .status { display: none; }
 
+  /* The tray of suspect circles: the victim's with the dagger badge, the chosen one ringed in ink, a placed one darkened
+     under its initial with a tick. Chips are 44px, 40 when a case has six or seven people, so a chosen chip's ring
+     touches neither its neighbour nor the badge. */
   .tray { display: flex; flex: none; justify-content: center; align-items: center; gap: 6px; width: 100%; min-height: 60px; }
   .tray-btn { flex: 0 1 52px; min-width: 44px; height: 54px; padding: 0; background: none; border: 0; display: grid; place-items: center; position: relative; }
-  .tray-btn .chip { position: relative; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-family: var(--serif); font-weight: 700; font-size: 17px; line-height: 1; color: #f4ecd8; border: 2px solid #f4ecd8; }
-  .tray-btn.victim .chip::after { content: "\2020"; position: absolute; top: -5px; right: -5px; width: 16px; height: 16px; border-radius: 50%; background: var(--blood); border: 1px solid #f4ecd8; display: grid; place-items: center; font-size: 10px; }
+  .tray-btn .chip { position: relative; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-family: var(--ui); font-weight: 600; font-size: 17px; line-height: 1; color: var(--cream); border: 2px solid var(--cream); }
+  .tray:has(.tray-btn:nth-child(6)) .tray-btn .chip { width: 40px; height: 40px; font-size: 16px; }
+  .tray-btn.victim .chip::after { content: ""; position: absolute; top: -5px; right: -5px; width: 16px; height: 16px; border-radius: 50%; background: var(--bad) var(--icon-dagger) center / 70% no-repeat; border: 1px solid var(--cream); }
   /* placed: the fill is darkened under the initial, not faded with it, and only while somebody is still to place */
   .tray:has(.tray-btn:not(.placed)) .tray-btn.placed:not(.selected) .chip { box-shadow: inset 0 0 0 40px rgba(26,29,42,.55); border-color: rgba(244,236,216,.5); }
   /* the tick is drawn with borders, as the green seal is, so it is never a font's glyph */
-  .tray-btn.placed::after { content: ""; position: absolute; right: 0; bottom: 0; width: 18px; height: 18px; border-radius: 50%; background: var(--ink); border: 1px solid var(--gold); }
-  .tray-btn.placed::before { content: ""; position: absolute; z-index: 1; right: 6.5px; bottom: 5.5px; width: 5px; height: 9px; border: solid var(--gold-2); border-width: 0 2px 2px 0; transform: rotate(45deg); }
-  .tray-btn.selected .chip { box-shadow: 0 0 0 2px var(--ink), 0 0 0 4px var(--gold); }
-  /* a square ring against the round ring that means selected; 54px of button and 3px of ring each side fill the tray's 60 */
-  .tray-btn:focus-visible { outline: 3px solid var(--gold-2); }
+  .tray-btn.placed::after { content: ""; position: absolute; right: 0; bottom: 0; width: 18px; height: 18px; border-radius: 50%; background: var(--fg); border: 1px solid var(--card); }
+  .tray-btn.placed::before { content: ""; position: absolute; z-index: 1; right: 6.5px; bottom: 5.5px; width: 5px; height: 9px; border: solid var(--card); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  .tray-btn.selected .chip { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--fg); }
+  /* a square ring against the round ring that means selected, 7px off the chip (9.1): 54px of button and 3px of ring each side fill the tray's 60 */
+  .tray-btn:focus-visible { outline: 3px solid var(--ring); }
 
-  /* The clue panel: the one zone that stretches, and it never scrolls. It shows one thing at a time, as the old statement
+  /* The clue card: the one zone that stretches, and it never scrolls. It shows one thing at a time, as the old statement
      line did: a message, a prompt, or the selected person's card. Its form follows its own room (data-size, set by
      sizePanel), so a tall panel holds one statement in large type and reads as full. Each state (data-show, set by render)
      shows its own parts and the rest are off. Nothing here is clamped, clipped or given a height: with the text enlarged
-     the panel grows and the page scrolls. No fill of its own for a selection: the dim text would be too faint on it. */
-  .clues { display: flex; flex-direction: column; flex: 1 0 auto; min-height: 88px; width: 100%; padding: 12px 14px; background: var(--ink-2); border: 1px solid var(--gold-dim); }
+     the panel grows and the page scrolls. No fill of its own for a selection. */
+  .clues { display: flex; flex-direction: column; flex: 1 0 auto; min-height: 88px; width: 100%; padding: 12px 16px; background: var(--card); border: 0; border-radius: 16px; }
   .clues[data-size="xl"] { padding: 16px; }
   .clues > * { display: none; margin: 0; }
   /* the prompt is a heading with a line under it; a message is the same paragraph in a plainer voice */
-  .statement { color: var(--gold-2); }
-  .statement .lead { display: block; font-family: var(--display); font-size: 24px; line-height: 1.1; }
+  .statement { font-family: var(--title); color: var(--fg); }
+  .statement .lead { display: block; font-family: var(--title); font-size: 24px; line-height: 1.1; }
   .clues[data-size="l"] .statement .lead { font-size: 28px; }
   .clues[data-size="xl"] .statement .lead { font-size: 32px; }
-  .statement .rest, .clue-sub { margin-top: 4px; font-style: italic; font-size: 15px; line-height: 1.35; color: var(--text-dim); }
+  .statement .rest, .clue-sub { margin-top: 4px; font-family: var(--title); font-style: italic; font-size: 17px; line-height: 1.35; color: var(--fg-2); }
   .statement .rest { display: block; }
-  .clues:is([data-show="told"], [data-show="told-card"]) .statement { font-style: italic; font-size: 17px; line-height: 1.35; }
-  .statement.warn { color: #e48a7f; }
-  .statement.good { color: #9fcf9f; }
+  .clues:is([data-show="told"], [data-show="told-card"]) .statement { font-style: italic; font-size: 19px; line-height: 1.35; }
+  .statement.warn { color: var(--bad); }
+  .statement.good { color: var(--good); }
   .clues:is([data-show="told"], [data-show="told-card"], [data-show="over"], [data-show="ready"], [data-show="cross"], [data-show="choose"]) .statement,
   .clues[data-show="choose"] .clue-sub { display: block; }
   /* a message with nobody selected stands alone, in the middle: the hint always speaks with nobody selected */
   .clues[data-show="told"] { justify-content: center; }
   /* the card: who it is, then what they said, in the middle of the height that is left */
-  .clues:is([data-show="card"], [data-show="told-card"]) .clue-head { display: grid; grid-template-columns: 44px 1fr auto; column-gap: 10px; align-items: center; }
-  .clue-head .chip { grid-row: 1 / 3; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-family: var(--serif); font-weight: 700; font-size: 17px; line-height: 1; color: #f4ecd8; border: 2px solid #f4ecd8; }
-  .clue-name { margin: 0; align-self: end; font-family: var(--display); font-weight: 400; font-size: 22px; line-height: 1.1; color: var(--text); }
-  .clue-mode { align-self: end; font-family: var(--type); font-weight: 700; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--gold-2); }
-  .clue-role { grid-column: 2 / 4; align-self: start; font-style: italic; font-size: 13px; line-height: 1.3; color: var(--text-dim); }
-  .clues[data-show="card"] .clue-text, .clues[data-show="told-card"] .statement { display: grid; align-content: center; flex: 1 0 auto; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--gold-dim); }
-  .clue-text { font-size: 20px; line-height: 1.25; color: var(--text); }
+  .clues:is([data-show="card"], [data-show="told-card"]) .clue-head { display: grid; grid-template-columns: 44px 1fr auto; column-gap: 12px; align-items: center; }
+  .clue-head .chip { grid-row: 1 / 3; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-family: var(--ui); font-weight: 600; font-size: 17px; line-height: 1; color: var(--cream); border: 2px solid var(--cream); }
+  .clue-name { margin: 0; align-self: end; font-family: var(--title); font-weight: 400; font-size: 24px; line-height: 1; color: var(--fg); }
+  /* the mode's word in a chip, as the handoff draws PLACING */
+  .clue-mode { align-self: center; grid-row: 1 / 3; padding: 4px 10px; border-radius: 999px; background: var(--chip); font-family: var(--ui); font-weight: 600; font-size: var(--t-label); line-height: 16px; letter-spacing: .1em; text-transform: uppercase; color: var(--fg); }
+  .clue-mode:empty { display: none; }
+  .clue-role { grid-column: 2 / 3; align-self: start; margin-top: 2px; font-family: var(--title); font-style: italic; font-size: 15px; line-height: 1.3; color: var(--fg-2); }
+  .clues[data-show="card"] .clue-text, .clues[data-show="told-card"] .statement { display: grid; align-content: center; flex: 1 0 auto; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
+  .clue-text { font-family: var(--title); font-size: 20px; line-height: 1.3; color: var(--fg); }
   .clues[data-size="l"] .clue-text { font-size: 22px; }
   .clues[data-size="xl"] .clue-text { font-size: 24px; }
   /* the foot, with nobody selected: the case's Local rule, or the three rules every case has. Never under a card or a message. */
-  .clue-rule { margin: auto -4px 0; padding: 8px 10px; border: 1px dashed var(--blood); background: rgba(158,43,37,.12); font-size: 14.5px; line-height: 1.35; color: var(--text); }
-  .clue-rule b { display: block; font-family: var(--deco); font-size: 13px; letter-spacing: .15em; text-transform: uppercase; color: #e48a7f; }
-  .clue-rules { margin-top: auto; padding-top: 8px; border-top: 1px solid var(--gold-dim); font-size: 15px; line-height: 1.35; color: var(--text-dim); }
+  .clue-rule { margin: auto 0 0; padding: 8px 12px; border-radius: 12px; background: var(--chip); font-family: var(--ui); font-size: 15px; line-height: 1.35; color: var(--fg); }
+  .clue-rule b { display: block; font-family: var(--ui); font-weight: 600; font-size: var(--t-label); letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); }
+  .clue-rules { margin-top: auto; padding-top: 8px; border-top: 1px solid var(--line); font-family: var(--ui); font-size: 15px; line-height: 1.35; color: var(--fg-2); }
   .clue-rules span { display: block; }
-  .clue-rules b { display: none; margin-bottom: 2px; font-family: var(--type); font-size: 12px; letter-spacing: .15em; text-transform: uppercase; }
+  .clue-rules b { display: none; margin-bottom: 2px; font-family: var(--ui); font-weight: 600; font-size: var(--t-label); letter-spacing: .1em; text-transform: uppercase; }
   .clues:is([data-size="l"], [data-size="xl"]) .clue-rules b { display: block; }
   .clues[data-rule]:not([data-size="s"]):is([data-show="over"], [data-show="ready"], [data-show="cross"], [data-show="choose"]) .clue-rule,
   .clues:not([data-rule], [data-size="s"]):is([data-show="over"], [data-show="ready"], [data-show="cross"], [data-show="choose"]) .clue-rules { display: block; }
@@ -490,7 +609,7 @@ body.modal-open { overflow: hidden; }
      their place, or a prompt. No name, no word for the mode (the bar's pressed button and the tray's ring say it), no foot. */
   .clues[data-size="s"] { padding: 6px 12px; justify-content: center; }
   .clues[data-size="s"] .statement .lead { font-size: 22px; }
-  .clues[data-size="s"]:is([data-show="told"], [data-show="told-card"]) .statement { font-size: 15px; line-height: 1.3; }
+  .clues[data-size="s"]:is([data-show="told"], [data-show="told-card"]) .statement { font-size: 16px; line-height: 1.3; }
   .clues[data-size="s"][data-show="told-card"] .statement { flex: none; margin-top: 0; padding-top: 0; border-top: 0; }
   .clues[data-size="s"][data-show="told-card"] .clue-head { display: none; }
   .clues[data-size="s"][data-show="card"] { flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; }
@@ -501,49 +620,56 @@ body.modal-open { overflow: hidden; }
   /* on a short panel the rule and "Choose someone." do not both fit, and the rule is the one the player cannot guess:
      it takes the prompt's place, whole, until someone is selected */
   .clues[data-size="s"][data-rule][data-show="choose"] :is(.statement, .clue-sub) { display: none; }
-  .clues[data-size="s"][data-rule][data-show="choose"] .clue-rule { display: block; margin: 0; padding: 0; border: 0; background: none; font-style: italic; font-size: 15px; line-height: 1.3; }
-  .clues[data-size="s"] .clue-rule b { display: inline; font: inherit; font-weight: 700; letter-spacing: 0; text-transform: none; }
+  .clues[data-size="s"][data-rule][data-show="choose"] .clue-rule { display: block; margin: 0; padding: 0; border: 0; border-radius: 0; background: none; font-family: var(--title); font-style: italic; font-size: 16px; line-height: 1.3; }
+  .clues[data-size="s"] .clue-rule b { display: inline; font: inherit; font-family: var(--ui); font-style: normal; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--fg); }
   .clues[data-size="s"] .clue-rule b::after { content: ". "; }
 
-  /* The column's last child, in the flow: it sits above the home indicator when the stack fits, and stays on screen when
-     the page scrolls, so Draft, Cross out and Accuse are never below the fold. It keeps the foot inset in its own padding. */
-  .tools { position: sticky; bottom: 0; z-index: 30; flex: none; align-self: stretch; margin: 0 -8px; flex-wrap: nowrap; gap: 6px; padding: 5px 8px calc(6px + var(--sab)); background: var(--ink); border-top: 1px solid var(--gold-dim); }
-  .tools .btn { flex: 0 0 44px; height: 44px; padding: 0; font-size: 0; letter-spacing: 0; display: grid; place-items: center; }
-  .tools .btn::before { font-family: var(--serif); font-size: 20px; line-height: 1; }
-  #tool-draft::before { content: "\270E"; }
-  #tool-mark::before { content: "\00D7"; font-size: 26px; }
-  #tool-undo::before { content: "\21BA"; }
-  #tool-hint::before { content: "?"; font-weight: 700; }
-  #tool-casebook, #tool-submit { flex: 1 1 0; min-width: 0; }
-  #tool-casebook { display: grid; background: var(--paper); border-color: var(--paper); color: var(--wall); font-family: var(--display); font-weight: 400; font-size: min(16px, 3.8vw); text-transform: none; }
-  #tool-submit { font-size: 13px; letter-spacing: .06em; }
+  /* The action bar, the column's last child, in the flow: it sits above the home indicator when the stack fits, and stays on
+     screen when the page scrolls, so Draft, Cross out and Accuse are never below the fold. It keeps the foot inset in its
+     own padding. Icon circles for Draft, Cross out, Undo and Hint, white with an ink icon; Draft and Cross out are filled
+     ink circles while they are on (D17); Casebook is the outlined pill and Accuse the one filled one, disabled until
+     everyone is placed. */
+  .tools { position: sticky; bottom: 0; z-index: 30; flex: none; align-self: stretch; margin: 0 -8px; flex-wrap: nowrap; gap: 6px; padding: 5px 8px calc(6px + var(--sab)); background: var(--bg); border-top: 1px solid var(--line); }
+  .tools .btn { flex: 0 0 44px; width: 44px; height: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 50%; background: var(--card); color: var(--fg); box-shadow: none; font-size: 0; display: grid; place-items: center; }
+  .tools .btn::before { content: ""; width: 18px; height: 18px; background: currentColor; -webkit-mask: var(--mask) center / contain no-repeat; mask: var(--mask) center / contain no-repeat; }
+  #tool-draft { --mask: var(--icon-pencil); }
+  #tool-mark { --mask: var(--icon-cross); }
+  #tool-undo { --mask: var(--icon-undo); }
+  #tool-hint { --mask: var(--icon-help); }
+  .tools .btn[aria-pressed="true"] { background: var(--fg); color: var(--card); }
+  #tool-casebook, #tool-submit { flex: 1 1 0; min-width: 0; width: auto; border-radius: 999px; font-family: var(--ui); font-weight: 600; font-size: 15px; }
+  /* the word must fit the width a narrow screen leaves the pill: it steps down with the screen */
+  #tool-casebook { font-size: min(15px, 3.9vw); }
+  #tool-casebook::before, #tool-submit::before { content: none; }
+  #tool-casebook { display: grid; background: transparent; box-shadow: inset 0 0 0 1.5px var(--fg); color: var(--fg); }
+  #tool-submit { background: var(--fg); color: var(--card); }
+  #tool-submit:disabled { background: var(--line); color: var(--fg-2); opacity: 1; cursor: default; }
+  .tools .btn:disabled { opacity: 1; }
+  #tool-hint:disabled { background: var(--line); color: var(--fg-2); }
+  .tools .btn:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
+  @media (hover: hover) {
+    .tools .btn:hover { background: var(--chip); color: var(--fg); }
+    .tools .btn[aria-pressed="true"]:hover, #tool-submit:hover { background: var(--fg); color: var(--card); }
+    #tool-submit:disabled:hover, #tool-hint:disabled:hover { background: var(--line); color: var(--fg-2); }
+  }
 
-  /* the testimony panel becomes the Casebook: a sheet over the whole screen */
-  .dossier { display: none; position: fixed; inset: 0; z-index: 40; overflow-y: auto; overscroll-behavior: contain; background: var(--paper); color: var(--wall); border: 0; padding: 0 16px calc(20px + var(--sab));
-    /* a row brought into view by focus must clear the sticky header, which is 63px and the top inset tall */
-    scroll-padding-top: calc(63px + var(--sat)); }
+  /* The testimony panel becomes the Casebook: a sheet over the whole screen on the page's ground, a white card a person,
+     the chosen one outlined in ink, a placed person's room in secondary ink with no tick and no green (D13). */
+  .dossier { display: none; position: fixed; inset: 0; z-index: 40; overflow-y: auto; overscroll-behavior: contain; background: var(--bg); color: var(--fg); border: 0; padding: 0 16px calc(20px + var(--sab));
+    /* a row brought into view by focus must clear the sticky header, which is 64px and the top inset tall */
+    scroll-padding-top: calc(64px + var(--sat)); }
   .dossier.open { display: block; }
   .dossier-head { display: none; }
-  .sheet-head { display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 1; background: var(--paper); padding: calc(10px + var(--sat)) 0 8px; border-bottom: 1px solid rgba(42,36,24,.3); }
-  .sheet-head h3 { flex: 1; margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; line-height: 1; }
-  .sheet-head span { font-family: var(--type); font-size: 13px; color: #5c5240; }
-  #casebook-close { flex: none; width: 44px; height: 44px; padding: 0; background: none; border: 1px solid var(--wall); color: var(--wall); font-size: 26px; line-height: 1; }
-  .dossier .twist { margin: 12px 0 0; }
-  .dossier .twist b { color: #8f2a23; }
-  .people { gap: 0; }
-  .person, .person.victim-card { background: none; color: var(--wall); border: 0; border-bottom: 1px solid rgba(42,36,24,.2); padding: 12px 4px; }
-  .person.selected { background: var(--paper-2); box-shadow: none; }
-  .person .chip { box-shadow: 0 0 0 1px rgba(42,36,24,.4); }
-  .person .clue { color: var(--wall); font-size: 15px; }
-  .person .who small, .person .state, .legend h5, .legend .note { color: #5c5240; }
-  .person .state.placing { color: #6e521c; }
-  .legend { color: var(--wall); border-top-color: rgba(42,36,24,.3); }
-  .sheet-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(42,36,24,.3); }
-  #sheet-tools button { flex: 1 1 40%; min-height: 44px; padding: 0 10px; background: none; border: 1px solid var(--wall); color: var(--wall); font-family: var(--type); font-weight: 700; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; text-decoration: none; }
-  #sheet-tools button[aria-pressed="true"] { background: var(--wall); color: var(--paper); }
-  #sheet-tools button:focus-visible, #casebook-close:focus-visible { outline: 3px solid var(--wall); outline-offset: 2px; }
-  /* the Casebook is paper and its rows touch: an ink ring, drawn inside each row */
-  .person:focus-visible { outline: 3px solid var(--wall); outline-offset: -3px; }
+  .sheet-head { display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 1; background: var(--bg); padding: calc(10px + var(--sat)) 0 10px; border-bottom: 0; }
+  .sheet-head h3 { flex: 1; margin: 0; font-family: var(--title); font-weight: 400; font-size: var(--t-h2); line-height: 1; color: var(--fg); }
+  .sheet-head span { font-family: var(--ui); font-size: var(--t-status); color: var(--fg-2); }
+  #casebook-close { flex: none; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: var(--card); color: var(--fg); font-size: 0; display: grid; place-items: center; }
+  #casebook-close::before { content: ""; width: 18px; height: 18px; background: currentColor; -webkit-mask: var(--icon-close) center / contain no-repeat; mask: var(--icon-close) center / contain no-repeat; }
+  .sheet-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+  /* no underline: a link's hover and focus rule reaches the three links once they are moved in here, where they are pills */
+  #sheet-tools button { flex: 1 1 40%; min-height: 44px; padding: 0 12px; background: transparent; border: 0; border-radius: 999px; box-shadow: inset 0 0 0 1.5px var(--fg); color: var(--fg); font-family: var(--ui); font-weight: 600; font-size: var(--t-btn); text-decoration: none; }
+  #sheet-tools button[aria-pressed="true"] { background: var(--fg); color: var(--card); box-shadow: none; }
+  #sheet-tools button:focus-visible, #casebook-close:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
 }
 /* narrower than any phone the board is sized for: seven people no longer fit, and the tray scrolls in place of the page.
    A scrolling box clips what is drawn outside it, so here the ring is drawn inside the button. */
@@ -559,9 +685,9 @@ body.modal-open { overflow: hidden; }
   .tools { flex-wrap: wrap; }
   #tool-casebook, #tool-submit { flex-basis: 40%; }
 }
-/* after the phone rules, which it changes: a phone with its text at twice the size: two files side by side no longer hold their words */
+/* after Home's rules, which it changes: a phone with its text at twice the size: two tiles side by side no longer hold their words */
 @media (max-width: 300px) {
-  .case-grid, #soon-row { grid-template-columns: minmax(0, 1fr); }
+  #soon-row { grid-template-columns: minmax(0, 1fr); }
   /* seven days across no longer hold a letter and a date on one line: the date goes under the letter */
   .week-day .cap { white-space: normal; }
 }
@@ -588,30 +714,22 @@ body.modal-open { overflow: hidden; }
 
 <!-- ============ TITLE ============ -->
 <section id="title" class="screen active">
-  <div class="sunburst" aria-hidden="true"></div>
   <h1 class="logo" id="title-heading" tabindex="-1">A Most Orderly Murder</h1>
-  <div class="deco-rule">✦</div>
   <p class="tagline">One person to every row. One person to every column. One killer alone with the body.<br>Four new cases every day.</p>
   <div class="title-buttons">
-    <button class="btn primary" id="btn-open-cases">Today's Cases</button>
-    <button class="btn" id="btn-how">How to Investigate</button>
+    <button class="btn primary full" id="btn-open-cases">Today's Cases</button>
+    <button class="btn full" id="btn-how">How to Investigate</button>
   </div>
 </section>
 
 <!-- ============ CASE SELECT ============ -->
 <section id="select" class="screen">
   <div class="page-head">
-    <div class="kicker" id="day-kicker"></div>
-    <div id="date-row"><span id="day-date"></span><span id="day-count"></span></div>
-    <div class="head-row"><h2 id="day-heading" tabindex="-1">Today's Cases</h2></div>
-    <div class="deco-rule">✦</div>
-    <div class="day-switch" id="day-switch">
-      <button class="btn small" id="btn-day-today" aria-pressed="true">Today</button>
-      <button class="btn small" id="btn-day-yesterday" aria-pressed="false">Yesterday</button>
-    </div>
+    <div id="date-row"><span id="day-date"></span></div>
+    <div class="head-row"><h2 id="day-heading" tabindex="-1">Today's Cases</h2><div id="streak-figure" hidden><b></b><span>day streak</span></div></div>
+    <div id="progress-row"></div>
   </div>
   <div class="case-grid" id="case-grid"></div>
-  <p class="next-cases" id="next-cases"></p>
   <div id="week">
     <div class="week-head"><span class="week-label">Last 7 days</span><span id="next-phone"></span></div>
     <div class="week-days" id="week-days"></div>
@@ -621,13 +739,12 @@ body.modal-open { overflow: hidden; }
     <div class="soon-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 13.5V8M8 13.5v-11M12.5 13.5V6" fill="none" stroke="currentColor" stroke-width="2"></path></svg><span>Stats</span><span class="soon">Soon</span></div>
   </div>
   <p id="premium-line">Premium · coming soon</p>
-  <div class="back-row"><button class="btn small" id="btn-back-title">← Back</button></div>
 </section>
 
 <!-- ============ GAME ============ -->
 <section id="game" class="screen">
   <div class="topbar">
-    <button class="btn small" id="btn-back-cases" aria-label="Back to the cases">← Cases</button>
+    <button class="btn small" id="btn-back-cases" aria-label="Back to the cases">Cases</button>
     <h2 class="case-name" id="case-name" tabindex="-1"></h2>
     <div class="top-links" id="top-links">
       <button class="link" id="tool-briefing">Briefing</button>
@@ -650,8 +767,8 @@ body.modal-open { overflow: hidden; }
       </section>
       <div class="tools" id="tools">
         <button class="btn small" id="tool-casebook" aria-haspopup="dialog">Casebook</button>
-        <button class="btn small" id="tool-draft" aria-label="Draft" aria-pressed="false" title="Note where the selected person might be (D)">✎ Draft</button>
-        <button class="btn small" id="tool-mark" aria-label="Cross out" aria-pressed="false" title="Cross a square out (X)">× Cross out</button>
+        <button class="btn small" id="tool-draft" aria-label="Draft" aria-pressed="false" title="Note where the selected person might be (D)">Draft</button>
+        <button class="btn small" id="tool-mark" aria-label="Cross out" aria-pressed="false" title="Cross a square out (X)">Cross out</button>
         <button class="btn small" id="tool-undo" aria-label="Undo" title="Undo (Z)">Undo</button>
         <button class="btn small" id="tool-lens" aria-pressed="false" title="Dim the squares the selected person's statement rules out (L)">Lens</button>
         <button class="btn small" id="tool-hint" title="Ask the Inspector (H)">Hint</button>
@@ -1045,25 +1162,112 @@ const store = {
   outcome(day, tierId) { return this.outcomes().find(o => o.day === day && o.tier === tierId)?.result || null; },
 };
 
+// ---------------------------------------------------------------- the streak (features/Rewards.md, section 4)
+// Days in a row with every case solved. Nothing of it is stored: it is worked out from one reading of the results
+// (store.outcomes()) each time it is shown, so a clock set forward and back cannot leave a wrong count behind.
+// A case given up is not solved, and neither is a result made after its day had closed.
+function streakDays(snapshot) {
+  const days = new Map();
+  snapshot.forEach(o => {
+    const d = days.get(o.day) || { n: o.n, solved: 0, spoiled: false };
+    if (o.result.gaveUp || o.result.late === true) d.spoiled = true; else d.solved++;
+    days.set(o.day, d);
+  });
+  return days;
+}
+function streakComplete(d) { return !!d && !d.spoiled && d.solved === d.n; }
+function streakRun(days, day) {
+  let run = 0;
+  while (day - run >= 1 && streakComplete(days.get(day - run))) run++;
+  return run;
+}
+// how many complete days in a row end on this day; none if the day itself is not complete
+function runEndingOn(day, snapshot) { return streakRun(streakDays(snapshot), day); }
+// The current streak is always a run that really happened: the one ending today, or, while today or yesterday can still
+// be completed, the one that ends just before them. So it never counts across a day not yet done, solving a case never
+// lowers it, and it is never above the best. It reads no day later than the one handed in; the best reads them all.
+function streak(today, snapshot) {
+  const days = streakDays(snapshot);
+  // a day still offered that can yet be completed: nothing given up in it and nothing late
+  const pending = n => dayOpen(n, today) && !streakComplete(days.get(n)) && !(days.get(n) && days.get(n).spoiled);
+  const yesterdayPending = pending(today - 1), todayPending = pending(today);
+  let waiting = 0;
+  if (yesterdayPending && (todayPending || streakComplete(days.get(today)))) waiting = streakRun(days, today - 2);
+  else if (todayPending && !yesterdayPending) waiting = streakRun(days, today - 1);
+  let best = 0;
+  days.forEach((d, n) => { if (streakComplete(d) && !streakComplete(days.get(n + 1))) best = Math.max(best, streakRun(days, n)); });
+  return { current: Math.max(streakRun(days, today), waiting), best, yesterdayPending };
+}
+function dayCount(n) { return n === 1 ? "1 day" : n + " days"; }
+// A day has a Scorecard once every case it offers has a result, and for as long as the day can still be played.
+function scorecardReady(day) { return dayOpen(day, currentDay()) && TIERS.every(t => store.result(day, t.id)); }
+// What a Scorecard says under its rows (features/Rewards.md, 4.2): a lead from the card's day alone, a sentence from the
+// streak as it stands now, and on today's card a line when yesterday can still be added to it. Each has its own
+// condition, so every card has its words.
+function scorecardWords(day, today, snapshot) {
+  const NUMBER = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight"], cap = w => w[0].toUpperCase() + w.slice(1);
+  const got = snapshot.filter(o => o.day === day), cases = got.length ? got[0].n : TIERS.length, word = NUMBER[cases] || String(cases);
+  const unsolved = cases - got.filter(o => !o.result.gaveUp).length;
+  const lead = unsolved === 0 ? `${cap(word)} for ${word}.` : unsolved === 1 ? "One case went unsolved." : `${cap(NUMBER[unsolved] || String(unsolved))} cases went unsolved.`;
+  const s = streak(today, snapshot), complete = streakComplete(streakDays(snapshot).get(day));
+  // the run this day broke: the one before it, or, with yesterday still to be completed, the one before yesterday
+  const broken = complete ? 0 : runEndingOn(day === today && s.yesterdayPending ? day - 2 : day - 1, snapshot);
+  const run = s.current ? `Streak: <b>${dayCount(s.current)}</b>.` : broken ? `The streak ends at <b>${dayCount(broken)}</b>.` : `No streak running. Solve all ${word} in a day to start one.`;
+  // a fact, not an order: the game does not press the player to keep a streak
+  const small = day === today && complete && s.yesterdayPending ? "Yesterday's cases stay open until midnight Eastern; the streak still counts them." : "";
+  return { lead, run, small, solved: cases - unsolved, cases };
+}
+// The day's Scorecard, drawn from one reading of the results as it opens. It writes nothing and starts nothing, so a day
+// that turns while it is open changes nothing on it. Opened from Home there is no case behind it to go back from.
+function showScorecard(day, fromHome) {
+  const today = currentDay();
+  if (!scorecardReady(day)) { closeModal(); if (fromHome) renderDay(); else backToDay(); return; }
+  const snapshot = store.outcomes(), words = scorecardWords(day, today, snapshot), date = dateOfDay(day);
+  const rows = TIERS.map(t => {
+    const r = (snapshot.find(o => o.day === day && o.tier === t.id) || { result: store.result(day, t.id) }).result;
+    return `<li data-tier="${t.id}" class="${r.gaveUp ? "gaveup" : "solved"}"><span class="row-tile" aria-hidden="true">${fileGrid(t.n, 0)}</span><span class="tier">${esc(t.label)}<small>${t.n}×${t.n}</small></span>${mark(r.gaveUp ? "dash" : "check")}<span class="word">${r.gaveUp ? "Given up" : "Solved"}</span><span class="time">${r.gaveUp ? "" : fmtTime(asCount(r.time))}</span></li>`;
+  }).join("");
+  const arrives = `${nextCasesIn(new Date())}, at midnight Eastern.`, done = words.solved === words.cases;
+  // the lead is the sheet's heading, so the sheet's name is the lead; the stamp's words live in the circle and the rows
+  openModal(`
+    <div class="day-circle${done ? " done" : ""}" aria-hidden="true">${mark("check")}</div>
+    <div class="stamp-closed">${day === today ? "Today's" : "Yesterday's"} Scorecard · ${WEEKDAYS[date.getUTCDay()]} ${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]}</div>
+    <h2 class="card-head verdict-head">${words.lead}</h2>
+    <p class="streak-line">${words.run}</p>
+    ${words.small ? `<p class="fine grace">${words.small}</p>` : ""}
+    <ul class="scorecard">${rows}</ul>
+    <div class="row">
+      <button class="btn primary" data-files>All cases</button>
+    </div>
+    <p class="fine">${day === today ? `The next body arrives in ${arrives}` : `Yesterday's cases close in ${arrives}`}</p>`, m => {
+    m.classList.add("scorecard-sheet");
+    m.querySelector("[data-files]").onclick = () => { closeModal(); if (!fromHome) backToDay(); };
+  });
+}
+
 // ---------------------------------------------------------------- helpers
 const $ = id => document.getElementById(id);
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
 const esc = s => String(s).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
 const initials = name => name.replace(/^(Lord|Lady|Mr\.|Mrs\.|Miss|Dr\.|Colonel|Countess|Father|Sir|Signora|Captain|Detective Sgt\.)\s+/, "")
   .replace(/'[^']*'\s*/g, "").split(/\s+/).filter(Boolean).map(w => w[0]).slice(0, 2).join("").toUpperCase();
-// the marks a case file and its status are told apart by; each is drawn in the colour of the words beside it
+// the marks a case's row and its status are told apart by; each is drawn in the colour of the words beside it
 const MARKS = {
   ring: '<circle cx="8" cy="8" r="5.5" fill="none" stroke="currentColor" stroke-width="2"></circle>',
   half: '<circle cx="8" cy="8" r="5.5" fill="none" stroke="currentColor" stroke-width="2"></circle><path d="M8 2.5a5.5 5.5 0 0 0 0 11z" fill="currentColor"></path>',
   check: '<path d="M2.5 8.5l3.5 3.5 7.5-8" fill="none" stroke="currentColor" stroke-width="2.4"></path>',
   dash: '<rect x="3" y="7" width="10" height="2" fill="currentColor"></rect>',
   lock: '<rect x="3.5" y="7.5" width="9" height="6.5" fill="currentColor"></rect><path d="M5.6 7.5V5.2a2.4 2.4 0 0 1 4.8 0v2.3" fill="none" stroke="currentColor" stroke-width="1.7"></path>',
+  dot: '<circle cx="8" cy="8" r="4" fill="currentColor"></circle>',
+  chevron: '<path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"></path>',
+  close: '<path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>',
 };
 const mark = kind => `<svg class="mark" viewBox="0 0 16 16" aria-hidden="true">${MARKS[kind]}</svg>`;
-// a case file's picture of its board: n by n squares, the first few filled, in reading order
+// a case row's picture of its board: n by n squares, the first few filled, in reading order; a filled square is a dot
+// inside it, so a board wholly filled still reads as a board on its tile and not as a block
 function fileGrid(n, filled) {
   let squares = "", lines = "";
-  for (let i = 0; i < filled; i++) squares += `<rect x="${i % n}" y="${Math.floor(i / n)}" width="1" height="1"></rect>`;
+  for (let i = 0; i < filled; i++) squares += `<rect x="${i % n + .25}" y="${Math.floor(i / n) + .25}" width=".5" height=".5"></rect>`;
   for (let i = 1; i < n; i++) lines += `M${i} 0V${n}M0 ${i}H${n}`;
   return `<svg class="file-grid" viewBox="0 0 ${n} ${n}" aria-hidden="true"><rect class="ground" width="${n}" height="${n}"></rect><g class="filled">${squares}</g><path class="lines" d="${lines}M0 0H${n}V${n}H0Z"></path></svg>`;
 }
@@ -1088,7 +1292,7 @@ function focusHeading() { $(HEADINGS[document.querySelector(".screen.active").id
 function show(id) {
   document.querySelectorAll(".screen").forEach(s => s.classList.toggle("active", s.id === id));
   window.scrollTo(0, 0);
-  // the case files can only be measured once their screen is showing
+  // the case rows can only be measured once their screen is showing
   if (id === "select") fitTiles();
   pageTitle();
   // focus left on a control of the screen just hidden would be nowhere
@@ -1104,13 +1308,18 @@ function setBehindModal(open) {
   document.body.classList.toggle("modal-open", open);
 }
 // kind "alert": a short question, read out with its text, entered at its first button. Otherwise a long sheet, entered at its heading.
-function openModal(html, onMount, kind) {
+function openModal(html, onMount, kind, form) {
   // Dialogs replace one another (the rules from the briefing, give up from the rejection). Only the first remembers
   // where focus was: the second would remember a button the first is about to destroy.
   if (!modalOpen()) modalOpener = document.activeElement;
   const m = $("modal");
   m.className = "modal";
-  m.innerHTML = html;
+  // a confirm dialog is a small card over a dimmed ground; everything else is a sheet with a close X that does what
+  // Escape does (D21). The X is first in the markup so it is last to matter: focus never lands on it by position.
+  $("modal-bg").classList.toggle("card", form === "card");
+  m.innerHTML = (form === "card" ? "" : `<button class="btn icon sheet-close" aria-label="Close"><svg viewBox="0 0 16 16" aria-hidden="true">${MARKS.close}</svg></button>`) + html;
+  const x = m.querySelector(".sheet-close");
+  if (x) x.onclick = dismissModal;
   const heading = m.querySelector("h2"), text = kind === "alert" ? document.createElement("div") : null;
   heading.id = "modal-title"; m.setAttribute("aria-labelledby", "modal-title");
   m.setAttribute("role", text ? "alertdialog" : "dialog");
@@ -1123,7 +1332,7 @@ function openModal(html, onMount, kind) {
   $("modal-bg").classList.add("open");
   setBehindModal(true);
   if (onMount) onMount(m);
-  if (text) m.querySelector("button").focus();
+  if (text) (m.querySelector("[data-dismiss]") || m.querySelector("button:not(.sheet-close)")).focus();
   else { heading.tabIndex = -1; heading.focus(); $("modal-bg").scrollTop = 0; }
 }
 function closeModal() {
@@ -1174,17 +1383,13 @@ function showHowTo(onClose, c) {
 
 $("btn-how").onclick = () => showHowTo();
 $("btn-open-cases").onclick = () => { viewOffset = 0; renderDay(); show("select"); };
-$("btn-back-title").onclick = () => show("title");
 $("btn-back-cases").onclick = () => { stopTimer(); backToDay(); };
-$("btn-day-today").onclick = () => { viewOffset = 0; renderDay(); };
-$("btn-day-yesterday").onclick = () => { viewOffset = 1; renderDay(); };
 
 let viewOffset = 0;  // 0 = today, 1 = yesterday
 
 let shownDay = 0;
 function showNextCases() {
-  $("next-cases").textContent = TEST_DAY ? "" : `New cases in ${nextCasesIn(new Date())}. The day turns at midnight Eastern for everyone.`;
-  // on a phone, at the head of the strip of days: the only notice of when yesterday's cases go
+  // at the head of the strip of days: the only notice of when yesterday's cases go
   $("next-phone").textContent = TEST_DAY ? "" : `New cases in ${nextCasesIn(new Date())}`;
 }
 // A day in the strip is named by its letter and its date: "M 12".
@@ -1192,7 +1397,19 @@ function weekCaption(n) { const date = dateOfDay(n); return `${WEEKDAYS[date.get
 // The last seven days: today first, at the left, and the days before it following in order, since a row is read from
 // the left and the day the player is on is where it starts (Scott, 2026-10-12). The cells are built when the day changes and brought up to date in place
 // every other time, so a cell that was pressed is still there to hold focus. Only classes and attributes are set.
-function renderWeek(today, shown) {
+// How a day reads from the results kept of it, for the strip and later the Archive (features/Visuals.md, D16 and D22):
+// every case solved while the day was open; begun (a result, a board in progress on a day still open, or every case
+// solved but one of them late: a late solve is kept and counted, and the day is not complete); finished with a case
+// given up; still open and untouched; gone by untouched, which is locked, not merely missed, since the Archive is where
+// its cases will be offered (Scott, 2026-10-12); or not a day of the game.
+function dayLook(n, today, snapshot) {
+  const got = snapshot.filter(o => o.day === n), solved = got.filter(o => !o.result.gaveUp).length, cases = got.length ? got[0].n : TIERS.length;
+  const open = dayOpen(n, today), late = got.some(o => o.result.late === true);
+  const begun = got.length > 0 || (open && TIERS.some(t => store.progress(n, t.id) != null));
+  const look = n < 1 ? "off" : solved === cases ? (late ? "part" : "done") : got.length === cases ? "gaveup" : begun ? "part" : open ? "none" : "locked";
+  return { look, solved, cases };
+}
+function renderWeek(today, shown, all = store.outcomes()) {
   const box = $("week-days");
   if (+box.dataset.today !== today) {
     box.innerHTML = "";
@@ -1206,18 +1423,12 @@ function renderWeek(today, shown) {
     }
     box.dataset.today = today;
   }
-  // one reading of everything stored serves all seven cells
-  const all = store.outcomes();
+  // one reading of everything stored serves all seven cells, and Home's streak figure with them
   [...box.children].forEach(wrap => {
     const n = +wrap.dataset.day, cell = wrap.lastChild, open = dayOpen(n, today), date = dateOfDay(n);
-    const got = all.filter(o => o.day === n), solved = got.filter(o => !o.result.gaveUp).length, cases = got.length ? got[0].n : TIERS.length;
-    // a board in progress counts for a day that can still be played; of an older day nothing of it is kept
-    const begun = got.length > 0 || (open && TIERS.some(t => store.progress(n, t.id) != null));
-    // A day that can no longer be played and was never touched is locked, not merely missed: the Archive is where its
-    // cases will be offered (Scott, 2026-10-12). Today and yesterday, untouched, are still there to be played.
-    const look = n < 1 ? "off" : solved === cases ? "done" : begun ? "part" : open ? "none" : "locked";
+    const { look, solved, cases } = dayLook(n, today, all);
     wrap.className = "week-day" + (n === today ? " today" : open ? " open" : "") + (n === shown ? " shown" : "");
-    if (cell.dataset.look !== look) { cell.dataset.look = look; cell.innerHTML = { done: mark("check"), part: mark("half"), none: mark("ring"), locked: mark("lock"), off: "" }[look]; }
+    if (cell.dataset.look !== look) { cell.dataset.look = look; cell.innerHTML = { done: mark("check"), part: mark("dot"), none: "", gaveup: mark("dash"), locked: mark("lock"), off: "" }[look]; }
     if (open) {
       cell.setAttribute("aria-pressed", String(n === shown));
       cell.setAttribute("aria-label", `${WEEKDAYS[date.getUTCDay()]} ${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]}, ${n === today ? "today" : "yesterday"}, ${solved} of ${cases} solved`);
@@ -1239,95 +1450,83 @@ function renderDay() {
   store.prune(today);
   if (today === 1) viewOffset = 0;
   const day = today - viewOffset;
-  $("day-kicker").textContent = `The Inspector's Desk · Day ${day}${TEST_DAY ? " · test day" : ""}`;
   const date = dateOfDay(day);
   $("day-date").textContent = `${WEEKDAYS[date.getUTCDay()]}, ${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]}${TEST_DAY ? " · test day" : ""}`;
   $("day-heading").textContent = viewOffset ? "Yesterday's Cases" : "Today's Cases";
   pageTitle();
   shownDay = today;
   showNextCases();
-  $("day-switch").hidden = today === 1;
-  $("btn-day-today").setAttribute("aria-pressed", String(viewOffset === 0));
-  $("btn-day-yesterday").setAttribute("aria-pressed", String(viewOffset === 1));
+  // the streak on Home (D1): the handoff's large figure, and nothing at zero; it is worked out, never stored
+  const all = store.outcomes(), run = streak(today, all).current;
+  $("streak-figure").hidden = run === 0;
+  $("streak-figure").firstChild.textContent = run;
   const grid = $("case-grid"); grid.innerHTML = "";
-  // Each card is written in both its forms, the wide card's and the phone's case file, and the stylesheet shows one:
-  // nothing here asks which screen it is. The phone's file is a picture of the board with its status, the title, the story
-  // and a bar that says what a press does (features/HomeScreen.md, 4.2).
-  let solved = 0;
+  // A case is a row at every width: the tier's tile with a picture of the board, the label, the title, how the case
+  // stands and what a press does (features/Visuals.md, D3 and D12; 9.4). Nothing here asks which screen it is.
+  let solved = 0, firstOpen = true;
   TIERS.forEach(t => {
     const c = puzzleFor(t.id, day);
     const done = store.result(day, t.id);
     if (done && !done.gaveUp) solved++;
     // the row is shown only when opening the case would really bring a board back
     const going = done ? null : readProgress(c, new Board(c), day);
-    const card = el("button", "case-card" + (done ? " done" : ""));
+    const card = el("button", "case-card");
     const kind = done ? (done.gaveUp ? "gaveup" : "solved") : going ? "going" : "new";
     const placed = going ? going.pos.filter(Boolean).length : 0, people = c.suspects.length + 1;
     const filled = kind === "solved" ? c.n * c.n : Math.round(c.n * c.n * placed / people);
     const status = { new: mark("ring") + "<span>Unsolved</span>", going: mark("half") + `<span>${placed} of ${people} placed</span>`, gaveup: mark("dash") + "<span>Given up</span>" }[kind] ||
       mark("check") + `<span>Solved <span class="when">${fmtTime(asCount(done.time))}</span></span>`;
-    const bar = { new: ["play", "Play"], going: ["resume", "Resume"] }[kind] || ["result", "View result"];
+    // the first case not yet begun carries the one filled pill on the screen; a Resume is outlined (D11, D12, screen 01)
+    const bar = { new: ["play" + (firstOpen ? " primary" : ""), "Play"], going: ["resume", "Resume"], gaveup: ["result", "Result"] }[kind] || ["check", mark("check")];
+    if (kind === "new") firstOpen = false;
     card.dataset.state = kind;
-    const tags = [`${c.suspects.length} suspects`];
-    if (c.twist) tags.push(`Local rule: ${c.twist.title}`);
-    const blurb = c.intro.split(". ").slice(0, 2).join(". ").replace(/\.$/, "") + ".";
+    card.dataset.tier = t.id;
     card.innerHTML = `
-      <div class="tab"><span>${esc(t.label)}</span><span>${c.n}×${c.n}</span></div>
       <div class="body">
-        <div class="file-top">${fileGrid(c.n, filled)}<div class="file-status">${status}</div></div>
-        ${c.twist ? `<div class="tile-rule">${esc(c.twist.title)}</div>` : ""}
+        <div class="row-tile">${fileGrid(c.n, filled)}</div>
+        <div class="row-label">${esc(t.label)} · ${c.n}×${c.n}</div>
         <h3>${esc(c.title)}</h3>
-        <div class="meta">${esc(c.date)}</div>
-        <div class="blurb">${esc(blurb)}</div>
-        <div class="story"><div class="story-text">${esc(c.intro)}</div></div>
-        <div class="tags">${tags.map(tag => `<span class="tag">${esc(tag)}</span>`).join("")}</div>
-        ${going ? `<div class="in-progress">In progress · ${fmtTime(going.elapsed)}</div>` : ""}
+        <div class="file-status">${status}${c.twist ? `<span class="tile-rule">${esc(c.twist.title)}</span>` : ""}</div>
         <span class="file-bar ${bar[0]}">${bar[1]}</span>
-      </div>
-      ${done ? `<div class="stamp">${done.gaveUp ? "GIVEN UP" : "SOLVED · " + fmtTime(asCount(done.time))}</div>` : ""}`;
+      </div>`;
     // what a press does is decided when it happens: a case finished meanwhile, in another tab, shows its result
     card.onclick = () => store.result(day, t.id) ? showResult(day, t.id) : startCase(c, day);
     grid.appendChild(card);
   });
-  $("day-count").innerHTML = (solved === TIERS.length ? mark("check") : "") + `${solved} of ${TIERS.length} solved`;
-  $("day-count").classList.toggle("all", solved === TIERS.length);
-  renderWeek(today, day);
+  // The progress line (D2): the segments and the count; on a finished day that is still open the line is the button to
+  // the day's Scorecard. The count keeps its id in either form, and its check once every case is solved.
+  const ready = scorecardReady(day), everySolved = solved === TIERS.length;
+  const line = el(ready ? "button" : "div", "progress", `<span class="segments" aria-hidden="true">${TIERS.map((t, i) => `<i${i < solved ? ' class="on"' : ""}></i>`).join("")}</span>` +
+    `<span id="day-count"${everySolved ? ' class="all"' : ""}>${everySolved ? mark("check") : ""}${solved} of ${TIERS.length} solved</span>` + (ready ? `<svg class="chevron" viewBox="0 0 16 16" aria-hidden="true">${MARKS.chevron}</svg>` : ""));
+  if (ready) { line.id = "btn-scorecard"; line.onclick = () => showScorecard(day, true); }
+  $("progress-row").replaceChildren(line);
+  renderWeek(today, day, all);
   fitTiles();
 }
 
-// On a phone a case file's title is two lines at most and its story ends at a whole line, and both depend on the size the
-// file was given: they are measured here, once the files are laid out. On a wide screen neither is shown and nothing is done.
+// A case row's title is two lines at most and never cut (D18), which depends on the width the row was given: it is
+// measured here, once the rows are laid out, and steps down a size where it must.
 const TITLE_STEPS = ["smaller", "smallest"];
 function fitTiles() {
-  const stories = [...document.querySelectorAll("#case-grid .story")];
-  stories.forEach(story => {
-    story.firstChild.style.webkitLineClamp = "";
-    story.classList.remove("none");
-    story.parentNode.querySelector("h3").classList.remove(...TITLE_STEPS);
-  });
-  if (!stories.length || !stories[0].offsetParent) return;
-  stories.forEach(story => {
-    const title = story.parentNode.querySelector("h3");
+  const titles = [...document.querySelectorAll("#case-grid .case-card h3")];
+  titles.forEach(title => title.classList.remove(...TITLE_STEPS));
+  if (!titles.length || !titles[0].offsetParent) return;
+  titles.forEach(title => {
     const twoLines = () => title.offsetHeight <= 2 * parseFloat(getComputedStyle(title).lineHeight) + 1;
     TITLE_STEPS.forEach(step => { if (!twoLines()) { title.classList.remove(...TITLE_STEPS); title.classList.add(step); } });
-  });
-  // read every file before any is written, so the four are measured in one layout
-  const lines = stories.map(story => Math.floor(story.clientHeight / parseFloat(getComputedStyle(story.firstChild).lineHeight)));
-  stories.forEach((story, at) => {
-    // a single line of a story says nothing: under two lines the room is left empty
-    if (lines[at] < 2) story.classList.add("none"); else story.firstChild.style.webkitLineClamp = lines[at];
   });
 }
 
 // Returns to the day the current puzzle belongs to; a puzzle left open for days falls back to yesterday.
-function backToDay() {
+function backToDay(toToday) {
   // leaving by Back is an ordinary way to go: the clock is kept to the second
   saveProgress(true);
   // only a case being kept can be the open case: a result looked at here must not forget a case open in another tab
   if (state.keep) store.clearOpen();
   // the player has left the case: a late clock write, as the page is hidden, must not name it the open case again
   state.keep = false;
-  viewOffset = Math.min(1, Math.max(0, currentDay() - state.day));
+  // a case finished after its day had closed goes back to today's cases, not to a day that is no longer offered (D22)
+  viewOffset = toToday ? 0 : Math.min(1, Math.max(0, currentDay() - state.day));
   renderDay();
   show("select");
 }
@@ -1425,6 +1624,7 @@ function enterCase(c, day, kept, keep) {
   state.opened = JSON.stringify(progressRecord());
   if (kept) state.saved = state.opened;
   $("case-name").innerHTML = `${esc(c.title)}<small>${esc(c.subtitle)} · Day ${day}<span class="head-count" id="head-count"></span></small>`;
+  $("game").dataset.tier = c.tier;
   $("timer").textContent = fmtTime(state.elapsed);
   $("tool-mark").setAttribute("aria-pressed", "false");
   $("tool-draft").setAttribute("aria-pressed", "false");
@@ -1630,7 +1830,7 @@ function buildPeople() {
   state.cards = [];
   state.order.forEach((i, at) => {
     const p = state.people[i];
-    const b = el("button", "person" + (p.victim ? " victim-card" : ""));
+    const b = el("button", "person");
     p.color = p.victim ? VICTIM_COLOR : TOKEN_COLORS[(at - 1) % TOKEN_COLORS.length];
     b.innerHTML = `
       <div class="chip" style="background:${p.color}">${initials(p.name)}</div>
@@ -1788,7 +1988,7 @@ $("tool-reset").onclick = () => {
     <div class="row"><button class="btn" data-no data-dismiss>Keep investigating</button><button class="btn primary" data-yes>Clear the board</button></div>`, m => {
     m.querySelector("[data-no]").onclick = closeModal;
     m.querySelector("[data-yes]").onclick = () => { snapshot(); clearNotices(); state.pos = state.pos.map(() => null); state.marks.clear(); state.drafts.clear(); state.selected = null; closeModal(); render(); };
-  }, "alert");
+  }, "alert", "card");
 };
 $("tool-briefing").onclick = () => { closeCasebook(); showBriefing(false); };
 $("tool-how").onclick = () => { closeCasebook(); showHowTo(null, state.c); };
@@ -1884,7 +2084,8 @@ function render() {
     card.classList.toggle("placed", !!pos[i]);
     const st = card.querySelector(".state");
     const placing = sel === i && !pos[i];
-    st.textContent = pos[i] ? "Placed" : placing ? "Placing" : "–";
+    // a placed person reads where they were put, in words and never a tick: nothing is checked until Accuse (D13)
+    st.textContent = pos[i] ? c.roomNames[b.room(...pos[i])] : placing ? "Placing" : "–";
     st.className = "state" + (placing ? " placing" : "");
     const tb = state.trayBtns[i], p = people[i];
     tb.classList.toggle("selected", sel === i);
@@ -2010,7 +2211,7 @@ function askForHint() {
     </div>`, m => {
     m.querySelector("[data-no]").onclick = closeModal;
     m.querySelector("[data-yes]").onclick = () => { closeModal(); hint(); };
-  }, "alert");
+  }, "alert", "card");
 }
 
 // ---------------------------------------------------------------- casebook (phone)
@@ -2112,8 +2313,9 @@ function rejectAccusation(o) {
   state.ringed = o ? o.ring : null;
   render();
   openModal(`
+    <div class="rejected-mark" aria-hidden="true"></div>
     <div class="kicker">Accusation rejected</div>
-    <h2>Not quite, Inspector.</h2>
+    <h2 class="verdict-head">Not quite, Inspector.</h2>
     ${o && o.rule ? `<p>The killer was alone with the body: exactly one suspect is in the victim's room.</p><p>${esc(o.detail)}</p>`
       : o ? `<p>One witness would like a word.</p>
     <div class="objection"><span class="chip" style="background:${p.color}" aria-hidden="true">${initials(p.name)}</span>
@@ -2129,18 +2331,31 @@ function rejectAccusation(o) {
   }, "alert");
 }
 
+// What revealing would do to the streak, said only when it would lower it: the streak now against the streak with this
+// case given up, from the same reading. A replay and a result being looked at record nothing, so they say nothing.
+function revealCost() {
+  const { c } = state;
+  if (!state.keep || state.viewing || store.result(state.day, c.tier)) return "";
+  const today = currentDay(), snapshot = store.outcomes(), same = snapshot.find(o => o.day === state.day);
+  const now = streak(today, snapshot).current;
+  const then = streak(today, [...snapshot, { day: state.day, tier: c.tier, caseId: c.id, n: same ? same.n : TIERS.length, result: { gaveUp: true } }]).current;
+  if (then >= now) return "";
+  return then === 0 ? `<p>This ends your streak of ${dayCount(now)}.</p>` : `<p>This takes your streak from ${dayCount(now)} to ${dayCount(then)}.</p>`;
+}
+
 function confirmGiveUp(onCancel) {
   openModal(`
     <div class="kicker">Close the file?</div>
     <h2>Give up this case?</h2>
     <p>The Inspector will show you where everyone was and who did it. Today's case will be recorded as given up, not solved.</p>
+    ${revealCost()}
     <div class="row">
       <button class="btn" data-no data-dismiss>Keep investigating</button>
       <button class="btn primary" data-yes>Reveal the killer</button>
     </div>`, m => {
     m.querySelector("[data-no]").onclick = onCancel;
     m.querySelector("[data-yes]").onclick = giveUp;
-  }, "alert");
+  }, "alert", "card");
 }
 
 // a daily result is the first outcome; replaying a case never changes it
@@ -2185,40 +2400,52 @@ function showVerdict() {
   const scene = roomRef(c.roomNames[state.board.room(...c.solution[0])]);
   // A result being looked at offers no next case: the way on is back to the cases, or the case again while its day is open.
   const next = state.viewing ? null : TIERS.find(t => !store.result(state.day, t.id));
+  // the day's Scorecard is offered where the next case would be, once there is none, and on any result looked at then
+  const card = !next && scorecardReady(state.day);
   const today = currentDay(), again = !!state.viewing && dayOpen(state.day, today), arrives = `${nextCasesIn(new Date())}, at midnight Eastern.`;
-  const fine = !state.viewing ? `${next ? "" : "That is every case for this day. "}The next body arrives in ${arrives}`
+  // A case finished after its day had closed (D22): the result is kept, the day is not counted as complete, no next case
+  // is offered from a day no longer open, and the way back lands on today's cases.
+  const late = !state.viewing && !dayOpen(state.day, today);
+  const fine = late ? "Finished after its day had closed. The result is kept; the day is not counted as complete."
+    : !state.viewing ? `${next ? "" : "That is every case for this day. "}The next body arrives in ${arrives}`
     : state.day === today ? `The next body arrives in ${arrives}` : again ? `Yesterday's cases close in ${arrives}` : "This day's cases are closed.";
   const role = k.role.replace(/^The\s+/i, "");
+  // the third cell: the day's cases solved, this one counted, under the day's name (D6)
+  const solvedToday = TIERS.filter(t => { const r = store.result(state.day, t.id); return r && !r.gaveUp; }).length;
   openModal(`
-    <div class="stamp-closed" id="modal-stamp">${state.gaveUp ? "Case abandoned" : "Case closed"} · ${fmtTime(state.elapsed)}</div>
-    <div class="kicker">${esc(c.title)} · Verdict</div>
-    ${state.gaveUp ? "" : `<div class="solved-check" aria-hidden="true"><i class="seal"></i><span>Solved</span></div>`}
-    ${state.gaveUp ? "" : `<p class="accused" id="modal-accused">You accused ${esc(k.short)}.</p>`}
+    <div class="verdict-tile" data-tier="${c.tier}" aria-hidden="true">${fileGrid(c.n, 0)}${state.gaveUp ? "" : `<div class="solved-check"><i class="seal"></i><span>Solved</span></div>`}</div>
+    <div class="stamp-closed" id="modal-stamp">${state.gaveUp ? "Case abandoned" : "Case closed"} · ${esc(c.title)}</div>
     <h2 class="verdict-head">The ${esc(/^[A-Z][a-z]/.test(role) ? role[0].toLowerCase() + role.slice(1) : role)} did it.</h2>
+    ${state.gaveUp ? "" : `<p class="accused" id="modal-accused">You accused ${esc(k.short)}.</p>`}
     <p>${esc(k.short)} was the only soul in ${esc(scene)} with ${esc(c.victim.short)}. <i>${esc(c.motives[c.killer - 1])}</i></p>
     <dl class="stats">
       <div><dt>Time</dt><dd>${fmtTime(state.elapsed)}</dd></div>
       <div><dt>Hint</dt><dd>${state.hints ? "Used" : "None"}</dd></div>
-      <div><dt>False starts</dt><dd>${state.falseStarts}</dd></div>
+      <div><dt>${state.day === today ? "Today" : state.day === today - 1 ? "Yesterday" : WEEKDAYS[dateOfDay(state.day).getUTCDay()]}</dt><dd>${solvedToday} of ${TIERS.length}</dd></div>
     </dl>
-    <div class="row">
-      <button class="btn${state.viewing ? " primary" : ""}" data-files>All cases</button>
-      ${next ? `<button class="btn primary" data-next>Next case: ${esc(next.label)} →</button>` : ""}
+    <div class="row verdict-row">
       ${again ? `<button class="btn" data-again>Play again</button>` : ""}
+      ${card && state.viewing ? `<button class="btn" data-card>Scorecard</button>` : ""}
+      <button class="btn${state.viewing || late ? " primary" : ""}${again && card ? " under" : ""}" data-files>All cases</button>
+      ${next && !late ? `<button class="btn primary" data-next>Next case: ${esc(next.label)}</button>` : ""}
+      ${card && !state.viewing ? `<button class="btn primary" data-card>Scorecard</button>` : ""}
     </div>
     <p class="fine">${fine}</p>`, m => {
-    // focus lands on the heading, below the stamp: without this a solved case and an abandoned one sound the same on opening
+    // focus lands on the heading, below the label: without this a solved case and an abandoned one sound the same on opening
     m.setAttribute("aria-describedby", state.gaveUp ? "modal-stamp" : "modal-stamp modal-accused");
-    m.querySelector("[data-files]").onclick = () => { closeModal(); backToDay(); };
+    m.querySelector("[data-files]").onclick = () => { closeModal(); backToDay(late); };
     const nx = m.querySelector("[data-next]");
     if (nx) nx.onclick = () => { closeModal(); startCase(puzzleFor(next.id, state.day), state.day); };
     // a replay, which is never saved and never changes the result; a sheet left open past its day goes back to the cases
     const ag = m.querySelector("[data-again]");
     if (ag) ag.onclick = () => { closeModal(); if (dayOpen(state.day, currentDay())) startCase(state.c, state.day); else backToDay(); };
+    // it takes this sheet's place; a sheet left open past its day goes back to the cases, as showScorecard does for itself
+    const sc = m.querySelector("[data-card]");
+    if (sc) sc.onclick = () => showScorecard(state.day);
   });
 }
 
-// What is measured against the room the screen has: the stories of the day's case files, and a case's board and clue panel.
+// What is measured against the room the screen has: the titles of the day's case rows, and a case's board and clue panel.
 function refit() {
   if ($("select").classList.contains("active")) fitTiles();
   if (!state || !$("game").classList.contains("active")) return;
@@ -2229,8 +2456,7 @@ function refit() {
 window.addEventListener("resize", refit);
 // The room can change with no resize at all. In the app the page is first laid out before the phone has told it its
 // insets, and a screen that opens as the page loads (the day's cases, or a case that was open) is measured in that
-// moment, for more room than there is. A story's box cannot outgrow its file, so nothing runs off the screen meanwhile,
-// but its words would be cut part way down a line. The probe's height is the room: when it changes, all is measured again.
+// moment, for more room than there is. The probe's height is the room: when it changes, all is measured again.
 if (window.ResizeObserver) new ResizeObserver(refit).observe($("vh-probe"));
 // the game's faces arrive after the first drawing and set wider than the fallback: a title may then take another line
 document.fonts.ready.then(() => { if ($("select").classList.contains("active")) fitTiles(); }).catch(() => {});
