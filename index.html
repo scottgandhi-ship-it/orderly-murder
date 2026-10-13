@@ -321,6 +321,7 @@ body.modal-open { overflow: hidden; }
 .stats dd { margin: 0; font-family: var(--title); font-weight: 400; font-size: 34px; line-height: 1; color: var(--fg); white-space: nowrap; }
 .stats dt { font-size: var(--t-status); line-height: 1.2; color: var(--fg-2); }
 .modal .fine { font-size: var(--t-status); line-height: 1.4; color: var(--fg-2); text-align: center; margin: 12px 0 0; }
+.modal .verdict-speed { font-size: var(--t-status); line-height: 1.4; color: var(--fg-2); text-align: center; margin: 8px 0 0; }
 /* The day's Scorecard (features/Visuals.md, section 5): a white card, a row a case with a hairline between, told by a mark
    and a word, never by colour alone; the big day circle above the label; the lead as the sheet's heading. */
 /* 12px under the circle, not the verdict tile's 20: a sheet's button is 52px tall (9.1), and the card is held to one screen at 375 by 721 */
@@ -344,8 +345,13 @@ body.modal-open { overflow: hidden; }
 .scorecard .mark { flex: none; width: 14px; height: 14px; color: var(--fg-2); }
 .scorecard .word { font-weight: 500; font-size: var(--t-status); color: var(--fg-2); white-space: nowrap; }
 .scorecard li.solved .mark, .scorecard li.solved .word { color: var(--good); }
-/* a time pushed to a line of its own, on the narrowest screens, stays at the right */
-.scorecard .time { min-width: 3.4em; margin-left: auto; text-align: right; font-family: var(--title); font-size: 24px; line-height: 1; color: var(--fg); white-space: nowrap; }
+/* The time and, under it, the words on the time beside the player's usual (features/PersonalBest.md, section 5) are one
+   block: pushed to a line of its own, on the narrowest screens, it stays at the right and the words go with the time. */
+.scorecard .clock { display: flex; flex-direction: column; align-items: flex-end; margin-left: auto; }
+.scorecard .time { min-width: 3.4em; text-align: right; font-family: var(--title); font-size: 24px; line-height: 1; color: var(--fg); white-space: nowrap; }
+/* said in words alone: slower is in the same ink as faster, and the fastest yet is told by its weight and the time's ink */
+.scorecard .speed { font-family: var(--ui); font-size: var(--t-label); line-height: 14px; color: var(--fg-2); white-space: nowrap; }
+.scorecard .speed.best { font-weight: 500; color: var(--fg); }
 .modal .streak-line { font-size: var(--t-body); }
 /* on a phone under 700px tall the Scorecard takes the handoff's smaller sizes (D19): 52px rows and a 56px circle; if it still does not fit, the ground scrolls with All cases in reach */
 @media (max-height: 699px) {
@@ -355,6 +361,14 @@ body.modal-open { overflow: hidden; }
   .scorecard .row-tile { width: 36px; height: 36px; border-radius: 8px; }
   .scorecard .tier { font-size: 19px; }
   .modal h2.verdict-head { margin: 8px 0 6px; }
+}
+/* Under 383px wide the full-size row has no room for the Daily Starter's name beside its time, and the time fell to a
+   line of its own; with the words under it that row would be 14px taller and the card longer than a 375 by 721 screen.
+   The rows there take the smaller size, which from 375 wide holds the name, the time and its words on one line. */
+@media (max-width: 382px) {
+  .scorecard li { min-height: 52px; padding: 6px 0; }
+  .scorecard .row-tile { width: 36px; height: 36px; border-radius: 8px; }
+  .scorecard .tier { font-size: 19px; }
 }
 .modal .streak-line b { font-weight: 600; }
 /* at twice the text size the heading's longest word is wider than the sheet */
@@ -526,7 +540,7 @@ button.soon-tile:focus-visible { outline: 3px solid var(--ring); outline-offset:
 /* a tab a tier: the pressed one is a toggle that is on (D17), and is not the screen's filled button */
 #stats-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; flex: none; }
 .stat-tab { min-width: 0; padding: 0 6px; font-size: var(--t-status); letter-spacing: .1em; text-transform: uppercase; }
-/* BEST and AVERAGE side by side, their figures on one baseline; the serif has no bold, so the best is told by its size */
+/* BEST and USUAL side by side, their figures on one baseline; the serif has no bold, so the best is told by its size */
 #stats-figures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(3, auto); grid-auto-flow: column; gap: 2px 8px; flex: none; margin-top: 16px; }
 #stats-figures .kicker { line-height: 16px; }
 .stat-fig { align-self: baseline; font-family: var(--title); font-size: 48px; line-height: 52px; color: var(--fg); }
@@ -539,7 +553,7 @@ button.soon-tile:focus-visible { outline: 3px solid var(--ring); outline-offset:
 .avg-key { display: inline-flex; align-items: center; gap: 6px; }
 .avg-key svg { flex: none; width: 16px; height: 4px; }
 /* The graph is drawn by the script at the box's own width, so its words are 12px as drawn. Every colour in it is a class
-   reading a token: a bar in its tier's colour, the best in ink, nothing written on a bar. The average is ink dashes over
+   reading a token: a bar in its tier's colour, the best in ink, nothing written on a bar. The usual is ink dashes over
    a wider white stroke, which keeps an edge on the ink bar; a time has a halo of the page so the line never runs through it. */
 #stats-graph { position: relative; flex: none; height: 300px; }
 @media (max-height: 595px) { #stats-graph { height: 184px; } }
@@ -872,10 +886,10 @@ button.soon-tile:focus-visible { outline: 3px solid var(--ring); outline-offset:
   <div id="stats-tabs"></div>
   <div id="stats-figures">
     <div class="kicker">Best</div><div class="stat-fig" id="stats-best"></div><div class="stat-under" id="stats-best-when"></div>
-    <div class="kicker">Average</div><div class="stat-fig avg" id="stats-average"></div><div class="stat-under" id="stats-solves"></div>
+    <div class="kicker">Usual</div><div class="stat-fig avg" id="stats-average"></div><div class="stat-under" id="stats-solves"></div>
   </div>
   <div class="stats-rule"></div>
-  <div class="graph-head"><span class="kicker" id="stats-graph-label"></span><span class="kicker avg-key"><svg viewBox="0 0 16 4" aria-hidden="true"><path class="g-avg" d="M0 2H16"></path></svg>average</span></div>
+  <div class="graph-head"><span class="kicker" id="stats-graph-label"></span><span class="kicker avg-key"><svg viewBox="0 0 16 4" aria-hidden="true"><path class="g-avg" d="M0 2H16"></path></svg>usual</span></div>
   <div id="stats-graph"></div>
 </section>
 
@@ -1383,7 +1397,9 @@ function showScorecard(day, fromHome) {
   const snapshot = store.outcomes(), words = scorecardWords(day, today, snapshot), date = dateOfDay(day);
   const rows = TIERS.map(t => {
     const r = (snapshot.find(o => o.day === day && o.tier === t.id) || { result: store.result(day, t.id) }).result;
-    return `<li data-tier="${t.id}" class="${r.gaveUp ? "gaveup" : "solved"}"><span class="row-tile" aria-hidden="true">${fileGrid(t.n, 0)}</span><span class="tier">${esc(t.label)}<small>${t.n}×${t.n}</small></span>${mark(r.gaveUp ? "dash" : "check")}<span class="word">${r.gaveUp ? "Given up" : "Solved"}</span><span class="time">${r.gaveUp ? "" : fmtTime(asCount(r.time))}</span></li>`;
+    // the time beside the player's usual for the tier, as the case's verdict said it; a case given up has none
+    const speed = r.gaveUp ? null : speedWords(snapshot, t.id, day, r.time);
+    return `<li data-tier="${t.id}" class="${r.gaveUp ? "gaveup" : "solved"}"><span class="row-tile" aria-hidden="true">${fileGrid(t.n, 0)}</span><span class="tier">${esc(t.label)}<small>${t.n}×${t.n}</small></span>${mark(r.gaveUp ? "dash" : "check")}<span class="word">${r.gaveUp ? "Given up" : "Solved"}</span><span class="clock"><span class="time">${r.gaveUp ? "" : fmtTime(asCount(r.time))}</span>${speed ? `<span class="speed${speed.state === "best" ? " best" : ""}">${esc(speed.row)}</span>` : ""}</span></li>`;
   }).join("");
   const arrives = `${nextCasesIn(new Date())}, at midnight Eastern.`, done = words.solved === words.cases;
   // the lead is the sheet's heading, so the sheet's name is the lead; the stamp's words live in the circle and the rows
@@ -1401,6 +1417,34 @@ function showScorecard(day, fromHome) {
     m.classList.add("scorecard-sheet");
     m.querySelector("[data-files]").onclick = () => { closeModal(); if (!fromHome) backToDay(); };
   });
+}
+
+// ---------------------------------------------------------------- the usual (features/PersonalBest.md, section 3)
+// A solved case's time beside the player's own record for its tier. Nothing of it is stored: both functions read the
+// results they are handed and write nothing. They are function declarations with their figures inside them, so nothing
+// here is read at the top level before the script's last statement.
+// The usual time of a tier as a case of the given day meets it: the mean, to the second, of the last ten solves Stats
+// counts on days before that day. The case's own day and later days are left out, so a day's figures read the same
+// whenever they are shown. With fewer than three there is no usual.
+function usualTime(snapshot, tier, day) {
+  const last = statSolves(snapshot).filter(s => s.tier === tier && s.day < day).slice(-10);
+  return last.length < 3 ? null : Math.round(last.reduce((sum, s) => sum + s.time, 0) / last.length);
+}
+// What is said of a solved case's time, for the verdict and for a Scorecard row, or null where nothing is said: with no
+// usual, and for a time under 1, which a damaged result reads as and which must never stand as the fastest.
+function speedWords(snapshot, tier, day, time) {
+  const usual = usualTime(snapshot, tier, day);
+  if (usual === null || !Number.isInteger(time) || time < 1) return null;
+  const word = tierWord(TIERS.find(t => t.id === tier));
+  // the fastest yet is against every earlier solve in the tier, not the last ten alone; a tie is not one
+  const fastest = Math.min(...statSolves(snapshot).filter(s => s.tier === tier && s.day < day).map(s => s.time));
+  if (time < fastest) return { state: "best", verdict: `Your fastest ${word} yet.`, row: "Fastest yet" };
+  // cases of one tier differ by more than a few percent: inside ten seconds or a tenth of the usual, whichever is more,
+  // the difference is the puzzle's and not the player's
+  const diff = time - usual;
+  if (Math.abs(diff) <= Math.max(10, usual / 10)) return { state: "on", verdict: `Right on your usual ${word}.`, row: "On your usual" };
+  const by = fmtTime(Math.abs(diff)), way = diff < 0 ? "faster" : "slower";
+  return { state: way, verdict: `${by} ${way} than your usual ${word}.`, row: `${by} ${way}` };
 }
 
 // ---------------------------------------------------------------- helpers
@@ -1505,7 +1549,8 @@ function closeModal() {
   else focusHeading();
 }
 // Escape and a click on the backdrop press the dialog's own way out, so whatever that button does (the Starter briefing's
-// starts the clock) is done however the dialog is left. The verdict has none: it closes and leaves the solved board on view.
+// starts the clock) is done however the dialog is left. A verdict has none, and closes to leave the solved board on view;
+// but for the verdict that ends the day, whose way out is the day's Scorecard (features/PersonalBest.md, section 6).
 function dismissModal() {
   const out = $("modal").querySelector("[data-dismiss]");
   if (out) { out.click(); return; }
@@ -1535,6 +1580,7 @@ const howTo = c => { const set = artSet(c).objects, pic = o => artSvg(set[o].sym
   </ol>
   <p class="toolkit"><b>Draft</b> notes where someone might be · <b>Cross out</b> rules a square out · <b>Lens</b> dims every square the selected person's own statement rules out · <b>Hint</b> has the Inspector put one person on their correct square.</p>
   <p class="typed">Every case has exactly one solution, and you can reach it by reasoning alone. Nothing is checked until you accuse.</p>
+  <p>Once you have solved three cases of a size, each new one is set beside your usual time for that size: faster, slower, or your fastest yet.</p>
   <div class="row"><button class="btn primary" data-close data-dismiss>Got it. Show me the body.</button></div>`; };
 
 function showHowTo(onClose, c) {
@@ -1699,7 +1745,7 @@ function fitTiles() {
 }
 
 // ---------------------------------------------------------------- Stats (features/StatsAndArchive.md, section 7)
-// The best time, the average and the last seven solves of a tier, and the streak in one line. Nothing of it is stored:
+// The best time, the usual time and the last seven solves of a tier, and the streak in one line. Nothing of it is stored:
 // each drawing takes one reading of the results and works every figure out from it. Opening the screen or pressing a
 // tab writes no result.
 // a tier's name where the room is a tab's: the Daily Starter is "Starter"
@@ -1734,15 +1780,20 @@ function renderStats(fresh) {
   const mine = solves.filter(s => s.tier === tier);
   // the lowest time; where two tie, the earlier day
   const best = mine.reduce((a, s) => !a || s.time < a.time ? s : a, null);
-  const average = mine.length ? Math.round(mine.reduce((sum, s) => sum + s.time, 0) / mine.length) : 0;
+  // The usual the next case of the tier will meet (features/PersonalBest.md, section 7): the mean of the last ten solves,
+  // today's among them, and none under three. Asked for as of a day past every solve, since Best, the count and the bars
+  // take in a solve on a day later than today as well.
+  const usual = usualTime(snapshot, tier, Math.max(today, ...mine.map(s => s.day)) + 1);
   $("stats-best").textContent = best ? fmtTime(best.time) : "–";
-  $("stats-average").textContent = best ? fmtTime(average) : "–";
-  ["stats-best", "stats-average"].forEach(id => $(id).classList.toggle("none", !best));
+  $("stats-average").textContent = usual === null ? "–" : fmtTime(usual);
+  // each by itself: the best can stand where the usual is still a dash
+  $("stats-best").classList.toggle("none", !best);
+  $("stats-average").classList.toggle("none", usual === null);
   $("stats-best-when").textContent = best ? `${WEEKDAYS[dateOfDay(best.day).getUTCDay()].slice(0, 3)} ${shortDate(best.day)}` : "";
   $("stats-solves").textContent = best ? (mine.length === 1 ? "1 solve" : mine.length + " solves") : "";
   // the heading is fixed and the graph shows what there is (S4)
   $("stats-graph-label").textContent = `Last 7 ${word} cases`;
-  statsDrawn = { bars: mine.slice(-7), best, average, word };
+  statsDrawn = { bars: mine.slice(-7), best, usual, word };
   drawStatsGraph();
 }
 // The graph: seven slots, the most recent solves filling them from the left, each bar in proportion to its time from
@@ -1751,19 +1802,19 @@ function renderStats(fresh) {
 function drawStatsGraph() {
   const box = $("stats-graph"), W = box.clientWidth, H = box.clientHeight;
   if (!statsDrawn || !W) return;
-  const { bars, best, average, word } = statsDrawn, GAP = 6, slot = (W - 6 * GAP) / 7;
+  const { bars, best, usual, word } = statsDrawn, GAP = 6, slot = (W - 6 * GAP) / 7;
   // from the foot: the date 16, a gap of 6, the baseline 1; from the top: a time's 16 and a gap of 4
   const base = H - 23, room = base - 20;
-  // the scale's top is the larger of the tallest bar and the average, so the average line never leaves the graph
-  const top = Math.max(average, ...bars.map(b => b.time)), y = time => base - Math.max(1, Math.round(room * time / top));
+  // the scale's top is the larger of the tallest bar and the usual, so the usual's line never leaves the graph
+  const top = Math.max(usual || 0, ...bars.map(b => b.time)), y = time => base - Math.max(1, Math.round(room * time / top));
   let drawn = "", words = "";
   bars.forEach((b, i) => {
     const x = i * (slot + GAP), mid = (x + slot / 2).toFixed(1), cls = b === best ? " best" : "";
     drawn += `<rect class="g-bar${cls}" x="${x.toFixed(1)}" y="${y(b.time)}" width="${slot.toFixed(1)}" height="${base - y(b.time)}"></rect>`;
     words += `<text class="g-time${cls}" x="${mid}" y="${y(b.time) - 8}" text-anchor="middle">${fmtTime(b.time)}</text><text class="g-date" x="${mid}" y="${H - 4}" text-anchor="middle">${shortDate(b.day)}</text>`;
   });
-  // over the bars and under the words
-  const line = bars.length ? `<path class="g-avg-under" d="M0 ${y(average)}H${W}"></path><path class="g-avg" d="M0 ${y(average)}H${W}"></path>` : `<rect class="g-box" x=".5" y=".5" width="${W - 1}" height="${base - .5}"></rect>`;
+  // the usual's line, over the bars and under the words; there is none until there is a usual
+  const line = !bars.length ? `<rect class="g-box" x=".5" y=".5" width="${W - 1}" height="${base - .5}"></rect>` : usual === null ? "" : `<path class="g-avg-under" d="M0 ${y(usual)}H${W}"></path><path class="g-avg" d="M0 ${y(usual)}H${W}"></path>`;
   box.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${drawn}<rect class="g-base" x="0" y="${base}" width="${W}" height="1"></rect>${line}${words}</svg>` +
     (bars.length ? "" : `<p class="stats-empty">No ${esc(word)} case solved yet.</p>`);
 }
@@ -2731,10 +2782,12 @@ function confirmGiveUp(onCancel) {
 }
 
 // a daily result is the first outcome; replaying a case never changes it
+// It says whether it wrote one: a replay, and a case another tab finished first, end in a verdict like any other, and
+// only this tells them from a result just made.
 function recordResult(gaveUp) {
   const { c } = state;
   // a result being looked at is never recorded again
-  if (state.viewing || store.result(state.day, c.tier)) return;
+  if (state.viewing || store.result(state.day, c.tier)) return false;
   // wrong: the count of wrong names from when the killer was picked from a list; kept so older results read the same
   const result = { time: state.elapsed, hints: state.hints, lens: state.lensUses, wrong: 0, falseStarts: state.falseStarts };
   if (gaveUp) result.gaveUp = true;
@@ -2742,6 +2795,7 @@ function recordResult(gaveUp) {
   // on its day, and anything that counts days played in turn must be able to tell.
   if (!dayOpen(state.day, currentDay())) result.late = true;
   store.record(state.day, c.tier, result);
+  return true;
 }
 
 function giveUp() {
@@ -2752,21 +2806,23 @@ function giveUp() {
   state.selected = null; state.lens = false;
   state.solved = true; state.gaveUp = true;
   stopTimer();
-  recordResult(true);
+  const recorded = recordResult(true);
   render();
-  showVerdict();
+  showVerdict(recorded);
 }
 
 function closeCase() {
   clearNotices();
   state.solved = true; state.selected = null; state.lens = false;
   stopTimer();
-  recordResult(false);
+  const recorded = recordResult(false);
   render();
-  showVerdict();
+  showVerdict(recorded);
 }
 
-function showVerdict() {
+// recorded: this case's result has just been written. With nothing handed in the sheet is a result looked at, or one
+// that records nothing.
+function showVerdict(recorded) {
   const { c, people } = state;
   const k = people[c.killer];
   const scene = roomRef(c.roomNames[state.board.room(...c.solution[0])]);
@@ -2774,6 +2830,11 @@ function showVerdict() {
   const next = state.viewing ? null : TIERS.find(t => !store.result(state.day, t.id));
   // the day's Scorecard is offered where the next case would be, once there is none, and on any result looked at then
   const card = !next && scorecardReady(state.day);
+  // The verdict that ends the day (features/PersonalBest.md, section 6): the result just written was the day's last. The
+  // Scorecard is then its one button and its way out, so the X, Escape and the ground behind the sheet open the card too.
+  // It happens in the sitting that finished the day and nothing is stored to remember it: a result looked at, a replay
+  // and a case finished late are as they were.
+  const ends = recorded === true && card;
   const today = currentDay(), again = !!state.viewing && dayOpen(state.day, today), arrives = `${nextCasesIn(new Date())}, at midnight Eastern.`;
   // A case finished after its day had closed (D22): the result is kept, the day is not counted as complete, no next case
   // is offered from a day no longer open, and the way back lands on today's cases.
@@ -2784,7 +2845,10 @@ function showVerdict() {
   const role = k.role.replace(/^The\s+/i, "");
   // the third cell: the day's cases solved, this one counted, under the day's name (D6)
   // read from every result kept of the day, held or put away: a result opened from the Archive may be in the log alone
-  const kept = store.outcomes().filter(o => o.day === state.day);
+  const snapshot = store.outcomes(), kept = snapshot.filter(o => o.day === state.day);
+  // the time beside the player's usual for the tier (features/PersonalBest.md, section 4), for the result just made or
+  // the one being looked at, against the solves before its own day. A replay and a case given up have none.
+  const speed = (recorded === true || state.viewing) && !state.gaveUp ? speedWords(snapshot, c.tier, state.day, state.elapsed) : null;
   const solvedToday = kept.filter(o => !o.result.gaveUp).length, casesThen = kept.length ? kept[0].n : TIERS.length;
   openModal(`
     <div class="verdict-tile" data-tier="${c.tier}" aria-hidden="true">${fileGrid(c.n, 0)}${state.gaveUp ? "" : `<div class="solved-check"><i class="seal"></i><span>Solved</span></div>`}</div>
@@ -2797,17 +2861,19 @@ function showVerdict() {
       <div><dt>Hint</dt><dd>${state.hints ? "Used" : "None"}</dd></div>
       <div><dt>${state.day === today ? "Today" : state.day === today - 1 ? "Yesterday" : WEEKDAYS[dateOfDay(state.day).getUTCDay()]}</dt><dd>${solvedToday} of ${casesThen}</dd></div>
     </dl>
+    ${speed ? `<p class="verdict-speed">${esc(speed.verdict)}</p>` : ""}
     <div class="row verdict-row">
       ${again ? `<button class="btn" data-again>Play again</button>` : ""}
       ${card && state.viewing ? `<button class="btn" data-card>Scorecard</button>` : ""}
-      <button class="btn${state.viewing || late ? " primary" : ""}${again && card ? " under" : ""}" data-files>All cases</button>
+      ${ends ? "" : `<button class="btn${state.viewing || late ? " primary" : ""}${again && card ? " under" : ""}" data-files>All cases</button>`}
       ${next && !late ? `<button class="btn primary" data-next>Next case: ${esc(next.label)}</button>` : ""}
-      ${card && !state.viewing ? `<button class="btn primary" data-card>Scorecard</button>` : ""}
+      ${card && !state.viewing ? `<button class="btn primary" data-card${ends ? " data-dismiss" : ""}>Scorecard</button>` : ""}
     </div>
     <p class="fine">${fine}</p>`, m => {
     // focus lands on the heading, below the label: without this a solved case and an abandoned one sound the same on opening
     m.setAttribute("aria-describedby", state.gaveUp ? "modal-stamp" : "modal-stamp modal-accused");
-    m.querySelector("[data-files]").onclick = () => { closeModal(); backToDay(late); };
+    const files = m.querySelector("[data-files]");
+    if (files) files.onclick = () => { closeModal(); backToDay(late); };
     const nx = m.querySelector("[data-next]");
     if (nx) nx.onclick = () => { closeModal(); startCase(puzzleFor(next.id, state.day), state.day, state.from); };
     // a replay, which is never saved and never changes the result; a sheet left open past its day goes back to the cases
