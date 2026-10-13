@@ -349,7 +349,7 @@ body.modal-open { overflow: hidden; }
    block: pushed to a line of its own, on the narrowest screens, it stays at the right and the words go with the time. */
 .scorecard .clock { display: flex; flex-direction: column; align-items: flex-end; margin-left: auto; }
 .scorecard .time { min-width: 3.4em; text-align: right; font-family: var(--title); font-size: 24px; line-height: 1; color: var(--fg); white-space: nowrap; }
-/* said in words alone: slower is in the same ink as faster, and the fastest yet is told by its weight and the time's ink */
+/* said in words alone, and only of a time that beat the usual; the fastest yet is told by its weight and the time's ink */
 .scorecard .speed { font-family: var(--ui); font-size: var(--t-label); line-height: 14px; color: var(--fg-2); white-space: nowrap; }
 .scorecard .speed.best { font-weight: 500; color: var(--fg); }
 .modal .streak-line { font-size: var(--t-body); }
@@ -369,6 +369,13 @@ body.modal-open { overflow: hidden; }
   .scorecard li { min-height: 52px; padding: 6px 0; }
   .scorecard .row-tile { width: 36px; height: 36px; border-radius: 8px; }
   .scorecard .tier { font-size: 19px; }
+}
+/* At 360 wide the smaller row is still 15px short for the Daily Starter. The gaps close to 8px, and the column the time
+   keeps is 76px, the width of the widest words under it, so the results beside it still stand in a column. */
+@media (max-width: 360px) {
+  .scorecard li { column-gap: 8px; }
+  .scorecard .time { min-width: 0; }
+  .scorecard .clock { min-width: 76px; }
 }
 .modal .streak-line b { font-weight: 600; }
 /* at twice the text size the heading's longest word is wider than the sheet */
@@ -1431,7 +1438,9 @@ function usualTime(snapshot, tier, day) {
   return last.length < 3 ? null : Math.round(last.reduce((sum, s) => sum + s.time, 0) / last.length);
 }
 // What is said of a solved case's time, for the verdict and for a Scorecard row, or null where nothing is said: with no
-// usual, and for a time under 1, which a damaged result reads as and which must never stand as the fastest.
+// usual, and for a time under 1, which a damaged result reads as and which must never stand as the fastest. Only a time
+// that beat the usual is spoken of (Scott, 2026-10-13: "No need to kick people when they're down"): a slower time says
+// nothing, and so does one on the usual, since a line kept for it would leave silence meaning slower.
 function speedWords(snapshot, tier, day, time) {
   const usual = usualTime(snapshot, tier, day);
   if (usual === null || !Number.isInteger(time) || time < 1) return null;
@@ -1441,10 +1450,10 @@ function speedWords(snapshot, tier, day, time) {
   if (time < fastest) return { state: "best", verdict: `Your fastest ${word} yet.`, row: "Fastest yet" };
   // cases of one tier differ by more than a few percent: inside ten seconds or a tenth of the usual, whichever is more,
   // the difference is the puzzle's and not the player's
-  const diff = time - usual;
-  if (Math.abs(diff) <= Math.max(10, usual / 10)) return { state: "on", verdict: `Right on your usual ${word}.`, row: "On your usual" };
-  const by = fmtTime(Math.abs(diff)), way = diff < 0 ? "faster" : "slower";
-  return { state: way, verdict: `${by} ${way} than your usual ${word}.`, row: `${by} ${way}` };
+  const gain = usual - time;
+  if (gain <= Math.max(10, usual / 10)) return null;
+  const by = fmtTime(gain);
+  return { state: "faster", verdict: `${by} faster than your usual ${word}.`, row: `${by} faster` };
 }
 
 // ---------------------------------------------------------------- helpers
@@ -1580,7 +1589,7 @@ const howTo = c => { const set = artSet(c).objects, pic = o => artSvg(set[o].sym
   </ol>
   <p class="toolkit"><b>Draft</b> notes where someone might be · <b>Cross out</b> rules a square out · <b>Lens</b> dims every square the selected person's own statement rules out · <b>Hint</b> has the Inspector put one person on their correct square.</p>
   <p class="typed">Every case has exactly one solution, and you can reach it by reasoning alone. Nothing is checked until you accuse.</p>
-  <p>Once you have solved three cases of a size, each new one is set beside your usual time for that size: faster, slower, or your fastest yet.</p>
+  <p>Once you have solved three cases of a size, the game tells you when a new one beats your usual time for that size, and when it is your fastest yet.</p>
   <div class="row"><button class="btn primary" data-close data-dismiss>Got it. Show me the body.</button></div>`; };
 
 function showHowTo(onClose, c) {
@@ -2831,7 +2840,7 @@ function showVerdict(recorded) {
   // the day's Scorecard is offered where the next case would be, once there is none, and on any result looked at then
   const card = !next && scorecardReady(state.day);
   // The verdict that ends the day (features/PersonalBest.md, section 6): the result just written was the day's last. The
-  // Scorecard is then its one button and its way out, so the X, Escape and the ground behind the sheet open the card too.
+  // Scorecard is then its one button and its way out, so Escape and the ground behind the sheet open the card too.
   // It happens in the sitting that finished the day and nothing is stored to remember it: a result looked at, a replay
   // and a case finished late are as they were.
   const ends = recorded === true && card;
@@ -2872,6 +2881,8 @@ function showVerdict(recorded) {
     <p class="fine">${fine}</p>`, m => {
     // focus lands on the heading, below the label: without this a solved case and an abandoned one sound the same on opening
     m.setAttribute("aria-describedby", state.gaveUp ? "modal-stamp" : "modal-stamp modal-accused");
+    // the verdict that ends the day has no X: every way out of it opens the Scorecard, and an X would say it closes
+    if (ends) m.querySelector(".sheet-close").remove();
     const files = m.querySelector("[data-files]");
     if (files) files.onclick = () => { closeModal(); backToDay(late); };
     const nx = m.querySelector("[data-next]");
