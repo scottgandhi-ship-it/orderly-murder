@@ -495,16 +495,13 @@ button.progress:focus-visible { outline: 3px solid var(--ring); outline-offset: 
 /* the day whose cases are on the screen: a bar under its cell */
 .week-day.shown::after { content: ""; position: absolute; left: 4px; right: 4px; bottom: -6px; height: 3px; border-radius: 2px; background: var(--fg); }
 .week-day button.week-cell:focus-visible { outline: 3px solid var(--ring); outline-offset: -2px; }
-/* The two tiles under the strip. One whose screen is not here yet (D5) is words alone, with a SOON chip so that it does
-   not read as live; one whose screen is built is the same tile as a button, without the chip. The rule serves both. */
+/* The two tiles under the strip, each the button to its screen: the player's Archive and Stats. */
 #soon-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; flex: none; margin-top: 8px; }
 .soon-tile { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0 8px; min-height: 44px; margin: 0; padding: 4px 8px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; font-family: var(--ui); font-weight: 600; font-size: var(--t-btn); line-height: 16px; color: var(--fg); text-align: center; }
 .soon-tile svg { flex: none; width: 16px; height: 16px; color: var(--fg); }
-.soon { padding: 0 6px; border: 1px solid var(--fg-2); border-radius: 999px; font-weight: 600; font-size: var(--t-label); line-height: 16px; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); }
 /* no arrow and no price: an arrow would promise a screen */
 #premium-line { display: block; flex: none; margin: 4px 0 0; font-family: var(--ui); font-size: var(--t-label); line-height: 20px; text-align: center; color: var(--fg-2); }
-/* a tile whose screen is built is a button (features/Visuals.md, 13.3): the same tile without its chip. The ring stands
-   1px off, clear of the Premium line under it */
+/* the ring stands 1px off, clear of the Premium line under it */
 button.soon-tile:focus-visible { outline: 3px solid var(--ring); outline-offset: 1px; }
 
 /* ---------- Stats and the Archive (features/StatsAndArchive.md; features/Visuals.md, 13.3) ----------
@@ -559,6 +556,59 @@ button.soon-tile:focus-visible { outline: 3px solid var(--ring); outline-offset:
 .g-avg { stroke: var(--fg); stroke-width: 2px; }
 /* a tier with no solve yet: the box and the baseline stay, so the tabs do not jump, and the sentence stands in the box */
 .stats-empty { position: absolute; inset: 0 0 23px; display: flex; align-items: center; justify-content: center; margin: 0; padding: 0 12px; font-family: var(--title); font-style: italic; font-size: 15px; line-height: 20px; text-align: center; color: var(--fg-body); }
+/* ---------- the Archive (features/StatsAndArchive.md, section 8; features/Visuals.md, 13.3) ----------
+   A calendar of the player's record in a white card, and under it a card for the chosen day with a row a case. A day's
+   cell carries the strip's looks (dayLook): no two alike in both mark and fill. */
+#archive-card { flex: none; margin-top: 4px; padding-bottom: 4px; background: var(--card); border-radius: 16px; }
+.month-row { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; min-height: 44px; padding: 0 4px; border-bottom: 1px solid var(--line); }
+#archive-month { font-family: var(--ui); font-weight: 600; font-size: 16px; line-height: 20px; text-align: center; color: var(--fg); }
+.month-arrow { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--fg); }
+.month-arrow svg { width: 16px; height: 16px; }
+.month-arrow path { stroke-width: 2.5px; }
+/* an arrow at its end keeps focus and does nothing: a colour and a weight of its own, never the disabled state, which
+   would drop focus, and never opacity */
+.month-arrow[aria-disabled="true"] { color: var(--fg-2); cursor: default; }
+.month-arrow[aria-disabled="true"] path { stroke-width: 1.5px; }
+.month-arrow:focus-visible { outline: 3px solid var(--ring); outline-offset: -3px; }
+.cal-letters, #archive-cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.cal-letters { margin-top: 6px; font-family: var(--ui); font-weight: 600; font-size: var(--t-label); line-height: 16px; text-align: center; color: var(--fg-2); }
+#archive-cal { margin-top: 4px; }
+/* A cell is 48px tall: a 32px circle 2px from its top, the date in the circle's upper half and the day's mark in its
+   lower, and room beneath for today's dot. A day of the game up to today is a button; any other is its number alone. */
+.cal-cell { position: relative; display: block; min-width: 0; height: 48px; padding: 0; border: 0; border-radius: 10px; background: none; font-family: var(--ui); font-weight: 600; font-size: var(--t-label); color: var(--fg); text-align: center; }
+/* a circle, and no wider than its cell: on a phone at twice the size a cell is narrower than 32px, and the circle is then a pill */
+.cal-cell .disc { position: absolute; left: 0; right: 0; top: 2px; width: min(32px, 100%); height: 32px; margin: 0 auto; border-radius: 16px; }
+.cal-cell .num { position: absolute; left: 0; right: 0; top: 3px; line-height: 12px; }
+.cal-cell .mark { position: absolute; left: 50%; top: 17px; width: 12px; height: 12px; margin-left: -6px; }
+.cal-cell.out { font-weight: 400; color: var(--fg-2); }
+/* a ring is drawn inside the circle, so the date and the mark stand where they stand on every look */
+.cal-cell[data-look="done"] .disc { background: var(--fg); color: var(--card); }
+.cal-cell[data-look="part"] .disc { box-shadow: inset 0 0 0 2px var(--fg); }
+.cal-cell:is([data-look="none"], [data-look="gaveup"]) .disc { background: var(--fill-grey); box-shadow: inset 0 0 0 1.5px var(--line-grey); }
+.cal-cell[data-look="locked"] { color: var(--fg-2); }
+/* today's dot beneath, as the strip has it; the chosen day a ring round its circle; focus a ring on the cell's own box,
+   so chosen, today and focused show at once as three marks */
+.cal-cell.today::after { content: ""; position: absolute; left: 50%; top: 40px; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: var(--fg); }
+.cal-cell[aria-pressed="true"] .disc { outline: 2px solid var(--fg); outline-offset: 1px; }
+.cal-cell:focus-visible { outline: 3px solid var(--ring); outline-offset: 0; }
+#archive-line { flex: none; margin: 4px 0; font-family: var(--ui); font-size: var(--t-status); line-height: 20px; text-align: center; color: var(--fg-2); }
+/* the chosen day: its date and number, how it stands, and a row a case in the look of Home's rows at a smaller size */
+#archive-panel { flex: none; padding: 16px 16px 12px; background: var(--card); border-radius: 16px; }
+#archive-panel .kicker { line-height: 16px; }
+.panel-head { margin: 0 0 4px; font-family: var(--title); font-weight: 400; font-size: 26px; line-height: 32px; color: var(--fg); }
+#archive-panel .case-card { flex: none; width: 100%; border-top: 1px solid var(--line); border-radius: 0; background: none; }
+#archive-panel .case-card .body { --tile: 36px; min-height: 48px; padding: 3px 0; column-gap: 10px; }
+#archive-panel .case-card .row-tile { border-radius: 10px; }
+#archive-panel .case-card h3 { font-size: 19px; }
+/* a case of a day gone by that was never finished: words and a lock, not a button */
+.locked-row { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; align-items: center; column-gap: 10px; min-height: 36px; padding: 4px 0; border-top: 1px solid var(--line); color: var(--fg-2); }
+.locked-row .mark { justify-self: center; width: 14px; height: 14px; }
+.locked-row h3 { margin: 0; font-family: var(--title); font-weight: 400; font-size: 19px; line-height: 1.05; overflow-wrap: break-word; }
+.locked-row .word { font-family: var(--ui); font-weight: 600; font-size: var(--t-label); line-height: 16px; letter-spacing: .14em; }
+/* words in a dashed box: no arrow, no price, nothing to press */
+#archive-premium { margin-top: 8px; padding: 8px 12px; border: 1px dashed var(--fg-2); border-radius: 12px; font-family: var(--ui); }
+#archive-premium b { display: block; font-weight: 600; font-size: var(--t-status); line-height: 18px; color: var(--fg); }
+#archive-premium span { display: block; font-size: var(--t-label); line-height: 16px; color: var(--fg-2); }
 @media (max-width: 359px) {
   /* 4px at a tab's sides, not 6: STARTER is 58px of letters, and a tab is 70 wide at 320 */
   .stat-tab { padding: 0 4px; font-size: var(--t-label); letter-spacing: .06em; }
@@ -805,7 +855,7 @@ button.soon-tile:focus-visible { outline: 3px solid var(--ring); outline-offset:
     <div class="week-days" id="week-days"></div>
   </div>
   <div id="soon-row">
-    <div class="soon-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4h11v9.5h-11zM2.5 7.5h11M5.5 2v3.5M10.5 2v3.5" fill="none" stroke="currentColor" stroke-width="1.6"></path></svg><span>Archive</span><span class="soon">Soon</span></div>
+    <button class="soon-tile" id="btn-archive"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4h11v9.5h-11zM2.5 7.5h11M5.5 2v3.5M10.5 2v3.5" fill="none" stroke="currentColor" stroke-width="1.6"></path></svg><span>Archive</span></button>
     <button class="soon-tile" id="btn-stats"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 13.5V8M8 13.5v-11M12.5 13.5V6" fill="none" stroke="currentColor" stroke-width="2"></path></svg><span>Stats</span></button>
   </div>
   <p id="premium-line">Premium · coming soon</p>
@@ -827,6 +877,26 @@ button.soon-tile:focus-visible { outline: 3px solid var(--ring); outline-offset:
   <div class="stats-rule"></div>
   <div class="graph-head"><span class="kicker" id="stats-graph-label"></span><span class="kicker avg-key"><svg viewBox="0 0 16 4" aria-hidden="true"><path class="g-avg" d="M0 2H16"></path></svg>average</span></div>
   <div id="stats-graph"></div>
+</section>
+
+<!-- ============ ARCHIVE ============ -->
+<section id="archive" class="screen record">
+  <div class="record-head">
+    <button class="back-home" id="btn-archive-home"><span class="circle" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>Home</button>
+    <h2 id="archive-heading" tabindex="-1">Archive</h2>
+    <span></span>
+  </div>
+  <div id="archive-card">
+    <div class="month-row">
+      <button class="month-arrow" id="btn-month-prev" aria-label="Previous month"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+      <div id="archive-month"></div>
+      <button class="month-arrow" id="btn-month-next" aria-label="Next month"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+    </div>
+    <div class="cal-letters" aria-hidden="true"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+    <div id="archive-cal"></div>
+  </div>
+  <p id="archive-line">Today and yesterday can be played.</p>
+  <div id="archive-panel"></div>
 </section>
 
 <!-- ============ GAME ============ -->
@@ -1476,11 +1546,18 @@ $("btn-how").onclick = () => showHowTo();
 function showHome() { viewOffset = 0; renderDay(); show("select"); }
 $("btn-open-cases").onclick = showHome;
 $("btn-stats-home").onclick = showHome;
+$("btn-archive-home").onclick = showHome;
+$("btn-archive").onclick = () => { renderArchive(); show("archive"); };
+$("btn-month-prev").onclick = () => turnMonth(-1);
+$("btn-month-next").onclick = () => turnMonth(1);
 // the graph's box can only be measured once its screen is showing, so the screen is shown and then drawn
 $("btn-stats").onclick = () => { show("stats"); renderStats(true); };
 $("btn-back-cases").onclick = () => { stopTimer(); backToDay(); };
 
 let viewOffset = 0;  // 0 = today, 1 = yesterday
+// The Archive's month (a year's twelve and the month, as one number), its chosen day, and the day it was last drawn for.
+// They are not part of a case's state, so they outlast a case opened from the Archive and it comes back where it was left.
+let archiveMonth = null, archiveDay = 0, archiveDrawn = 0;
 // what the Stats graph last drew, kept so that it is drawn again when the room changes without the results being read again
 let statsDrawn = null;
 
@@ -1494,7 +1571,7 @@ function weekCaption(n) { const date = dateOfDay(n); return `${WEEKDAYS[date.get
 // The last seven days: today first, at the left, and the days before it following in order, since a row is read from
 // the left and the day the player is on is where it starts (Scott, 2026-10-12). The cells are built when the day changes and brought up to date in place
 // every other time, so a cell that was pressed is still there to hold focus. Only classes and attributes are set.
-// How a day reads from the results kept of it, for the strip and later the Archive (features/Visuals.md, D16 and D22):
+// How a day reads from the results kept of it, for the strip and the Archive (features/Visuals.md, D16 and D22):
 // every case solved while the day was open; begun (a result, a board in progress on a day still open, or every case
 // solved but one of them late: a late solve is kept and counted, and the day is not complete); finished with a case
 // given up; still open and untouched; gone by untouched, which is locked, not merely missed, since the Archive is where
@@ -1535,12 +1612,20 @@ function renderWeek(today, shown, all = store.outcomes()) {
 // A tab left on this screen keeps its countdown honest and brings in the new cases when the day turns.
 // The cards are only rebuilt when the day has changed, so a keyboard user's place on them is not lost.
 function refreshDayScreen() {
-  if (!$("select").classList.contains("active") || modalOpen()) return;
+  if (modalOpen()) return;
+  // the Archive is drawn again when the day turns, on the month and the day it was showing
+  if ($("archive").classList.contains("active") && currentDay() !== archiveDrawn) renderArchive();
+  if (!$("select").classList.contains("active")) return;
   if (currentDay() !== shownDay) renderDay(); else showNextCases();
 }
 setInterval(refreshDayScreen, 60000);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshDayScreen(); });
 
+// How a case stands, as a row says it on Home and in the Archive (D3): a mark and one of four lines of words.
+function rowStatus(kind, placed, people, result) {
+  return { new: mark("ring") + "<span>Unsolved</span>", going: mark("half") + `<span>${placed} of ${people} placed</span>`, gaveup: mark("dash") + "<span>Given up</span>" }[kind] ||
+    mark("check") + `<span>Solved <span class="when">${fmtTime(asCount(result.time))}</span></span>`;
+}
 // The day is read every time this screen is drawn, so a tab left open past the reset rolls over here.
 function renderDay() {
   const today = currentDay();
@@ -1571,8 +1656,7 @@ function renderDay() {
     const kind = done ? (done.gaveUp ? "gaveup" : "solved") : going ? "going" : "new";
     const placed = going ? going.pos.filter(Boolean).length : 0, people = c.suspects.length + 1;
     const filled = kind === "solved" ? c.n * c.n : Math.round(c.n * c.n * placed / people);
-    const status = { new: mark("ring") + "<span>Unsolved</span>", going: mark("half") + `<span>${placed} of ${people} placed</span>`, gaveup: mark("dash") + "<span>Given up</span>" }[kind] ||
-      mark("check") + `<span>Solved <span class="when">${fmtTime(asCount(done.time))}</span></span>`;
+    const status = rowStatus(kind, placed, people, done);
     // the first case not yet begun carries the one filled pill on the screen; a Resume is outlined (D11, D12, screen 01)
     const bar = { new: ["play" + (firstOpen ? " primary" : ""), "Play"], going: ["resume", "Resume"], gaveup: ["result", "Result"] }[kind] || ["check", mark("check")];
     if (kind === "new") firstOpen = false;
@@ -1684,6 +1768,117 @@ function drawStatsGraph() {
     (bars.length ? "" : `<p class="stats-empty">No ${esc(word)} case solved yet.</p>`);
 }
 
+// ---------------------------------------------------------------- the Archive (features/StatsAndArchive.md, section 8)
+// A calendar of the player's record. A day lists its cases: one with a result opens the result; today's and yesterday's
+// can be played, as from Home; an older case never finished is shown locked. No day older than yesterday can be played
+// by any press here: every way into a case to be played is startCase, which refuses it. Each drawing takes one reading
+// of the results.
+// the day number of a calendar date (month from 0), by dayAt's arithmetic; it may be less than 1 or more than today
+function dayOfDate(year, month, date) {
+  const [y, m, d] = DATA.epoch.split("-").map(Number);
+  return Math.round((Date.UTC(year, month, date) - Date.UTC(y, m - 1, d)) / DAY_MS) + 1;
+}
+function monthOfDay(n) { const date = dateOfDay(n); return date.getUTCFullYear() * 12 + date.getUTCMonth(); }
+function longDate(n) { const date = dateOfDay(n); return `${WEEKDAYS[date.getUTCDay()]} ${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]}`; }
+function renderArchive() {
+  const today = currentDay();
+  // a day that has closed is in the log before it is read, as on Home
+  store.prune(today);
+  // the first time, today and its month; afterwards whatever was left showing, held to the days there are
+  if (archiveDay < 1 || archiveDay > today) archiveDay = today;
+  archiveMonth = archiveMonth === null ? monthOfDay(today) : Math.min(monthOfDay(today), Math.max(monthOfDay(1), archiveMonth));
+  archiveDrawn = today;
+  const snapshot = store.outcomes();
+  drawCalendar(today, snapshot);
+  drawPanel(today, snapshot);
+}
+// the arrows run from the month of day 1 to the month of today; the chosen day and its panel do not change with the month
+function turnMonth(by) {
+  const today = currentDay(), to = archiveMonth + by;
+  if (to < monthOfDay(1) || to > monthOfDay(today)) return;
+  archiveMonth = to;
+  drawCalendar(today, store.outcomes());
+}
+// The cells are built when the month or the day changes and brought up to date in place every other time, so a cell or
+// an arrow that was pressed is still there to hold focus. The first day's column is made by empty cells before it.
+// Only classes and attributes are set.
+function drawCalendar(today, snapshot) {
+  const cal = $("archive-cal"), year = Math.floor(archiveMonth / 12), month = archiveMonth % 12, key = archiveMonth + ":" + today;
+  $("archive-month").textContent = `${MONTHS[month]} ${year}`;
+  $("btn-month-prev").setAttribute("aria-disabled", String(archiveMonth <= monthOfDay(1)));
+  $("btn-month-next").setAttribute("aria-disabled", String(archiveMonth >= monthOfDay(today)));
+  if (cal.dataset.drawn !== key) {
+    cal.innerHTML = "";
+    // Monday first
+    for (let i = (new Date(Date.UTC(year, month, 1)).getUTCDay() + 6) % 7; i > 0; i--) cal.appendChild(el("span"));
+    const last = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+    for (let date = 1; date <= last; date++) {
+      const n = dayOfDate(year, month, date), live = n >= 1 && n <= today;
+      const cell = cal.appendChild(el(live ? "button" : "span", "cal-cell" + (live ? "" : " out") + (n === today ? " today" : ""), `<span class="disc"><span class="num">${date}</span></span>`));
+      if (!live) continue;
+      cell.dataset.day = n;
+      cell.onclick = () => { archiveDay = n; const now = currentDay(), read = store.outcomes(); drawCalendar(now, read); drawPanel(now, read); };
+    }
+    cal.dataset.drawn = key;
+  }
+  cal.querySelectorAll("button.cal-cell").forEach(cell => {
+    const n = +cell.dataset.day, { look, solved, cases } = dayLook(n, today, snapshot);
+    if (cell.dataset.look !== look) {
+      cell.dataset.look = look;
+      cell.querySelector(".mark")?.remove();
+      const drawn = { done: "check", part: "dot", gaveup: "dash", locked: "lock" }[look];
+      if (drawn) cell.firstChild.insertAdjacentHTML("beforeend", mark(drawn));
+    }
+    cell.setAttribute("aria-pressed", String(n === archiveDay));
+    cell.setAttribute("aria-label", `${longDate(n)}, ${n === today ? "today, " : n === today - 1 ? "yesterday, " : ""}${look === "locked" ? "not played, locked" : `${solved} of ${cases} solved`}`);
+  });
+}
+// The chosen day's card. Whether a case has a result is read from the same snapshot as its day's cell, so a row and its
+// cell always agree; a board in progress is decided as Home's row decides it, so Resume is shown only where a board
+// would really come back. A row names the case its result names, wherever the schedule has since put that case.
+function drawPanel(today, snapshot) {
+  const day = archiveDay, open = dayOpen(day, today), got = snapshot.filter(o => o.day === day), { solved, cases } = dayLook(day, today, snapshot);
+  const panel = $("archive-panel");
+  panel.innerHTML = `<div class="kicker">${esc(longDate(day))} · Day ${day}</div><h3 class="panel-head">${!open && !got.length ? `${cases} cases, locked` : `${solved} of ${cases} solved`}</h3>`;
+  let firstOpen = true, locked = false;
+  TIERS.forEach(t => {
+    const entry = got.find(o => o.tier === t.id), c = entry ? caseOf(entry.caseId) : puzzleFor(t.id, day);
+    if (!c) return;
+    if (!entry && !open) {
+      locked = true;
+      panel.appendChild(el("div", "locked-row", `${mark("lock")}<h3>${esc(c.title)}</h3><span class="word">Locked</span>`));
+      return;
+    }
+    const going = entry ? null : readProgress(c, new Board(c), day);
+    const kind = entry ? (entry.result.gaveUp === true ? "gaveup" : "solved") : going ? "going" : "new";
+    const placed = going ? going.pos.filter(Boolean).length : 0, people = c.suspects.length + 1;
+    const filled = kind === "solved" ? c.n * c.n : Math.round(c.n * c.n * placed / people);
+    // the first case not yet begun carries the one filled pill on the screen, as on Home; every other pill is outlined
+    const bar = { new: ["play" + (firstOpen ? " primary" : ""), "Play"], going: ["resume", "Resume"] }[kind] || ["result", "Result"];
+    if (kind === "new") firstOpen = false;
+    const row = el("button", "case-card", `
+      <div class="body">
+        <div class="row-tile">${fileGrid(c.n, filled)}</div>
+        <div class="row-label">${esc(t.label)} · ${c.n}×${c.n}</div>
+        <h3>${esc(c.title)}</h3>
+        <div class="file-status">${rowStatus(kind, placed, people, entry && entry.result)}</div>
+        <span class="file-bar ${bar[0]}">${bar[1]}</span>
+      </div>`);
+    row.dataset.state = kind;
+    row.dataset.tier = t.id;
+    row.setAttribute("aria-label", `${bar[1]}, ${c.title}${entry ? (kind === "solved" ? ", solved" : ", given up") : ""}`);
+    // what a press does is decided when it happens: a case finished meanwhile, in another tab, shows its result
+    row.onclick = () => entry || store.result(day, t.id) ? showResult(day, t.id, "archive") : startCase(c, day, "archive");
+    panel.appendChild(row);
+  });
+  // one element, written by this one line: taking it off for an outside tester is this line (Q3)
+  if (locked) panel.appendChild(el("div", "", "<b>Premium · coming soon</b><span>Nothing to buy yet.</span>")).id = "archive-premium";
+}
+// the screen a case or a result was asked for from, drawn again
+function showFrom(from) {
+  if (from === "archive") { renderArchive(); show("archive"); } else { renderDay(); show("select"); }
+}
+
 // Returns to the day the current puzzle belongs to; a puzzle left open for days falls back to yesterday.
 function backToDay(toToday) {
   // leaving by Back is an ordinary way to go: the clock is kept to the second
@@ -1692,6 +1887,8 @@ function backToDay(toToday) {
   if (state.keep) store.clearOpen();
   // the player has left the case: a late clock write, as the page is hidden, must not name it the open case again
   state.keep = false;
+  // a case or a result opened from the Archive comes back to it, on the month and the day it was left on, late or not
+  if (state.from === "archive") { showFrom("archive"); return; }
   // a case finished after its day had closed goes back to today's cases, not to a day that is no longer offered (D22)
   viewOffset = toToday ? 0 : Math.min(1, Math.max(0, currentDay() - state.day));
   renderDay();
@@ -1769,7 +1966,7 @@ window.addEventListener("pagehide", () => saveProgress(true));
 
 // How a case reaches the screen. A case to be played (startCase) and a result to be looked at (showResult) both come
 // through here, so the two are set up by the same lines and cannot drift apart.
-function enterCase(c, day, kept, keep) {
+function enterCase(c, day, kept, keep, from) {
   const people = [{ ...c.victim, victim: true }, ...c.suspects];
   // shown victim first, then suspects A to Z; everything else keeps the stored order the statements and solution use
   const order = [0, ...people.map((_, i) => i).slice(1).sort((a, b) => people[a].name.localeCompare(people[b].name, "en"))];
@@ -1786,6 +1983,8 @@ function enterCase(c, day, kept, keep) {
     hints: store.hintsUsed(day, c.tier), lensUses: kept ? kept.lensUses : 0, falseStarts: kept ? kept.falseStarts : 0,
     elapsed: kept ? kept.elapsed : 0, solved: false, gaveUp: false,
     keep, saved: null, opened: null,
+    // the screen the case was opened from, which leaving it comes back to; never stored, so a reload comes back to Home
+    from: from === "archive" ? "archive" : "home",
   };
   // saved: the board as last stored, null while nothing is stored; opened: the untouched board, which is never stored
   state.opened = JSON.stringify(progressRecord());
@@ -1805,15 +2004,15 @@ function enterCase(c, day, kept, keep) {
   render();
 }
 
-function startCase(c, day) {
+function startCase(c, day, from) {
   // Only today's and yesterday's cases can be played, and every way into a case to be played comes through here: a
   // verdict left open over midnight, say, must not start the next case of a day that has been put away.
-  if (!dayOpen(day, currentDay())) { renderDay(); show("select"); return; }
+  if (!dayOpen(day, currentDay())) { showFrom(from); return; }
   // A board is kept only for the case the schedule shows that day, only until it has a result (a replay is never saved),
   // and only until the player leaves the case by Back.
   const keep = !store.result(day, c.tier) && puzzleFor(c.tier, day)?.id === c.id;
   const kept = keep ? readProgress(c, new Board(c), day) : null;
-  enterCase(c, day, kept, keep);
+  enterCase(c, day, kept, keep, from);
   const { people } = state;
   // the Starter is where new players arrive, so it opens with the briefing; bigger cases begin at once
   // a player picking a Starter up again has already begun: the briefing's button is what starts the clock on a first visit
@@ -1838,11 +2037,17 @@ function startCase(c, day) {
 
 // A finished case, looked at again: everybody on their square and the verdict over it, from the stored result.
 // No clock runs and nothing is written: the state is solved from the start, and it is not a case being kept.
-function showResult(day, tierId) {
-  const c = puzzleFor(tierId, day), result = store.result(day, tierId);
-  if (!c || !result) { renderDay(); return; }
+// A result of any day that has one, held or put away. The case opened is the one the result names, not the one the
+// schedule shows for that day now; for a day still held the two are the same.
+function showResult(day, tierId, from) {
+  // Home's row decides by the held result alone, and a held result the snapshot will not read (one that is damaged)
+  // still opens as it always did, on the case the schedule shows
+  const held = store.result(day, tierId);
+  const entry = store.outcomes().find(o => o.day === day && o.tier === tierId) || (held ? { caseId: puzzleFor(tierId, day)?.id, result: held } : null);
+  const c = entry ? caseOf(entry.caseId) : null, result = entry && entry.result;
+  if (!c) { if (from === "archive") renderArchive(); else renderDay(); return; }
   stopTimer();
-  enterCase(c, day, null, false);
+  enterCase(c, day, null, false, from);
   state.pos = c.solution.map(p => [...p]);
   state.solved = true; state.gaveUp = result.gaveUp === true; state.viewing = true;
   state.elapsed = asCount(result.time); state.hints = asCount(result.hints); state.falseStarts = asCount(result.falseStarts);
@@ -2578,7 +2783,9 @@ function showVerdict() {
     : state.day === today ? `The next body arrives in ${arrives}` : again ? `Yesterday's cases close in ${arrives}` : "This day's cases are closed.";
   const role = k.role.replace(/^The\s+/i, "");
   // the third cell: the day's cases solved, this one counted, under the day's name (D6)
-  const solvedToday = TIERS.filter(t => { const r = store.result(state.day, t.id); return r && !r.gaveUp; }).length;
+  // read from every result kept of the day, held or put away: a result opened from the Archive may be in the log alone
+  const kept = store.outcomes().filter(o => o.day === state.day);
+  const solvedToday = kept.filter(o => !o.result.gaveUp).length, casesThen = kept.length ? kept[0].n : TIERS.length;
   openModal(`
     <div class="verdict-tile" data-tier="${c.tier}" aria-hidden="true">${fileGrid(c.n, 0)}${state.gaveUp ? "" : `<div class="solved-check"><i class="seal"></i><span>Solved</span></div>`}</div>
     <div class="stamp-closed" id="modal-stamp">${state.gaveUp ? "Case abandoned" : "Case closed"} · ${esc(c.title)}</div>
@@ -2588,7 +2795,7 @@ function showVerdict() {
     <dl class="stats">
       <div><dt>Time</dt><dd>${fmtTime(state.elapsed)}</dd></div>
       <div><dt>Hint</dt><dd>${state.hints ? "Used" : "None"}</dd></div>
-      <div><dt>${state.day === today ? "Today" : state.day === today - 1 ? "Yesterday" : WEEKDAYS[dateOfDay(state.day).getUTCDay()]}</dt><dd>${solvedToday} of ${TIERS.length}</dd></div>
+      <div><dt>${state.day === today ? "Today" : state.day === today - 1 ? "Yesterday" : WEEKDAYS[dateOfDay(state.day).getUTCDay()]}</dt><dd>${solvedToday} of ${casesThen}</dd></div>
     </dl>
     <div class="row verdict-row">
       ${again ? `<button class="btn" data-again>Play again</button>` : ""}
@@ -2602,10 +2809,10 @@ function showVerdict() {
     m.setAttribute("aria-describedby", state.gaveUp ? "modal-stamp" : "modal-stamp modal-accused");
     m.querySelector("[data-files]").onclick = () => { closeModal(); backToDay(late); };
     const nx = m.querySelector("[data-next]");
-    if (nx) nx.onclick = () => { closeModal(); startCase(puzzleFor(next.id, state.day), state.day); };
+    if (nx) nx.onclick = () => { closeModal(); startCase(puzzleFor(next.id, state.day), state.day, state.from); };
     // a replay, which is never saved and never changes the result; a sheet left open past its day goes back to the cases
     const ag = m.querySelector("[data-again]");
-    if (ag) ag.onclick = () => { closeModal(); if (dayOpen(state.day, currentDay())) startCase(state.c, state.day); else backToDay(); };
+    if (ag) ag.onclick = () => { closeModal(); if (dayOpen(state.day, currentDay())) startCase(state.c, state.day, state.from); else backToDay(); };
     // it takes this sheet's place; a sheet left open past its day goes back to the cases, as showScorecard does for itself
     const sc = m.querySelector("[data-card]");
     if (sc) sc.onclick = () => showScorecard(state.day);
