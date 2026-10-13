@@ -100,10 +100,10 @@ body.modal-open { overflow: hidden; }
 /* the second line keeps what it says and gains the tier's 10px colour square */
 .topbar .case-name small { display: block; margin-top: 4px; font-family: var(--ui); font-size: var(--t-status); line-height: 16px; color: var(--fg-2); }
 .topbar .case-name small::before { content: ""; display: inline-block; vertical-align: -1px; margin-right: 6px; width: 10px; height: 10px; border-radius: 2px; background: var(--tier, var(--fg)); }
-#game[data-tier="starter"] { --tier: var(--tier-starter); }
-#game[data-tier="easy"] { --tier: var(--tier-easy); }
-#game[data-tier="medium"] { --tier: var(--tier-medium); }
-#game[data-tier="hard"] { --tier: var(--tier-hard); }
+:is(#game, #stats)[data-tier="starter"] { --tier: var(--tier-starter); }
+:is(#game, #stats)[data-tier="easy"] { --tier: var(--tier-easy); }
+:is(#game, #stats)[data-tier="medium"] { --tier: var(--tier-medium); }
+:is(#game, #stats)[data-tier="hard"] { --tier: var(--tier-hard); }
 /* the way back: a white circle with the chevron, as the handoff's screen 05 has it */
 #btn-back-cases { flex: none; width: 44px; height: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 50%; background: var(--card); color: var(--fg); font-size: 0; box-shadow: none; display: grid; place-items: center; }
 #btn-back-cases::before { content: ""; width: 18px; height: 18px; background: currentColor; -webkit-mask: var(--icon-back) center / contain no-repeat; mask: var(--icon-back) center / contain no-repeat; }
@@ -495,14 +495,84 @@ button.progress:focus-visible { outline: 3px solid var(--ring); outline-offset: 
 /* the day whose cases are on the screen: a bar under its cell */
 .week-day.shown::after { content: ""; position: absolute; left: 4px; right: 4px; bottom: -6px; height: 3px; border-radius: 2px; background: var(--fg); }
 .week-day button.week-cell:focus-visible { outline: 3px solid var(--ring); outline-offset: -2px; }
-/* What is coming and is not here yet (D5): the handoff's tile with a SOON chip, so that it does not read as live. The
-   rule serves a tile that is words alone and, once its screen is built, the same tile as a button. */
+/* The two tiles under the strip. One whose screen is not here yet (D5) is words alone, with a SOON chip so that it does
+   not read as live; one whose screen is built is the same tile as a button, without the chip. The rule serves both. */
 #soon-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; flex: none; margin-top: 8px; }
 .soon-tile { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0 8px; min-height: 44px; margin: 0; padding: 4px 8px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; font-family: var(--ui); font-weight: 600; font-size: var(--t-btn); line-height: 16px; color: var(--fg); text-align: center; }
 .soon-tile svg { flex: none; width: 16px; height: 16px; color: var(--fg); }
 .soon { padding: 0 6px; border: 1px solid var(--fg-2); border-radius: 999px; font-weight: 600; font-size: var(--t-label); line-height: 16px; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); }
 /* no arrow and no price: an arrow would promise a screen */
 #premium-line { display: block; flex: none; margin: 4px 0 0; font-family: var(--ui); font-size: var(--t-label); line-height: 20px; text-align: center; color: var(--fg-2); }
+/* a tile whose screen is built is a button (features/Visuals.md, 13.3): the same tile without its chip. The ring stands
+   1px off, clear of the Premium line under it */
+button.soon-tile:focus-visible { outline: 3px solid var(--ring); outline-offset: 1px; }
+
+/* ---------- Stats and the Archive (features/StatsAndArchive.md; features/Visuals.md, 13.3) ----------
+   The player's record, each screen reached by its tile on Home: one column of 600px at most at any width, on the page's
+   ground, with the game screen's 8px at its sides on a phone. Nothing here stands inside a width query but the steps a
+   narrow screen needs. */
+.record { max-width: 616px; min-height: 0; margin: 0 auto; padding: calc(8px + var(--sat)) 8px calc(8px + var(--sab)); }
+/* on .active: a rule on .record alone would undo .screen { display: none } */
+.record.active { display: flex; flex-direction: column; }
+/* the header, the same on both: the way Home at the left, and the heading centred by an empty third column */
+.record-head { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; flex: none; min-height: 52px; }
+.record-head h2 { margin: 0; font-family: var(--title); font-weight: 400; font-size: var(--t-h2); line-height: 1; color: var(--fg); text-align: center; }
+.back-home { justify-self: start; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px 0 0; border: 0; border-radius: 999px; background: none; font-family: var(--ui); font-weight: 600; font-size: var(--t-btn); line-height: 1; color: var(--fg); }
+.back-home .circle { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--card); }
+.back-home svg { width: 18px; height: 18px; }
+.back-home:focus-visible { outline: 3px solid var(--ring); outline-offset: 1px; }
+/* the streak, one line: no figure here is larger than the best time's */
+#stats-streak { flex: none; min-height: 20px; margin: 4px 0 8px; font-family: var(--ui); font-size: var(--t-label); line-height: 20px; text-align: center; color: var(--fg-2); }
+#stats-streak .lab { font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+#stats-streak b { font-weight: 600; color: var(--fg); }
+#stats-streak .dot { margin: 0 4px; }
+/* a tab a tier: the pressed one is a toggle that is on (D17), and is not the screen's filled button */
+#stats-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; flex: none; }
+.stat-tab { min-width: 0; padding: 0 6px; font-size: var(--t-status); letter-spacing: .1em; text-transform: uppercase; }
+/* BEST and AVERAGE side by side, their figures on one baseline; the serif has no bold, so the best is told by its size */
+#stats-figures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(3, auto); grid-auto-flow: column; gap: 2px 8px; flex: none; margin-top: 16px; }
+#stats-figures .kicker { line-height: 16px; }
+.stat-fig { align-self: baseline; font-family: var(--title); font-size: 48px; line-height: 52px; color: var(--fg); }
+.stat-fig.avg { font-size: 34px; line-height: 40px; }
+.stat-fig.none { color: var(--fg-2); }
+.stat-under { min-height: 16px; font-family: var(--ui); font-size: var(--t-status); line-height: 16px; color: var(--fg-2); }
+.stats-rule { flex: none; height: 1px; margin: 12px 0; background: var(--line); }
+.graph-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0 12px; flex: none; min-height: 16px; margin-bottom: 8px; }
+.graph-head .kicker { line-height: 16px; }
+.avg-key { display: inline-flex; align-items: center; gap: 6px; }
+.avg-key svg { flex: none; width: 16px; height: 4px; }
+/* The graph is drawn by the script at the box's own width, so its words are 12px as drawn. Every colour in it is a class
+   reading a token: a bar in its tier's colour, the best in ink, nothing written on a bar. The average is ink dashes over
+   a wider white stroke, which keeps an edge on the ink bar; a time has a halo of the page so the line never runs through it. */
+#stats-graph { position: relative; flex: none; height: 300px; }
+@media (max-height: 595px) { #stats-graph { height: 184px; } }
+#stats-graph svg { display: block; }
+.g-bar { fill: var(--tier); }
+.g-bar.best, .g-base { fill: var(--fg); }
+.g-box { fill: none; stroke: var(--line); }
+.g-time, .g-date { font-family: var(--ui); font-size: 12px; }
+.g-time { fill: var(--fg); paint-order: stroke; stroke: var(--bg); stroke-width: 6px; stroke-linejoin: round; }
+.g-time.best { font-weight: 600; }
+.g-date { fill: var(--fg-2); }
+.g-avg, .g-avg-under { fill: none; stroke-dasharray: 4 3; }
+.g-avg-under { stroke: var(--card); stroke-width: 4px; }
+.g-avg { stroke: var(--fg); stroke-width: 2px; }
+/* a tier with no solve yet: the box and the baseline stay, so the tabs do not jump, and the sentence stands in the box */
+.stats-empty { position: absolute; inset: 0 0 23px; display: flex; align-items: center; justify-content: center; margin: 0; padding: 0 12px; font-family: var(--title); font-style: italic; font-size: 15px; line-height: 20px; text-align: center; color: var(--fg-body); }
+@media (max-width: 359px) {
+  /* 4px at a tab's sides, not 6: STARTER is 58px of letters, and a tab is 70 wide at 320 */
+  .stat-tab { padding: 0 4px; font-size: var(--t-label); letter-spacing: .06em; }
+  .stat-fig { font-size: 40px; line-height: 44px; }
+  .stat-fig.avg { font-size: 30px; line-height: 36px; }
+}
+/* a phone with its text at twice the size: the heading goes to the right of the way Home, the tabs take two rows and the two figures stack */
+@media (max-width: 299px) {
+  .record-head { grid-template-columns: auto minmax(0, 1fr); }
+  .record-head h2 { text-align: right; }
+  .record-head > span { display: none; }
+  #stats-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #stats-figures { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-auto-flow: row; }
+}
 /* on a phone under 700px tall the rows are the handoff's smaller ones (D19): a 50px tile in a 66px row. A phone only:
    a wide screen's rows do not share the screen's height, so a short window has nothing to make room for */
 @media (max-width: 600px) and (max-height: 699px) {
@@ -736,9 +806,27 @@ button.progress:focus-visible { outline: 3px solid var(--ring); outline-offset: 
   </div>
   <div id="soon-row">
     <div class="soon-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4h11v9.5h-11zM2.5 7.5h11M5.5 2v3.5M10.5 2v3.5" fill="none" stroke="currentColor" stroke-width="1.6"></path></svg><span>Archive</span><span class="soon">Soon</span></div>
-    <div class="soon-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 13.5V8M8 13.5v-11M12.5 13.5V6" fill="none" stroke="currentColor" stroke-width="2"></path></svg><span>Stats</span><span class="soon">Soon</span></div>
+    <button class="soon-tile" id="btn-stats"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 13.5V8M8 13.5v-11M12.5 13.5V6" fill="none" stroke="currentColor" stroke-width="2"></path></svg><span>Stats</span></button>
   </div>
   <p id="premium-line">Premium · coming soon</p>
+</section>
+
+<!-- ============ STATS ============ -->
+<section id="stats" class="screen record">
+  <div class="record-head">
+    <button class="back-home" id="btn-stats-home"><span class="circle" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>Home</button>
+    <h2 id="stats-heading" tabindex="-1">Stats</h2>
+    <span></span>
+  </div>
+  <p id="stats-streak"></p>
+  <div id="stats-tabs"></div>
+  <div id="stats-figures">
+    <div class="kicker">Best</div><div class="stat-fig" id="stats-best"></div><div class="stat-under" id="stats-best-when"></div>
+    <div class="kicker">Average</div><div class="stat-fig avg" id="stats-average"></div><div class="stat-under" id="stats-solves"></div>
+  </div>
+  <div class="stats-rule"></div>
+  <div class="graph-head"><span class="kicker" id="stats-graph-label"></span><span class="kicker avg-key"><svg viewBox="0 0 16 4" aria-hidden="true"><path class="g-avg" d="M0 2H16"></path></svg>average</span></div>
+  <div id="stats-graph"></div>
 </section>
 
 <!-- ============ GAME ============ -->
@@ -1281,11 +1369,13 @@ const roomRef = name => name.startsWith("Compartment") ? name : "the " + name;
 const staffWord = c => /crew/i.test(c.twist?.title || "") ? "Crew" : "Staff";
 
 const GAME_NAME = document.title;
-const HEADINGS = { title: "title-heading", select: "day-heading", game: "case-name" };
+const HEADINGS = { title: "title-heading", select: "day-heading", game: "case-name", stats: "stats-heading", archive: "archive-heading" };
+// the screens whose name in the browser tab never changes
+const SCREEN_NAMES = { stats: "Stats", archive: "Archive" };
 // the browser tab, and a screen reader's first words, follow the screen
 function pageTitle() {
-  const on = id => $(id).classList.contains("active");
-  document.title = on("game") && state ? `${state.c.title} · ${GAME_NAME}` : on("select") ? `${$("day-heading").textContent} · ${GAME_NAME}` : GAME_NAME;
+  const id = document.querySelector(".screen.active").id;
+  document.title = id === "game" && state ? `${state.c.title} · ${GAME_NAME}` : id === "select" ? `${$("day-heading").textContent} · ${GAME_NAME}` : SCREEN_NAMES[id] ? `${SCREEN_NAMES[id]} · ${GAME_NAME}` : GAME_NAME;
 }
 // never scrolls: show() goes to the top of the page itself, and every other caller must leave the player where they are
 function focusHeading() { $(HEADINGS[document.querySelector(".screen.active").id]).focus({ preventScroll: true }); }
@@ -1382,10 +1472,17 @@ function showHowTo(onClose, c) {
 }
 
 $("btn-how").onclick = () => showHowTo();
-$("btn-open-cases").onclick = () => { viewOffset = 0; renderDay(); show("select"); };
+// Home, on today's cases: from the title, and from each screen its tiles open
+function showHome() { viewOffset = 0; renderDay(); show("select"); }
+$("btn-open-cases").onclick = showHome;
+$("btn-stats-home").onclick = showHome;
+// the graph's box can only be measured once its screen is showing, so the screen is shown and then drawn
+$("btn-stats").onclick = () => { show("stats"); renderStats(true); };
 $("btn-back-cases").onclick = () => { stopTimer(); backToDay(); };
 
 let viewOffset = 0;  // 0 = today, 1 = yesterday
+// what the Stats graph last drew, kept so that it is drawn again when the room changes without the results being read again
+let statsDrawn = null;
 
 let shownDay = 0;
 function showNextCases() {
@@ -1515,6 +1612,76 @@ function fitTiles() {
     const twoLines = () => title.offsetHeight <= 2 * parseFloat(getComputedStyle(title).lineHeight) + 1;
     TITLE_STEPS.forEach(step => { if (!twoLines()) { title.classList.remove(...TITLE_STEPS); title.classList.add(step); } });
   });
+}
+
+// ---------------------------------------------------------------- Stats (features/StatsAndArchive.md, section 7)
+// The best time, the average and the last seven solves of a tier, and the streak in one line. Nothing of it is stored:
+// each drawing takes one reading of the results and works every figure out from it. Opening the screen or pressing a
+// tab writes no result.
+// a tier's name where the room is a tab's: the Daily Starter is "Starter"
+function tierWord(t) { return t.label.replace(/^Daily\s+/, ""); }
+function shortDate(n) { const date = dateOfDay(n); return `${date.getUTCDate()} ${MONTHS[date.getUTCMonth()].slice(0, 3)}`; }
+// The solves that count, oldest day first and in tier order within a day. A case given up is not one. Neither is a result
+// with no time, a time of 0 or one that is not a whole number: the verdict reads a missing time as 0, and here a 0 would
+// stand as the best for ever. A hint does not matter and a late solve counts (S3, Q5); so does a solve on a day later
+// than today, which a clock once set forward can leave.
+function statSolves(snapshot) {
+  return snapshot.filter(o => o.result.gaveUp !== true && Number.isInteger(o.result.time) && o.result.time >= 1).map(o => ({ day: o.day, tier: o.tier, time: o.result.time }));
+}
+// fresh: the screen is being opened, on the tier of the most recent solve; otherwise the pressed tab is kept
+function renderStats(fresh) {
+  const today = currentDay();
+  // a day that has closed is in the log before it is read, as on Home
+  store.prune(today);
+  const snapshot = store.outcomes(), solves = statSolves(snapshot), tabs = $("stats-tabs");
+  if (!tabs.children.length) TIERS.forEach(t => {
+    const tab = tabs.appendChild(el("button", "btn stat-tab", esc(tierWord(t))));
+    tab.dataset.tier = t.id;
+    // the states are swapped in place, so the tab pressed keeps focus
+    tab.onclick = () => { [...tabs.children].forEach(b => b.setAttribute("aria-pressed", String(b === tab))); renderStats(); };
+  });
+  const pressed = fresh ? null : tabs.querySelector('[aria-pressed="true"]');
+  const tier = pressed ? pressed.dataset.tier : solves.length ? solves[solves.length - 1].tier : TIERS[0].id, word = tierWord(TIERS.find(t => t.id === tier));
+  [...tabs.children].forEach(b => b.setAttribute("aria-pressed", String(b.dataset.tier === tier)));
+  $("stats").dataset.tier = tier;
+  // before any complete day there is no streak to name
+  const run = streak(today, snapshot);
+  $("stats-streak").innerHTML = `<span class="lab">Streak</span> <b>${run.best ? dayCount(run.current) : "–"}</b><span class="dot"> · </span><span class="lab">Longest</span> <b>${run.best ? dayCount(run.best) : "–"}</b>`;
+  const mine = solves.filter(s => s.tier === tier);
+  // the lowest time; where two tie, the earlier day
+  const best = mine.reduce((a, s) => !a || s.time < a.time ? s : a, null);
+  const average = mine.length ? Math.round(mine.reduce((sum, s) => sum + s.time, 0) / mine.length) : 0;
+  $("stats-best").textContent = best ? fmtTime(best.time) : "–";
+  $("stats-average").textContent = best ? fmtTime(average) : "–";
+  ["stats-best", "stats-average"].forEach(id => $(id).classList.toggle("none", !best));
+  $("stats-best-when").textContent = best ? `${WEEKDAYS[dateOfDay(best.day).getUTCDay()].slice(0, 3)} ${shortDate(best.day)}` : "";
+  $("stats-solves").textContent = best ? (mine.length === 1 ? "1 solve" : mine.length + " solves") : "";
+  // the heading is fixed and the graph shows what there is (S4)
+  $("stats-graph-label").textContent = `Last 7 ${word} cases`;
+  statsDrawn = { bars: mine.slice(-7), best, average, word };
+  drawStatsGraph();
+}
+// The graph: seven slots, the most recent solves filling them from the left, each bar in proportion to its time from
+// zero with its time above and its date beneath, as words. Its viewBox is the box's own width, so 12px is drawn at 12px;
+// that is why it is drawn again when the room changes (refit). Sizes are attributes and colours are classes: no style is set.
+function drawStatsGraph() {
+  const box = $("stats-graph"), W = box.clientWidth, H = box.clientHeight;
+  if (!statsDrawn || !W) return;
+  const { bars, best, average, word } = statsDrawn, GAP = 6, slot = (W - 6 * GAP) / 7;
+  // from the foot: the date 16, a gap of 6, the baseline 1; from the top: a time's 16 and a gap of 4
+  const base = H - 23, room = base - 20;
+  // the scale's top is the larger of the tallest bar and the average, so the average line never leaves the graph
+  const top = Math.max(average, ...bars.map(b => b.time)), y = time => base - Math.max(1, Math.round(room * time / top));
+  let drawn = "", words = "";
+  bars.forEach((b, i) => {
+    const x = i * (slot + GAP), mid = (x + slot / 2).toFixed(1), cls = b === best ? " best" : "";
+    drawn += `<rect class="g-bar${cls}" x="${x.toFixed(1)}" y="${y(b.time)}" width="${slot.toFixed(1)}" height="${base - y(b.time)}"></rect>`;
+    words += `<text class="g-time${cls}" x="${mid}" y="${y(b.time) - 8}" text-anchor="middle">${fmtTime(b.time)}</text><text class="g-date" x="${mid}" y="${H - 4}" text-anchor="middle">${shortDate(b.day)}</text>`;
+  });
+  // over the bars and under the words
+  const line = bars.length ? `<path class="g-avg-under" d="M0 ${y(average)}H${W}"></path><path class="g-avg" d="M0 ${y(average)}H${W}"></path>` : `<rect class="g-box" x=".5" y=".5" width="${W - 1}" height="${base - .5}"></rect>`;
+  box.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${drawn}<rect class="g-base" x="0" y="${base}" width="${W}" height="1"></rect>${line}${words}</svg>` +
+    (bars.length ? "" : `<p class="stats-empty">No ${esc(word)} case solved yet.</p>`);
 }
 
 // Returns to the day the current puzzle belongs to; a puzzle left open for days falls back to yesterday.
@@ -2445,9 +2612,10 @@ function showVerdict() {
   });
 }
 
-// What is measured against the room the screen has: the titles of the day's case rows, and a case's board and clue panel.
+// What is measured against the room the screen has: the titles of the day's case rows, the Stats graph, and a case's board and clue panel.
 function refit() {
   if ($("select").classList.contains("active")) fitTiles();
+  if ($("stats").classList.contains("active")) drawStatsGraph();
   if (!state || !$("game").classList.contains("active")) return;
   if (cellSize(state.board.n) !== state.cellSize) { buildBoard(); render(); }
   // the height can change and leave the square as it was: the clue panel's room has changed with it
