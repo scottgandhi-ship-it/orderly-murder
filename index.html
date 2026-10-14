@@ -1190,16 +1190,79 @@ const STORE_KEY = TEST_DAY ? "orderly-murder-daily-test" : "orderly-murder-daily
 // and a history that only grows must not be rewritten with it. The version is raised when the shape changes.
 const LOG_KEY = STORE_KEY + "-log", LOG_VERSION = 1;
 const RESULT_FIGURES = ["time", "hints", "lens", "wrong", "falseStarts"];
+// These two, and the remover in store.wipe, are the only lines of the page that name localStorage (the commit hook holds it):
+// the app keeps a second copy of saved state outside the web view, and a write made anywhere else would never reach it.
+function savedText(key) { try { return localStorage.getItem(key); } catch { return null; } }
+// says whether the write took
+function saveText(key, text) { try { localStorage.setItem(key, text); return true; } catch { return false; } }
+// A stored value counts only if it is an object: anything else is treated as none, and is never sent to the app.
+function savedObject(text) {
+  if (typeof text !== "string") return null;
+  try { const v = JSON.parse(text); return v && typeof v === "object" && !Array.isArray(v) ? v : null; } catch { return null; }
+}
+const wholeRev = n => Number.isInteger(n) && n >= 0 ? n : 0;
+// The iOS shell, where there is one (features/NativeStorage.md): it keeps each key's text in a file of the app's own,
+// because iOS may empty a web view's storage. In a browser it is not there and nothing below reaches anything.
+const savedShell = (() => {
+  try { const h = window.webkit.messageHandlers.savedState; return h && typeof h.postMessage === "function" ? h : null; } catch { return null; }
+})();
+// Each message carries the whole value, so one that fails needs no retry: the next write carries everything it did.
+function sendSaved(key, rev, text) {
+  if (!savedShell) return;
+  try { savedShell.postMessage({ key, rev, value: text }); } catch {}
+}
+// The highest counter this page has met for each key. A write goes one past it, so that a value built afresh,
+// or written over a copy the shell holds and the page could not read, is never refused by the shell as an older one.
+const revSeen = {};
+function readSaved(key) {
+  const v = savedObject(savedText(key));
+  if (v && wholeRev(v.rev) > (revSeen[key] || 0)) revSeen[key] = v.rev;
+  return v;
+}
+// `rev` goes up by one inside the value, in the same write as the change, so the two cannot tear.
+// The shell is told only of what localStorage took: its file must never hold what the page does not.
+function writeSaved(key, v) {
+  let text;
+  try {
+    v.rev = Math.max(wholeRev(v.rev), revSeen[key] || 0) + 1;
+    text = JSON.stringify(v);
+  } catch { return false; }
+  if (!saveText(key, text)) return false;
+  revSeen[key] = v.rev;
+  sendSaved(key, v.rev, text);
+  return true;
+}
+// At start the newer of the two copies wins, key by key. The shell hands its copy over before this script runs,
+// so nothing waits. The log goes first: a day is deleted from the day key only once its results are in the log.
+function reconcileSaved() {
+  const given = window.nativeSavedState, native = given && typeof given === "object" ? given : null;
+  if (!savedShell && !native) return;
+  [LOG_KEY, STORE_KEY].forEach(key => {
+    const text = savedText(key), local = savedObject(text), L = local ? wholeRev(local.rev) : 0;
+    const n = native && Object.prototype.hasOwnProperty.call(native, key) ? native[key] : undefined;
+    if (n === undefined) { if (local) sendSaved(key, L, text); return; }
+    const held = n && typeof n === "object" ? savedObject(n.value) : null;
+    if (!held || !Number.isInteger(n.rev) || n.rev < 0 || held.rev !== n.rev) {
+      // A copy the page cannot read must not leave the mirror dead: the next write goes past the number the shell holds.
+      revSeen[key] = Math.max(L, n && typeof n === "object" ? wholeRev(n.rev) : 0);
+      if (local) writeSaved(key, local);
+      return;
+    }
+    if (!local || n.rev > L) { if (saveText(key, n.value)) revSeen[key] = n.rev; return; }
+    // on equal counters the page is what the player last saw
+    if (L > n.rev || text !== n.value) sendSaved(key, L, text);
+  });
+}
+// At the top level, far above boot: a throw here would kill every listener below, and leaves the page on localStorage alone.
+try { reconcileSaved(); } catch {}
 const store = {
   get() {
-    let v;
-    try { v = JSON.parse(localStorage.getItem(STORE_KEY) || "{}"); } catch { v = {}; }
-    if (!v || typeof v !== "object") v = {};
+    const v = readSaved(STORE_KEY) || {};
     if (!v.days || typeof v.days !== "object") v.days = {};
     return v;
   },
   // the game stays fully playable without storage; only the solved stamps are lost
-  set(v) { try { localStorage.setItem(STORE_KEY, JSON.stringify(v)); } catch {} },
+  set(v) { writeSaved(STORE_KEY, v); },
   // a result belongs to a case, not only to a day: when the pool changes under a player,
   // what they did on another case must not show up on the one that took its place
   entry(day, tierId) {
@@ -1247,29 +1310,29 @@ const store = {
   },
   // a log that does not parse, or is of another version, reads as empty
   getLog() {
-    let v;
-    try { v = JSON.parse(localStorage.getItem(LOG_KEY) || "null"); } catch { v = null; }
-    const sound = v && typeof v === "object" && v.v === LOG_VERSION && v.days && typeof v.days === "object" && !Array.isArray(v.days);
+    const v = readSaved(LOG_KEY);
+    const sound = v && v.v === LOG_VERSION && v.days && typeof v.days === "object" && !Array.isArray(v.days);
     return sound ? v : { v: LOG_VERSION, days: {} };
   },
   // A log of a later version was written by a newer page than this one, and this one cannot read it:
   // it must not be written over, and no day is deleted on its account.
   logIsNewer() {
-    try { const v = JSON.parse(localStorage.getItem(LOG_KEY) || "null"); return !!v && typeof v === "object" && Number.isFinite(v.v) && v.v > LOG_VERSION; } catch { return false; }
+    const v = readSaved(LOG_KEY);
+    return !!v && Number.isFinite(v.v) && v.v > LOG_VERSION;
   },
   // a tier's result is in a day of the log only as outcomes() would read it: a result, of a case of that tier
   logHas(entry, t) { return !!entry && !!entry[t.id] && typeof entry[t.id] === "object" && caseOf(entry["case:" + t.id])?.tier === t.id; },
   // says whether the write took: a day is deleted only once its results are known to be in the log
-  setLog(v) { try { localStorage.setItem(LOG_KEY, JSON.stringify(v)); return true; } catch { return false; } },
+  setLog(v) { return writeSaved(LOG_KEY, v); },
   // Whether this device has been here before: the day screen has been drawn (which writes maxDay), or something is kept.
   // The log's key is only looked for, not read.
   seen() {
     const v = this.get();
-    let logged = false;
-    try { logged = localStorage.getItem(LOG_KEY) !== null; } catch {}
-    return Number.isInteger(v.maxDay) || Object.keys(v.days).length > 0 || logged;
+    return Number.isInteger(v.maxDay) || Object.keys(v.days).length > 0 || savedText(LOG_KEY) !== null;
   },
-  wipe() { try { localStorage.removeItem(STORE_KEY); localStorage.removeItem(LOG_KEY); } catch {} },
+  // For the tests only, and called nowhere in the page: the shell has no delete, so a key removed in play
+  // would be put back from its file at the next start.
+  wipe() { [STORE_KEY, LOG_KEY].forEach(key => { try { localStorage.removeItem(key); } catch {} }); },
   // What the log keeps of a day: the results of the cases the schedule shows for it, and how many cases it offered, which
   // could not be worked out later once a day can offer more. Boards in progress and hint counts are not kept.
   fold(day, d) {
