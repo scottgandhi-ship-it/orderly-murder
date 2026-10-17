@@ -167,6 +167,8 @@ body.modal-open { overflow: hidden; }
 .token.victim::after { content: ""; position: absolute; top: -22%; right: -22%; width: 46%; height: 46%; border-radius: 50%; background: var(--bad) var(--icon-dagger) center / 70% no-repeat; border: 1px solid #f4ecd8; }
 .token.selected { outline: max(2px, calc(var(--cell) * .03)) solid var(--fg); outline-offset: 2px; }
 .token.flagged { outline: max(3px, calc(var(--cell) * .05)) solid var(--bad); outline-offset: 2px; }
+/* the ring takes the outline, so a selected token keeps its ink cue as a shadow, beside its own drop shadow */
+.token.selected.flagged { box-shadow: 0 0 0 max(2px, calc(var(--cell) * .03)) var(--fg), 0 calc(var(--cell) * .02) calc(var(--cell) * .05) rgba(0,0,0,.45); }
 @keyframes drop { from { transform: scale(1.4); opacity: 0; } }
 
 .tools { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
@@ -404,6 +406,8 @@ body.modal-open { overflow: hidden; }
 .objection p { margin: 0; }
 .objection .quote { grid-column: 1 / -1; font-family: var(--title); font-size: 22px; line-height: 1.25; }
 .objection .quote + p { grid-column: 1 / -1; padding-top: 10px; border-top: 1px solid var(--line); font-weight: 500; color: var(--bad); }
+/* a rule of the house: nobody says it, so there is no witness chip */
+.objection.house { grid-template-columns: 1fr; }
 .rules { counter-reset: rule; list-style: none; padding-left: 0 !important; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 10px; }
 .rules li { counter-increment: rule; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin: 0; }
 .rules li::before { content: "0" counter(rule); display: block; font-family: var(--ui); font-weight: 600; font-size: var(--t-label); letter-spacing: .1em; color: var(--fg-2); }
@@ -2539,10 +2543,15 @@ function evaluate() {
     const p = pos[i]; if (!p) return;
     if (UNARY.has(cl.type)) clueState[i] = b.unaryOk(cl, p[0], p[1]);
     else { const q = pos[cl.other]; if (q) clueState[i] = b.binaryOk(cl, p, q); }
-    if (clueState[i] === true && ONLY[cl.type] &&
-        pos.some((q, j) => q && j !== i && b.unaryOk(cl, q[0], q[1]))) clueState[i] = false;
+    if (clueState[i] === true && ONLY[cl.type] && rivals(i).length) clueState[i] = false;
   });
   return { clueState };
+}
+
+// Everyone else on a square of the kind an ONLY or ALONE statement claims for its speaker alone.
+function rivals(i) {
+  const { board: b, pos, c } = state, cl = c.clues[i];
+  return pos.map((q, j) => j).filter(j => j !== i && pos[j] && b.unaryOk(cl, pos[j][0], pos[j][1]));
 }
 
 function render() {
@@ -2756,31 +2765,66 @@ function placeControls() {
 }
 
 // ---------------------------------------------------------------- completion & accusation
-// What the Inspector objects to first: a shared line, a guest out of bounds, then a broken statement.
+const nameList = names => names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}` : names[0];
+// The statements' own phrases, built as generate.py's clue_text and beside_phrase build them; a browser test holds them to the text.
+// The victim's statements say "lay on a chair" where everyone else's say "sitting in a chair".
+function onPhrase(j, obj) { return j === 0 ? "on a " + state.c.legend[obj].name : state.c.legend[obj].on; }
+function nearPhrase(obj) { const L = state.c.legend[obj]; return L.wall ? "in front of a " + L.name : "beside a " + L.name; }
+
+// What the Inspector objects to first: a shared line, a guest out of bounds, then a broken statement. Each detail is one
+// fact on the board that makes the quote false, read off the squares as placed: never who is wrong, never a correct square.
 function findObjection() {
   const { board: b, pos, people, c } = state;
+  const name = i => people[i].short;
   const inRoom = i => roomRef(c.roomNames[b.room(...pos[i])]);
+  // house: the quote is a rule of the house, which nobody says, so the sheet shows no witness
   for (let i = 0; i < people.length; i++) for (let j = i + 1; j < people.length; j++) {
-    if (pos[i][0] === pos[j][0]) return { who: i, ring: [i, j], quote: "One person to every row.", detail: `${people[i].short} and ${people[j].short} are in the same row.` };
-    if (pos[i][1] === pos[j][1]) return { who: i, ring: [i, j], quote: "One person to every column.", detail: `${people[i].short} and ${people[j].short} are in the same column.` };
+    if (pos[i][0] === pos[j][0]) return { house: true, ring: [i, j], quote: "One person to every row.", detail: `${name(i)} and ${name(j)} are in the same row.` };
+    if (pos[i][1] === pos[j][1]) return { house: true, ring: [i, j], quote: "One person to every column.", detail: `${name(i)} and ${name(j)} are in the same column.` };
   }
   for (let i = 0; i < people.length; i++) {
     if (!b.allowed(people[i], pos[i][0], pos[i][1])) {
       // a closed kind of square is named for what it is; a closed room by its name
       const o = b.obj(...pos[i]);
-      return { who: i, ring: [i], quote: c.twist ? c.twist.text : "Guests keep to their own rooms.",
-        detail: b.closedObjects.has(o) ? `You've put ${people[i].short} ${c.legend[o].on}.` : `You've put ${people[i].short} in ${inRoom(i)}.` };
+      return { house: true, ring: [i], quote: c.twist ? c.twist.text : "Guests keep to their own rooms.",
+        detail: b.closedObjects.has(o) ? `You've put ${name(i)} ${c.legend[o].on}.` : `You've put ${name(i)} in ${inRoom(i)}.` };
     }
   }
-  const i = evaluate().clueState.indexOf(false);
-  if (i < 0) return null;
+  const broken = evaluate().clueState.map((s, i) => s === false ? i : -1).filter(i => i >= 0);
+  if (!broken.length) return null;
+  // A statement false of its speaker alone comes first, as the speaker is then certainly misplaced; then an ONLY or ALONE
+  // statement broken by somebody else; then a statement about two people. Cast order within each.
+  const ownFault = i => UNARY.has(c.clues[i].type) && !b.unaryOk(c.clues[i], ...pos[i]);
+  const i = broken.find(ownFault) ?? broken.find(i => ONLY[c.clues[i].type]) ?? broken[0];
   const cl = c.clues[i];
-  // an ONLY or ALONE statement can be true of its speaker and still be broken by somebody else
-  const rival = ONLY[cl.type] && b.unaryOk(cl, pos[i][0], pos[i][1]) ? pos.findIndex((q, j) => j !== i && b.unaryOk(cl, q[0], q[1])) : -1;
-  // said: the quote is this person's own statement. The quotes above are rules of the house, which nobody says.
-  return { who: i, said: true, ring: [rival >= 0 ? rival : i], quote: cl.text, detail: rival >= 0
-    ? `You've put ${people[rival].short} in ${inRoom(rival)}, where the same would be true of them.`
-    : `You've put ${people[i].short} in ${inRoom(i)}.` };
+  // said: the quote is this person's own statement
+  const said = (ring, detail) => ({ who: i, said: true, ring, quote: cl.text, detail });
+  if (BINARY.has(cl.type)) {
+    const j = cl.other, a = name(i), o = name(j);
+    // the row and column checks above come first, so the two are never in one row or column here: "below" and
+    // "to the right of" are then exact
+    return said([i, j], {
+      north: `You've put ${a} in a row below ${o}.`,
+      west: `You've put ${a} in a column to the right of ${o}.`,
+      diagonal: `You've put ${a} and ${o} on squares that are not diagonally adjacent.`,
+      sameRoom: `You've put ${a} in ${inRoom(i)} and ${o} in ${inRoom(j)}.`,
+    }[cl.type]);
+  }
+  if (!ownFault(i)) {
+    // in cast order, so the victim, when a rival, leads and the line takes the victim's "on a chair"
+    const r = rivals(i), who = nameList(r.map(name));
+    return said([i, ...r], cl.type === "onlyOn" ? `You've put ${who} ${onPhrase(r[0], cl.obj)} too.`
+      : cl.type === "onlyBeside" ? `You've put ${who} ${nearPhrase(cl.obj)} too.`
+      : `You've put ${who} in ${roomRef(c.roomNames[cl.room])} too.`);
+  }
+  const at = `You've put ${name(i)} in ${inRoom(i)}`;
+  const base = ONLY[cl.type] || cl.type;
+  return said([i], base === "corner" ? `${at}, not in the corner of a room.`
+    : base === "on" ? `${at}, not ${onPhrase(i, cl.obj)}.`
+    : base === "beside" ? `${at}, not ${nearPhrase(cl.obj)}.`
+    : base === "rowWith" ? `You've put ${name(i)} in a row without the ${c.legend[cl.obj].name}.`
+    : base === "colWith" ? `You've put ${name(i)} in a column without the ${c.legend[cl.obj].name}.`
+    : `${at}.`);
 }
 
 // The accusation is read off the board: whoever the player has left alone with the body.
@@ -2799,9 +2843,9 @@ function submitFindings() {
   if (withBody.length !== 1) {
     const scene = roomRef(c.roomNames[b.room(...pos[0])]);
     const names = withBody.map(i => people[i].short);
-    state.falseStarts++;
+    // not counted: with nobody, or two, beside the body the board accuses no one, and the player can count that for themselves
     rejectAccusation({ rule: true, ring: [0, ...withBody], detail: names.length
-      ? `You've put ${names.slice(0, -1).join(", ")} and ${names[names.length - 1]} in ${scene} with ${c.victim.short}. That is ${names.length} suspects.`
+      ? `You've put ${nameList(names)} in ${scene} with ${c.victim.short}. That is ${names.length} suspects.`
       : `You've put nobody in ${scene} with ${c.victim.short}.` });
     return;
   }
@@ -2813,9 +2857,9 @@ function submitFindings() {
 
 // Never names the accused: "you accuse X, not quite" would read as clearing X, who may well be the killer.
 // The count of rejections is the case's falseStarts, raised before this is called and kept with the board, so it
-// survives a reload; every rejection counts, one on the rule alone included.
+// survives a reload. A slip on the rule alone is the one rejection that does not raise it, so it never brings Reveal.
 function rejectAccusation(o) {
-  const p = o && !o.rule ? state.people[o.who] : null, reveal = state.falseStarts >= REVEAL_AFTER;
+  const p = o && !o.rule && !o.house ? state.people[o.who] : null, reveal = state.falseStarts >= REVEAL_AFTER;
   // with no square names to quote, the tokens in question are ringed on the board instead
   state.ringed = o ? o.ring : null;
   render();
@@ -2823,7 +2867,9 @@ function rejectAccusation(o) {
     <div class="rejected-mark" aria-hidden="true"></div>
     <div class="kicker">Accusation rejected</div>
     <h2 class="verdict-head">Not quite, Inspector.</h2>
-    ${o && o.rule ? `<p>The killer was alone with the body: exactly one suspect is in the victim's room.</p><p>${esc(o.detail)}</p>`
+    ${o && o.rule ? `<p>The killer was alone with the body: exactly one suspect is in the victim's room. Any other room may hold more than one person.</p><p>${esc(o.detail)}</p>`
+      : o && o.house ? `<p>A rule of the house is broken.</p>
+    <div class="objection house"><div><p class="quote">${esc(o.quote)}</p><p>${esc(o.detail)}</p></div></div>`
       : o ? `<p>One witness would like a word.</p>
     <div class="objection"><span class="chip" style="background:${p.color}" aria-hidden="true">${initials(p.name)}</span>
       <div><p class="quote">${o.said ? `<span class="sr-only">${esc(p.short)} says: </span>` : ""}“${esc(o.quote)}”</p><p>${esc(o.detail)}</p></div></div>`
