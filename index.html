@@ -325,6 +325,8 @@ body.modal-open { overflow: hidden; }
   .token { animation: none; }
   /* the hint must not be lost with its flash: a still ring for the same three seconds */
   .cell.hint-flash .fx { animation: none; box-shadow: inset 0 0 0 4px var(--bad); }
+  /* the rank's bar and words stand at once where they would have come to rest */
+  .modal .rank .rank-fill, .modal .rank .rank-fill.wrap, .modal .rank .rank-points, .modal .rank .rank-promoted { animation: none; }
 }
 /* small buttons and links are finger-sized wherever a finger is likely: a touch screen of any width, and every phone */
 @media (pointer: coarse), (max-width: 600px) { .btn.small, .link { min-height: 44px; min-width: 44px; } }
@@ -335,7 +337,29 @@ body.modal-open { overflow: hidden; }
 .stats dd { margin: 0; font-family: var(--title); font-weight: 400; font-size: 34px; line-height: 1; color: var(--fg); white-space: nowrap; }
 .stats dt { font-size: var(--t-status); line-height: 1.2; color: var(--fg-2); }
 .modal .fine { font-size: var(--t-status); line-height: 1.4; color: var(--fg-2); text-align: center; margin: 12px 0 0; }
-.modal .verdict-speed { font-size: var(--t-status); line-height: 1.4; color: var(--fg-2); text-align: center; margin: 8px 0 0; }
+.modal .verdict-speed { font-size: var(--t-status); line-height: 1.4; color: var(--fg-2); text-align: center; margin: 8px 0 0; text-wrap: balance; }
+/* The rank for the month on the verdict (features/Progression.md, sections 4 and 5): the points and the rank, the bar,
+   and what is still owed or the promotion. Two rows around the bar, since one would wrap anywhere at 375 wide. */
+.rank { margin: 12px 0 0; text-align: center; }
+.rank-row { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 0 8px; font-family: var(--ui); font-weight: 600; font-size: 15px; line-height: 20px; color: var(--fg); }
+.rank-points { font-family: var(--title); font-weight: 400; font-size: 30px; line-height: 32px; animation: rank-rise 200ms ease-out 250ms both; }
+.rank-name { min-width: 0; overflow-wrap: anywhere; }
+.rank-for, .rank-dot { font-weight: 400; font-size: 13px; color: var(--fg-2); }
+.rank-owed { margin-top: 6px; font-family: var(--ui); font-size: 13px; line-height: 18px; color: var(--fg-2); }
+.rank-promoted { margin-top: 6px; font-family: var(--title); font-size: 26px; line-height: 30px; color: var(--fg); animation: rank-rise 280ms ease-out 900ms both; }
+/* The bar: ink on grey, with no colour of its own; the figure beside it says the same in words. The fill's two widths are
+   on its own fresh element, and without its motion it stands at the second. */
+.rank-bar { height: 8px; border-radius: 4px; overflow: hidden; background: var(--fill-grey); box-shadow: inset 0 0 0 1px var(--line-grey); }
+.rank .rank-bar { margin-top: 8px; }
+.rank-fill { display: block; width: var(--to); min-width: 8px; height: 100%; border-radius: 4px; background: var(--fg); }
+.rank .rank-fill { animation: rank-fill 600ms cubic-bezier(.2, .7, .2, 1) 400ms both; }
+.rank .rank-fill.wrap { animation: rank-wrap 1000ms cubic-bezier(.2, .7, .2, 1) 400ms both; }
+@keyframes rank-fill { from { width: var(--from); } to { width: var(--to); } }
+@keyframes rank-wrap { 0% { width: var(--from); } 55% { width: 100%; } 56% { width: 0; } 100% { width: var(--to); } }
+@keyframes rank-rise { from { opacity: 0; transform: translateY(6px); } }
+/* the room for it: the gap over the three cells and the one over the fine print close to 8px */
+.modal.ranked .stats { margin-top: 8px; }
+.modal.ranked .fine { margin-top: 8px; }
 /* The day's Scorecard (features/Visuals.md, section 5): a white card, a row a case with a hairline between, told by a mark
    and a word, never by colour alone; the big day circle above the label; the lead as the sheet's heading. */
 /* 12px under the circle, not the verdict tile's 20: a sheet's button is 52px tall (9.1), and the card is held to one screen at 375 by 721 */
@@ -367,6 +391,12 @@ body.modal-open { overflow: hidden; }
 .scorecard .speed { font-family: var(--ui); font-size: var(--t-label); line-height: 14px; color: var(--fg-2); white-space: nowrap; }
 .scorecard .speed.best { font-weight: 500; color: var(--fg); }
 .modal .streak-line { font-size: var(--t-body); }
+/* the day's points and its month's rank (features/Progression.md, section 6): a second line of the streak's sentence, so
+   the two stand together with no gap between, and the Full day under them in the fine print */
+.modal .streak-line:has(+ .rank-line), .modal .rank-line:has(+ .full-day) { margin-bottom: 0; }
+.modal .rank-line { margin-top: 0; text-wrap: balance; }
+.modal .rank-line .nb { white-space: nowrap; }
+.modal .full-day { margin: 4px 0 10px; line-height: 18px; }
 /* on a phone under 700px tall the Scorecard takes the handoff's smaller sizes (D19): 52px rows and a 56px circle; if it still does not fit, the ground scrolls with All cases in reach */
 @media (max-height: 699px) {
   .modal .day-circle { width: 56px; height: 56px; margin: 0 0 12px; }
@@ -375,6 +405,11 @@ body.modal-open { overflow: hidden; }
   .scorecard .row-tile { width: 36px; height: 36px; border-radius: 8px; }
   .scorecard .tier { font-size: 19px; }
   .modal h2.verdict-head { margin: 8px 0 6px; }
+  /* the rank's block is 10px shorter, and the verdict's tile gives up 32px for it */
+  .modal.ranked .verdict-tile { width: 56px; height: 56px; margin: 4px 0 12px; }
+  .rank { margin-top: 8px; }
+  .rank-points { font-size: 26px; line-height: 28px; }
+  .rank .rank-bar { margin-top: 6px; }
 }
 /* Under 383px wide the full-size row has no room for the Daily Starter's name beside its time, and the time fell to a
    line of its own; with the words under it that row would be 14px taller and the card longer than a 375 by 721 screen.
@@ -410,7 +445,7 @@ body.modal-open { overflow: hidden; }
 .objection.house { grid-template-columns: 1fr; }
 .rules { counter-reset: rule; list-style: none; padding-left: 0 !important; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 10px; }
 .rules li { counter-increment: rule; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin: 0; }
-.rules li::before { content: "0" counter(rule); display: block; font-family: var(--ui); font-weight: 600; font-size: var(--t-label); letter-spacing: .1em; color: var(--fg-2); }
+.rules li::before { content: counter(rule, decimal-leading-zero); display: block; font-family: var(--ui); font-weight: 600; font-size: var(--t-label); letter-spacing: .1em; color: var(--fg-2); }
 .rules li b { display: block; font-family: var(--title); font-weight: 400; font-size: 20px; line-height: 1.15; margin: 2px 0 4px; }
 .rules .art-row { display: flex; align-items: center; gap: 4px; margin-top: 6px; flex-wrap: wrap; font-family: var(--ui); font-weight: 600; font-size: var(--t-label); letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); }
 .rules .art-row .legend-art { width: 30px; height: 30px; }
@@ -555,8 +590,25 @@ button.soon-tile:focus-visible { outline: 3px solid var(--ring); outline-offset:
 .back-home .circle { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--card); }
 .back-home svg { width: 18px; height: 18px; }
 .back-home:focus-visible { outline: 3px solid var(--ring); outline-offset: 1px; }
+/* The rank for the month and the streak, in one white card above the tabs (features/Progression.md, 7.1): the month and
+   last month's rank, this month's rank, its bar and what is owed, then a hairline and the streak. The tabs do not touch
+   it. Its bar fills once from nothing as the screen opens. */
+#stats-card { flex: none; margin: 4px 0 8px; padding: 12px 16px; background: var(--card); border-radius: 16px; }
+.rank-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0 16px; }
+.rank-top .kicker { line-height: 16px; }
+.rank-last { font-family: var(--ui); font-size: var(--t-label); line-height: 16px; color: var(--fg-2); }
+.rank-title { margin-top: 2px; font-family: var(--title); font-weight: 400; font-size: 28px; line-height: 30px; color: var(--fg); overflow-wrap: anywhere; }
+#stats-card .rank-bar { margin-top: 8px; }
+#stats-card .rank-fill { animation: rank-fill 500ms ease-out 150ms both; }
+.rank-need { margin-top: 6px; font-family: var(--ui); font-size: var(--t-status); line-height: 18px; color: var(--fg-2); text-wrap: balance; }
+.rank-rule { height: 1px; margin: 10px 0 4px; background: var(--line); }
+@media (prefers-reduced-motion: reduce) { #stats-card .rank-fill { animation: none; } }
+@media (max-height: 699px) {
+  #stats-card { padding: 10px 16px; }
+  .rank-title { font-size: 24px; line-height: 26px; }
+}
 /* the streak, one line: no figure here is larger than the best time's */
-#stats-streak { flex: none; min-height: 20px; margin: 4px 0 8px; font-family: var(--ui); font-size: var(--t-label); line-height: 20px; text-align: center; color: var(--fg-2); }
+#stats-streak { flex: none; min-height: 20px; margin: 0; text-wrap: balance; font-family: var(--ui); font-size: var(--t-label); line-height: 20px; text-align: center; color: var(--fg-2); }
 #stats-streak .lab { font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
 #stats-streak b { font-weight: 600; color: var(--fg); }
 #stats-streak .dot { margin: 0 4px; }
@@ -578,8 +630,10 @@ button.soon-tile:focus-visible { outline: 3px solid var(--ring); outline-offset:
 /* The graph is drawn by the script at the box's own width, so its words are 12px as drawn. Every colour in it is a class
    reading a token: a bar in its tier's colour, the best in ink, nothing written on a bar. The usual is ink dashes over
    a wider white stroke, which keeps an edge on the ink bar; a time has a halo of the page so the line never runs through it. */
+/* the graph gives up height to the rank's card on all but the tallest screens (features/Progression.md, 7.2) */
 #stats-graph { position: relative; flex: none; height: 300px; }
-@media (max-height: 595px) { #stats-graph { height: 184px; } }
+@media (max-height: 799px) { #stats-graph { height: 232px; } }
+@media (max-height: 639px) { #stats-graph { height: 160px; } }
 #stats-graph svg { display: block; }
 .g-bar { fill: var(--tier); }
 .g-bar.best, .g-base { fill: var(--fg); }
@@ -657,6 +711,7 @@ button.soon-tile:focus-visible { outline: 3px solid var(--ring); outline-offset:
   .record-head { grid-template-columns: auto minmax(0, 1fr); }
   .record-head h2 { text-align: right; }
   .record-head > span { display: none; }
+  .rank-title { font-size: 22px; line-height: 24px; }
   #stats-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   #stats-figures { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-auto-flow: row; }
 }
@@ -905,7 +960,11 @@ button.soon-tile:focus-visible { outline: 3px solid var(--ring); outline-offset:
     <h2 id="stats-heading" tabindex="-1">Stats</h2>
     <span></span>
   </div>
-  <p id="stats-streak"></p>
+  <div id="stats-card">
+    <div id="stats-rank"></div>
+    <div class="rank-rule"></div>
+    <p id="stats-streak"></p>
+  </div>
   <div id="stats-tabs"></div>
   <div id="stats-figures">
     <div class="kicker">Best</div><div class="stat-fig" id="stats-best"></div><div class="stat-under" id="stats-best-when"></div>
@@ -1461,7 +1520,8 @@ function dayCount(n) { return n === 1 ? "1 day" : n + " days"; }
 function scorecardReady(day) { return dayOpen(day, currentDay()) && TIERS.every(t => store.result(day, t.id)); }
 // What a Scorecard says under its rows (features/Rewards.md, 4.2): a lead from the card's day alone, a sentence from the
 // streak as it stands now, and on today's card a line when yesterday can still be added to it. Each has its own
-// condition, so every card has its words.
+// condition, so every card has its words. Under the streak, the day's points and the rank of its month as it stands now
+// (features/Progression.md, section 6); a day that earned nothing says nothing of them.
 function scorecardWords(day, today, snapshot) {
   const NUMBER = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight"], cap = w => w[0].toUpperCase() + w.slice(1);
   const got = snapshot.filter(o => o.day === day), cases = got.length ? got[0].n : TIERS.length, word = NUMBER[cases] || String(cases);
@@ -1473,7 +1533,10 @@ function scorecardWords(day, today, snapshot) {
   const run = s.current ? `Streak: <b>${dayCount(s.current)}</b>.` : broken ? `The streak ends at <b>${dayCount(broken)}</b>.` : `No streak running. Solve all ${word} in a day to start one.`;
   // a fact, not an order: the game does not press the player to keep a streak
   const small = day === today && complete && s.yesterdayPending ? "Yesterday's cases stay open until midnight Eastern; the streak still counts them." : "";
-  return { lead, run, small, solved: cases - unsolved, cases };
+  const month = monthOfDay(day), full = complete ? 40 : 0, points = got.reduce((sum, o) => sum + casePoints(o.tier, o.result), 0) + full;
+  // the break comes after the dot, so a rank's name never stands alone at the start of a line with a dot before it
+  const rank = points ? `<span class="nb"><b>+${pointWords(points)}</b> for ${month === monthOfDay(today) ? "the day" : MONTHS[month % 12]} ·</span> ${rankOf(monthPoints(snapshot, month)).name}` : "";
+  return { lead, run, small, rank, full: points && full ? `Full day +${full}` : "", solved: cases - unsolved, cases };
 }
 // The day's Scorecard, drawn from one reading of the results as it opens. It writes nothing and starts nothing, so a day
 // that turns while it is open changes nothing on it. Opened from Home there is no case behind it to go back from.
@@ -1494,6 +1557,8 @@ function showScorecard(day, fromHome) {
     <div class="stamp-closed">${day === today ? "Today's" : "Yesterday's"} Scorecard · ${WEEKDAYS[date.getUTCDay()]} ${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]}</div>
     <h2 class="card-head verdict-head">${words.lead}</h2>
     <p class="streak-line">${words.run}</p>
+    ${words.rank ? `<p class="streak-line rank-line">${words.rank}</p>` : ""}
+    ${words.full ? `<p class="fine full-day">${words.full}</p>` : ""}
     ${words.small ? `<p class="fine grace">${words.small}</p>` : ""}
     <ul class="scorecard">${rows}</ul>
     <div class="row">
@@ -1535,6 +1600,49 @@ function speedWords(snapshot, tier, day, time) {
   return { state: "faster", verdict: `${by} faster than your usual ${word}.`, row: `${by} faster` };
 }
 
+
+// ---------------------------------------------------------------- the rank for the month (features/Progression.md, section 3)
+// Points for solved cases fill a bar up a ladder of ranks, and every month starts again at Rookie. Nothing of it is
+// stored: each figure is worked out from the results it is handed, and nothing here writes. They are function
+// declarations with their tables inside them, as the usual's are.
+// a tier's par in seconds: a fixed time a tier, about half as long again as the time the tier is made for (A1)
+function parOf(tier) { return { starter: 90, easy: 210, medium: 420, hard: 900 }[tier]; }
+// a time that counts, strictly under its tier's par
+function underPar(tier, time) { return Number.isInteger(time) && time >= 1 && time < parOf(tier); }
+// A case's points: what its tier's place earns, and half as much again for each of no rejected accusation and a time
+// under par. A case counts when Stats counts it; one given up, or with no time to count, earns nothing. A hint costs
+// nothing, and nothing is ever taken away. wrong is read for results from before the killer was read off the board.
+function casePoints(tier, r) {
+  if (!r || r.gaveUp === true || !Number.isInteger(r.time) || r.time < 1) return 0;
+  const base = (TIERS.findIndex(t => t.id === tier) + 1) * 10;
+  return base + (asCount(r.falseStarts) === 0 && asCount(r.wrong) === 0 ? base / 2 : 0) + (underPar(tier, r.time) ? base / 2 : 0);
+}
+// A month's points: every case of its days, and 40 for each day in it that keeps the streak. A case belongs to the month
+// of its own day, whenever it was solved: the log has no time of play.
+function monthPoints(snapshot, month) {
+  const mine = snapshot.filter(o => monthOfDay(o.day) === month);
+  let points = mine.reduce((sum, o) => sum + casePoints(o.tier, o.result), 0);
+  streakDays(mine).forEach(d => { if (streakComplete(d)) points += 40; });
+  return points;
+}
+// The rank a month's points reach, the next one and what is still owed to it, and how far through its band they are
+// (1 at the top). The early ranks come quickly and the later ones slowly.
+function rankOf(points) {
+  const LADDER = [["Rookie", 0], ["Constable", 100], ["Detective Constable", 250], ["Detective Sergeant", 500], ["Inspector", 900],
+    ["Chief Inspector", 1500], ["Superintendent", 2700], ["Chief Superintendent", 4000], ["Master Detective", 5700]];
+  let at = 0;
+  while (at + 1 < LADDER.length && points >= LADDER[at + 1][1]) at++;
+  const [name, from] = LADDER[at], up = LADDER[at + 1];
+  return { at, name, next: up ? up[0] : null, owed: up ? up[1] - points : 0, need: up ? up[1] : null, fraction: up ? (points - from) / (up[1] - from) : 1 };
+}
+function pointWords(n) { return n.toLocaleString("en-US"); }
+// The bar, drawn fresh each time with its two widths in the element's own style attribute, so nothing is set on it
+// afterwards and nothing is left set. With no points there is no fill, and the track shows alone. wrap: the fill runs
+// to the end of the old band and starts the new one.
+function rankBar(from, to, points, wrap) {
+  const pc = f => Math.round(f * 1000) / 10 + "%";
+  return `<div class="rank-bar">${points ? `<i class="rank-fill${wrap ? " wrap" : ""}" style="--from:${pc(from)};--to:${pc(to)}"></i>` : ""}</div>`;
+}
 // ---------------------------------------------------------------- helpers
 const $ = id => document.getElementById(id);
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
@@ -1665,10 +1773,12 @@ const howTo = c => { const set = artSet(c).objects, pic = o => artSvg(set[o].sym
     <li><b>Above, left, diagonally adjacent.</b> "In a row above" means any higher row, in any column. "In a column to the left" means any column further left, in any row. "Diagonally adjacent" means the two squares touch only at a corner; the two people can be in different rooms. A corner of a room is a square touching two walls of its own room.</li>
     <li><b>Some cases have a Local rule.</b> It closes a room, or a kind of square such as every chair, to some people or to everyone. It is always stated on the case, and the squares it closes are hatched on the map.</li>
     <li><b>The killer was left alone with the body.</b> Place everyone and press Accuse: the one suspect you have put in the victim's room is the person you accuse.</li>
+    <li><b>Your rank for the month.</b> Every case you solve adds to your rank for the month: more for a harder case, and more again when it is solved with no wrong accusation, or under par. Solve all four in a day for more still. Each month starts again at Rookie.</li>
   </ol>
   <p class="toolkit"><b>Draft</b> notes where someone might be · <b>Cross out</b> rules a square out · <b>Lens</b> dims every square the selected person's own statement rules out · <b>Hint</b> has the Inspector put one person on their correct square.</p>
   <p class="typed">Every case has exactly one solution, and you can reach it by reasoning alone. Nothing is checked until you accuse.</p>
   <p>Once you have solved three cases of a size, the game tells you when a new one beats your usual time for that size, and when it is your fastest yet.</p>
+  <p>Under par: ${TIERS.map(t => `${tierWord(t)} ${fmtTime(parOf(t.id))}`).join(", ")}.</p>
   <div class="row"><button class="btn primary" data-close data-dismiss>Got it. Show me the body.</button></div>`; };
 
 function showHowTo(onClose, c) {
@@ -1833,7 +1943,8 @@ function fitTiles() {
 }
 
 // ---------------------------------------------------------------- Stats (features/StatsAndArchive.md, section 7)
-// The best time, the usual time and the last seven solves of a tier, and the streak in one line. Nothing of it is stored:
+// The best time, the usual time and the last seven solves of a tier, and above them a card with the rank for the month
+// and the streak in one line (features/Progression.md, section 7). Nothing of it is stored:
 // each drawing takes one reading of the results and works every figure out from it. Opening the screen or pressing a
 // tab writes no result.
 // a tier's name where the room is a tab's: the Daily Starter is "Starter"
@@ -1862,6 +1973,8 @@ function renderStats(fresh) {
   const tier = pressed ? pressed.dataset.tier : solves.length ? solves[solves.length - 1].tier : TIERS[0].id, word = tierWord(TIERS.find(t => t.id === tier));
   [...tabs.children].forEach(b => b.setAttribute("aria-pressed", String(b.dataset.tier === tier)));
   $("stats").dataset.tier = tier;
+  // the rank is drawn once, as the screen opens, so a tab press neither touches it nor fills its bar again
+  if (fresh) $("stats-rank").innerHTML = rankCard(today, snapshot);
   // before any complete day there is no streak to name
   const run = streak(today, snapshot);
   $("stats-streak").innerHTML = `<span class="lab">Streak</span> <b>${run.best ? dayCount(run.current) : "–"}</b><span class="dot"> · </span><span class="lab">Longest</span> <b>${run.best ? dayCount(run.best) : "–"}</b>`;
@@ -1883,6 +1996,15 @@ function renderStats(fresh) {
   $("stats-graph-label").textContent = `Last 7 ${word} cases`;
   statsDrawn = { bars: mine.slice(-7), best, usual, word };
   drawStatsGraph();
+}
+// The rank for this month, its bar filling from nothing, what is owed to the next rank, and last month's rank where last
+// month earned anything. At the top there is no next rank and the bar is full.
+function rankCard(today, snapshot) {
+  const month = monthOfDay(today), points = monthPoints(snapshot, month), now = rankOf(points), last = monthPoints(snapshot, month - 1);
+  return `<div class="rank-top"><span class="kicker">${MONTHS[month % 12]}</span>${last ? `<span class="rank-last">Last month: ${rankOf(last).name}</span>` : ""}</div>
+    <div class="rank-title">${now.name}</div>
+    ${rankBar(0, now.fraction, points, false)}
+    ${now.next ? `<div class="rank-need">${pointWords(points)} of ${pointWords(now.need)} to ${now.next}</div>` : ""}`;
 }
 // The graph: seven slots, the most recent solves filling them from the left, each bar in proportion to its time from
 // zero with its time above and its date beneath, as words. Its viewBox is the box's own width, so 12px is drawn at 12px;
@@ -2950,6 +3072,26 @@ function closeCase() {
   showVerdict(recorded);
 }
 
+// What a case just solved has added to the rank for its month (features/Progression.md, section 4): the month with
+// this case against the month without it, from the one reading the verdict takes, so a case finished after another
+// never counts twice. Nothing when the reading does not hold the case, or when it earned nothing (a case given up).
+function rankWords(snapshot, today) {
+  const mine = snapshot.find(o => o.day === state.day && o.tier === state.c.tier), month = monthOfDay(state.day);
+  if (!mine) return "";
+  const to = monthPoints(snapshot, month), from = monthPoints(snapshot.filter(o => o !== mine), month);
+  if (to <= from) return "";
+  const was = rankOf(from), now = rankOf(to), promoted = now.at > was.at;
+  // a promotion fills the old band and starts the new one, but at the top there is no new band to start
+  const wrap = promoted && now.next !== null;
+  const other = month !== monthOfDay(today) ? ` <span class="rank-for">for ${MONTHS[month % 12]}</span>` : "";
+  const after = promoted ? `<div class="rank-promoted">Promoted to ${now.name}.</div>` : now.next ? `<div class="rank-owed">${pointWords(now.owed)} to ${now.next}</div>` : "";
+  return `<div class="rank">
+      <div class="rank-row"><span class="rank-points">+${pointWords(to - from)}</span>${other} <span class="rank-dot">·</span> <span class="rank-name">${now.name}</span></div>
+      ${rankBar(was.fraction, now.fraction, to, wrap)}
+      ${after}
+    </div>`;
+}
+
 // recorded: this case's result has just been written. With nothing handed in the sheet is a result looked at, or one
 // that records nothing.
 function showVerdict(recorded) {
@@ -2978,7 +3120,11 @@ function showVerdict(recorded) {
   const snapshot = store.outcomes(), kept = snapshot.filter(o => o.day === state.day);
   // the time beside the player's usual for the tier (features/PersonalBest.md, section 4), for the result just made or
   // the one being looked at, against the solves before its own day. A replay and a case given up have none.
-  const speed = (recorded === true || state.viewing) && !state.gaveUp ? speedWords(snapshot, c.tier, state.day, state.elapsed) : null;
+  const told = (recorded === true || state.viewing) && !state.gaveUp, speed = told ? speedWords(snapshot, c.tier, state.day, state.elapsed) : null;
+  // the time under its tier's par earns its points, and is said with the line on the usual, ahead of it (A1)
+  const pace = [told && underPar(c.tier, state.elapsed) ? "Under par." : "", speed ? speed.verdict : ""].filter(Boolean).join(" ");
+  // the rank moves only with a result just made, never with one looked at or a replay
+  const rank = recorded === true ? rankWords(snapshot, today) : "";
   const solvedToday = kept.filter(o => !o.result.gaveUp).length, casesThen = kept.length ? kept[0].n : TIERS.length;
   openModal(`
     <div class="verdict-tile" data-tier="${c.tier}" aria-hidden="true">${fileGrid(c.n, 0)}${state.gaveUp ? "" : `<div class="solved-check"><i class="seal"></i><span>Solved</span></div>`}</div>
@@ -2991,7 +3137,8 @@ function showVerdict(recorded) {
       <div><dt>Hint</dt><dd>${state.hints ? "Used" : "None"}</dd></div>
       <div><dt>${state.day === today ? "Today" : state.day === today - 1 ? "Yesterday" : WEEKDAYS[dateOfDay(state.day).getUTCDay()]}</dt><dd>${solvedToday} of ${casesThen}</dd></div>
     </dl>
-    ${speed ? `<p class="verdict-speed">${esc(speed.verdict)}</p>` : ""}
+    ${pace ? `<p class="verdict-speed">${esc(pace)}</p>` : ""}
+    ${rank}
     <div class="row verdict-row">
       ${again ? `<button class="btn" data-again>Play again</button>` : ""}
       ${card && state.viewing ? `<button class="btn" data-card>Scorecard</button>` : ""}
@@ -3002,6 +3149,8 @@ function showVerdict(recorded) {
     <p class="fine">${fine}</p>`, m => {
     // focus lands on the heading, below the label: without this a solved case and an abandoned one sound the same on opening
     m.setAttribute("aria-describedby", state.gaveUp ? "modal-stamp" : "modal-stamp modal-accused");
+    // a verdict carrying the rank closes up its gaps to make room for it
+    if (rank) m.classList.add("ranked");
     // the verdict that ends the day has no X: every way out of it opens the Scorecard, and an X would say it closes
     if (ends) m.querySelector(".sheet-close").remove();
     const files = m.querySelector("[data-files]");
