@@ -133,8 +133,9 @@ body.modal-open { overflow: hidden; }
 .board-frame { padding: 1px; background: transparent; border: 1px solid transparent; position: relative; }
 .board-frame::before { content: ""; position: absolute; inset: -1px; border-radius: 14px; background: var(--fg); }
 .board { display: grid; position: relative; background: var(--fg); user-select: none; -webkit-user-select: none; touch-action: manipulation; }
-/* layers in a square, bottom to top: floor tint and staff hatch, object, window, brass corner,
-   claimed wash, cross-out and draft marks, lens and hint overlay, token, room label */
+/* layers in a square, bottom to top: floor tint and staff hatch, object, window, brass corner, claimed wash, room label,
+   cross-out, lens and hint overlay, token, draft marks. The label is under the people and their drafts, and the Lens
+   dims it (features/RoomLabels.md). */
 .cell { position: relative; border: 1px solid rgba(42,36,24,.16); cursor: pointer; }
 .cell.wt { border-top: 3px solid var(--fg); }
 .cell.wb { border-bottom: 3px solid var(--fg); }
@@ -150,7 +151,7 @@ body.modal-open { overflow: hidden; }
 .cell .corner { position: absolute; top: 0; right: 0; width: 24%; height: 24%; z-index: 2; pointer-events: none; }
 .cell.claimed::after { content: ""; position: absolute; inset: 0; background: rgba(26,29,42,.2); z-index: 2; pointer-events: none; }
 .cell .mark { position: absolute; inset: 0; display: grid; place-items: center; z-index: 3; color: #a35f43; font-family: var(--ui); font-weight: 600; font-size: calc(var(--cell) * .62); line-height: 1; pointer-events: none; }
-.drafts { position: absolute; left: 4%; right: 4%; bottom: 3%; display: flex; flex-wrap: wrap; gap: 0 calc(var(--cell) * .04); z-index: 3; pointer-events: none; }
+.drafts { position: absolute; left: 4%; right: 4%; bottom: 3%; display: flex; flex-wrap: wrap; gap: 0 calc(var(--cell) * .04); z-index: 5; pointer-events: none; }
 .draft { font-family: var(--ui); font-weight: 600; font-size: max(10px, calc(var(--cell) * .19)); line-height: 1.05; color: var(--who, #4a3f2c); background: #f4ecd8; padding: 0 .16em; }
 /* the token colours are too weak as letters on the cream chip, so the selected person's drafts reverse into a small copy of their token, cream ring included: without it the chip has no edge on teal art */
 .draft.focus { color: #f4ecd8; background: var(--who, #4a3f2c); box-shadow: 0 0 0 1px #f4ecd8; }
@@ -160,10 +161,18 @@ body.modal-open { overflow: hidden; }
 .cell.away .fx { background: rgba(26,29,42,.5); }
 .cell.hint-flash .fx { animation: flash 1s ease-in-out 3; }
 @keyframes flash { 50% { box-shadow: inset 0 0 0 4px var(--bad); } }
-.cell .room-label { position: absolute; top: 1px; left: 2px; z-index: 6; padding: 0 2px; background: rgba(244,236,216,.78); overflow: hidden; text-overflow: ellipsis; font-family: var(--ui); font-weight: 600; font-size: clamp(8px, calc(var(--cell) * .15), 12px); letter-spacing: .06em; text-transform: uppercase; color: var(--fg-body); white-space: nowrap; pointer-events: none; line-height: 1.25; }
-/* a Local rule's word must never be cut off, so a label that carries one may take a second line */
-.cell .room-label.ruled { white-space: normal; line-height: 1.15; }
-.cell .room-label.vertical { writing-mode: vertical-rl; top: 2px; left: 1px; padding: 2px 0; }
+/* One line, sized by the square, on bare floor or a solid piece (10-play.js, labelSpot, measures it at these figures).
+   It shares the shading's level and comes ahead of it in the markup, so the shading is drawn over it. */
+.cell .room-label, .cell .rule-chip.apart { position: absolute; top: 1px; left: 2px; z-index: 3; font-family: var(--ui); font-weight: 600; font-size: clamp(8px, calc(var(--cell) * .17), 12px); letter-spacing: .06em; line-height: 1.25; text-transform: uppercase; white-space: nowrap; pointer-events: none; }
+.cell .room-label { display: flex; padding-inline: 2px; background: rgba(244,236,216,.86); color: var(--fg-body); }
+/* the name gives way before the rule's word: a name shortened by labelSpot is drawn from data-short */
+.room-label .room-name { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; }
+.room-label .room-name[data-short]::before { content: attr(data-short); }
+/* A Local rule's word is a chip of its own, never cut, and the room's hatch is still the second cue. Where the name
+   takes a run of the room the chip has another. */
+.cell .rule-chip { flex: none; margin-inline-start: 3px; padding-inline: 3px; background: #2a2418; color: #f4ecd8; }
+.cell .rule-chip.apart { margin: 0; }
+.cell .room-label.vertical { writing-mode: vertical-rl; top: 2px; left: 1px; }
 
 /* centred with inset, not a transform: the drop animation below animates transform */
 .token { position: absolute; inset: 24%; border-radius: 50%; display: grid; place-items: center; font-family: var(--ui); font-weight: 600;
@@ -2481,6 +2490,111 @@ function sizePanel() {
   $("clues").dataset.size = (PHONE_PANEL_STEPS.find(step => room >= step[1]) || ["s"])[0];
 }
 
+// ---------------------------------------------------------------- room labels
+// A room's name is one line on bare floor or a solid piece, never over a brass corner or a teal drawing, in whichever
+// row of the room shows most of it; a Local rule's word is a chip beside it and is never cut (features/RoomLabels.md).
+// The spot is read from the plan alone, never the solution, so it gives nothing away.
+// The label's padding, the chip's padding and its gap from the name, and the label's inset from its square's edge, as 02-play.css sets them.
+const LABEL_PAD = 4, CHIP_PAD = 6, CHIP_GAP = 3, LABEL_INSET = 2;
+// a square's border: 3px where a wall runs, 1px inside a room
+const SIDE = { wall: 3, open: 1 };
+const labelFont = cell => Math.min(12, Math.max(8, cell * .17));
+// Widths are measured in the page's own face. Until the faces arrive they are measured in the fallback, so the cache is
+// cleared and the board built again once they have.
+const labelWidths = new Map();
+let labelPen = null;
+function labelWidth(text, cell) {
+  const px = labelFont(cell), key = px + " " + text;
+  if (!labelWidths.has(key)) {
+    if (!labelPen) labelPen = document.createElement("canvas").getContext("2d");
+    labelPen.font = `600 ${px}px ${getComputedStyle(document.documentElement).getPropertyValue("--ui")}`;
+    const caps = text.toUpperCase();
+    labelWidths.set(key, labelPen.measureText(caps).width + caps.length * px * .06);
+  }
+  return labelWidths.get(key);
+}
+// The name as it may be shortened, longest first: whole, without a trailing Room, Car or Van ("Compartment" as "Cmpt"),
+// then the first word. A trailing single capital, as in "Compartment A", tells two rooms apart and is never dropped.
+// A form no shorter than the one before it is left out.
+function labelNames(name) {
+  const words = name.split(" "), last = words[words.length - 1], tail = words.length > 1 && /^[A-Z]$/.test(last) ? " " + last : "";
+  const out = [[1, name]];
+  if (words[0] === "Compartment") out.push([3, "Cmpt" + tail]);
+  else if (words.length > 1 && ["Room", "Car", "Van"].includes(last)) out.push([3, words.slice(0, -1).join(" ")]);
+  if (words.length > 1) out.push([4, out[out.length - 1][1].split(" ")[0] + tail]);
+  return out.filter((x, i) => i === 0 || x[1].length < out[i - 1][1].length).map(x => [...x, tail]);
+}
+// Where a room's label goes at this size of square, and what it says. Returns the square it starts on (r, k), whether
+// it runs down the room, the squares it may cross (len) and the room they give it (cap, in px), whether it stands on a
+// drawing for want of bare floor (onArt), the rung of features/RoomLabels.md's requirement 6 it reached,
+// the text shown, and where the rule's chip is: "inline", a run of its own (r, k, len, cap), or null for a room with no rule.
+function labelSpot(rooms, objects, legend, room, cell, name, word) {
+  const n = rooms.length, outside = (r, k) => r < 0 || k < 0 || r >= n || k >= n || rooms[r][k] !== room;
+  const side = (r, k) => outside(r, k) ? SIDE.wall : SIDE.open;
+  const bare = (r, k) => objects[r][k] === "." || legend[objects[r][k]].blocking;
+  const squares = [];
+  for (let r = 0; r < n; r++) for (let k = 0; k < n; k++) if (rooms[r][k] === room) squares.push([r, k]);
+  const vertical = squares.length > 1 && squares.every(p => p[1] === squares[0][1]);
+  let runs = [];
+  if (vertical) {
+    const [r, k] = squares[0], e = squares[squares.length - 1][0];
+    runs.push({ r, k, len: e - r + 1, cap: (e - r + 1) * cell - side(r - 1, k) - side(e + 1, k) - 2 * LABEL_INSET });
+  } else {
+    // each stretch of bare squares in a row, in reading order, so the first that serves is the topmost and then the leftmost
+    for (const [r, k] of squares) {
+      if (!bare(r, k) || (!outside(r, k - 1) && bare(r, k - 1))) continue;
+      let e = k;
+      while (!outside(r, e + 1) && bare(r, e + 1)) e++;
+      runs.push({ r, k, len: e - k + 1, cap: (e - k + 1) * cell - side(r, k - 1) - side(r, e + 1) - 2 * LABEL_INSET });
+    }
+    // a room with no bare square: the label starts on a drawing and stops short of its corner
+    if (!runs.length) runs = squares.map(([r, k]) => ({ r, k, len: 1, onArt: true, cap: .7 * cell - side(r, k - 1) - LABEL_INSET }));
+  }
+  const chip = word ? labelWidth(word, cell) + CHIP_PAD : 0;
+  const need = (text, inline) => labelWidth(text, cell) + LABEL_PAD + (inline ? CHIP_GAP + chip : 0);
+  const spot = (rung, run, text, chipAt) => ({ r: run.r, k: run.k, vertical, len: run.len, cap: run.cap, onArt: !!run.onArt, rung, text, chip: !word ? null : chipAt || "inline" });
+  // The name and the chip in one run, or else, beside a rule, the name in one run and the chip in a later one: a chip
+  // in a square drawn after the name's is under that square's own shading.
+  const place = (text, rung) => {
+    const at = runs.find(run => need(text, !!word) <= run.cap);
+    if (at) return spot(rung, at, text);
+    if (!word || vertical) return null;
+    for (let i = 0; i < runs.length; i++) {
+      if (need(text, false) > runs[i].cap) continue;
+      const apart = runs.slice(i + 1).find(run => chip <= run.cap);
+      if (apart) return spot(rung === 1 ? 2 : rung, runs[i], text, { r: apart.r, k: apart.k, len: apart.len, cap: apart.cap });
+    }
+    return null;
+  };
+  const names = labelNames(name);
+  for (const [rung, text] of names) {
+    const got = place(text, rung);
+    if (got) return got;
+  }
+  // the first word cut to the most letters that fit, four at least
+  const tail = names[0][2], first = names[names.length - 1][1].split(" ")[0];
+  for (let len = first.length - 1; len >= 4; len--) {
+    const got = place(first.slice(0, len) + "…" + tail, 5);
+    if (got) return got;
+  }
+  const widest = runs.reduce((a, run) => run.cap > a.cap ? run : a);
+  return spot(5, widest, (first.length > 4 ? first.slice(0, 4) + "…" : first) + tail);
+}
+// A room's label as labelSpot places it. Its text is always "Name · Word": a shortened name is drawn from data-short
+// over the whole one, kept out of sight, and the separator is never drawn.
+function roomLabel(s, name, word) {
+  const lab = el("span", "room-label" + (s.vertical ? " vertical" : ""));
+  const shown = el("span", "room-name", s.text === name ? esc(name) : null);
+  if (s.text !== name) { shown.dataset.short = s.text; shown.appendChild(el("span", "sr-only", esc(name))); }
+  lab.appendChild(shown);
+  if (word) {
+    lab.appendChild(el("span", "sr-only", " · "));
+    lab.appendChild(el("span", s.chip === "inline" ? "rule-chip" : "sr-only", esc(word)));
+  }
+  lab.style[s.vertical ? "maxHeight" : "maxWidth"] = s.cap + "px";
+  return lab;
+}
+
 function buildBoard() {
   const { board: b, c } = state;
   const n = b.n;
@@ -2495,7 +2609,7 @@ function buildBoard() {
   grid.style.gridTemplateRows = `repeat(${n}, ${cell}px)`;
   const roomCodes = [...new Set(c.rooms.join(""))];
   const tints = artSet(c).tints;
-  const labelled = new Set();
+  const spots = new Map(roomCodes.map(rm => [rm, labelSpot(c.rooms, c.objects, c.legend, rm, cell, c.roomNames[rm], b.ruleWord(rm))]));
   state.cells = [];
   for (let r = 0; r < n; r++) {
     state.cells.push([]);
@@ -2510,15 +2624,13 @@ function buildBoard() {
       if (b.edge(r, k, 0, -1)) d.classList.add("wl");
       if (b.edge(r, k, 0, 1)) d.classList.add("wr");
       if (b.ruleWord(rm) || b.closedObjects.has(o)) d.classList.add("staff");
-      if (!labelled.has(rm)) {
-        labelled.add(rm);
-        let wide = 0, tall = 0;
-        while (k + wide < n && b.room(r, k + wide) === rm) wide++;
-        while (r + tall < n && b.room(r + tall, k) === rm) tall++;
-        const lab = el("span", "room-label", esc(c.roomNames[rm]) + (b.ruleWord(rm) ? " · " + b.ruleWord(rm) : ""));
-        if (wide === 1 && tall >= 3) { lab.classList.add("vertical"); lab.style.maxHeight = (tall * cell - 4) + "px"; }
-        else { lab.style.maxWidth = (wide * cell - 5) + "px"; if (b.ruleWord(rm)) lab.classList.add("ruled"); }
-        d.appendChild(lab);
+      // the label comes ahead of the square's shading, so the Lens and the closing dim fall over it
+      const s = spots.get(rm);
+      if (s.r === r && s.k === k) d.appendChild(roomLabel(s, c.roomNames[rm], b.ruleWord(rm)));
+      if (s.chip && s.chip.r === r && s.chip.k === k) {
+        const chip = el("span", "rule-chip apart", esc(b.ruleWord(rm)));
+        chip.setAttribute("aria-hidden", "true");
+        d.appendChild(chip);
       }
       if (o !== ".") {
         const L = c.legend[o];
@@ -3325,8 +3437,13 @@ window.addEventListener("resize", refit);
 // insets, and a screen that opens as the page loads (the day's cases, or a case that was open) is measured in that
 // moment, for more room than there is. The probe's height is the room: when it changes, all is measured again.
 if (window.ResizeObserver) new ResizeObserver(refit).observe($("vh-probe"));
-// the game's faces arrive after the first drawing and set wider than the fallback: a title may then take another line
-document.fonts.ready.then(() => { if ($("select").classList.contains("active")) fitTiles(); }).catch(() => {});
+// the game's faces arrive after the first drawing and set wider than the fallback: a title may then take another line,
+// and a room label measured in the fallback may want another row
+document.fonts.ready.then(() => {
+  labelWidths.clear();
+  if ($("select").classList.contains("active")) fitTiles();
+  if (state && $("game").classList.contains("active")) { buildBoard(); render(); }
+}).catch(() => {});
 // crossing the phone width, by rotating for instance: an open Casebook would otherwise leave the page shut off
 PHONE.addEventListener("change", () => {
   closeCasebook();
