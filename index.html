@@ -1910,11 +1910,11 @@ const howTo = c => { const set = artSet(c).objects, pic = o => artSvg(set[o].sym
       <div class="art-row">${pic("T")}${pic("D")}${pic("B")}${pic("L")} solid</div></li>
     <li><b>Windows are in the walls.</b> "In front of a window" means the square just inside it.
       <div class="art-row">${pic("W")} window</div></li>
-    <li><b>"Beside" means touching, in the same room.</b> Directly north, east, south or west of the object. Diagonals don't count, and neither does the object's own square: someone sitting in a chair is <i>not</i> beside a chair.</li>
+    <li><b>"Beside" means touching, in the same room.</b> Directly above, below, left or right of the object. Diagonals don't count, and neither does the object's own square: someone sitting in a chair is <strong>not</strong> beside a chair.</li>
     <li><b>ONLY and ALONE mean nobody else.</b> "The ONLY person beside a table" keeps everyone else off the squares beside tables. It does not stop anyone else sitting in a chair or standing on a rug.</li>
     <li><b>Above, left, diagonally adjacent.</b> "In a row above" means any higher row, in any column. "In a column to the left" means any column further left, in any row. "Diagonally adjacent" means the two squares touch only at a corner; the two people can be in different rooms. A corner of a room is a square touching two walls of its own room.</li>
     <li><b>Some cases have a Local rule.</b> It closes a room, or a kind of square such as every chair, to some people or to everyone. It is always stated on the case, and the squares it closes are hatched on the map.</li>
-    <li><b>The killer was left alone with the body.</b> Place everyone and press Accuse: the one suspect you have put in the victim's room is the person you accuse.</li>
+    <li><b>The killer was left alone with the body.</b> Any number of people may share a room; only the killer is alone with the body. Place everyone and press Accuse: the one suspect you have put in the victim's room is the person you accuse.</li>
     <li><b>Your rank for the month.</b> Every case you solve adds to your rank for the month: more for a harder case, and more again when it is solved with no wrong accusation, or under par. Solve all four in a day for more still, and more again for each day in a row. Each month starts again at Rookie.</li>
   </ol>
   <p class="toolkit"><b>Draft</b> notes where someone might be · <b>Cross out</b> rules a square out · <b>Lens</b> dims every square the selected person's own statement rules out · <b>Hint</b> has the Inspector put one person on their correct square.</p>
