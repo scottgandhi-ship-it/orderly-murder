@@ -343,7 +343,6 @@ body.modal-open { overflow: hidden; }
 /* the rejected sheet's mark: a ring with the red cross */
 .rejected-mark { width: 76px; height: 76px; margin: 8px 0 20px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--fg); display: grid; place-items: center; color: var(--bad); }
 .rejected-mark::before { content: ""; width: 26px; height: 26px; background: currentColor; -webkit-mask: var(--icon-cross) center / contain no-repeat; mask: var(--icon-cross) center / contain no-repeat; }
-.modal .accused { color: var(--fg-2); }
 @media (min-width: 601px) {
   .modal-bg { background: rgba(27,27,27,.5); padding: 24px 16px; }
   .modal { min-height: 0; max-width: 640px; padding: 28px 28px 24px; background: var(--card); border-radius: 24px; }
@@ -3413,7 +3412,9 @@ function showVerdict(recorded) {
   const fine = late ? "Finished after its day had closed. The result is kept; the day is not counted as complete."
     : !state.viewing ? `${next ? "" : "That is every case for this day. "}The next body arrives in ${arrives}`
     : state.day === today ? `The next body arrives in ${arrives}` : again ? `Yesterday's cases close in ${arrives}` : "This day's cases are closed.";
-  const role = k.role.replace(/^The\s+/i, "");
+  // "IT administrator" must not become "iT administrator": only a capital followed by a lowercase letter is lowered
+  const bare = k.role.replace(/^The\s+/i, "");
+  const word = /^[A-Z][a-z]/.test(bare) ? bare[0].toLowerCase() + bare.slice(1) : bare;
   // the third cell: the day's cases solved, this one counted, under the day's name (D6)
   // read from every result kept of the day, held or put away: a result opened from the Archive may be in the log alone
   const snapshot = store.outcomes(), kept = snapshot.filter(o => o.day === state.day);
@@ -3428,8 +3429,8 @@ function showVerdict(recorded) {
   openModal(`
     <div class="verdict-tile" data-tier="${c.tier}" aria-hidden="true">${fileGrid(c.n, 0)}${state.gaveUp ? "" : `<div class="solved-check"><i class="seal"></i><span>Solved</span></div>`}</div>
     <div class="stamp-closed" id="modal-stamp">${state.gaveUp ? "Case abandoned" : "Case closed"} · ${esc(c.title)}</div>
-    <h2 class="verdict-head">The ${esc(/^[A-Z][a-z]/.test(role) ? role[0].toLowerCase() + role.slice(1) : role)} did it.</h2>
-    ${state.gaveUp ? "" : `<p class="accused" id="modal-accused">You accused ${esc(k.short)}.</p>`}
+    <h2 class="verdict-head">${state.gaveUp ? `${esc(k.short)}, the ${esc(word)}, did it.` : "Solved!"}</h2>
+    ${state.gaveUp ? "" : `<p class="verdict-who" id="modal-who">${esc(k.short)}, the ${esc(word)}, did it.</p>`}
     <p>${esc(k.short)} was the only soul in ${esc(scene)} with ${esc(c.victim.short)}. <i>${esc(c.motives[c.killer - 1])}</i></p>
     <dl class="stats">
       <div><dt>Time</dt><dd>${fmtTime(state.elapsed)}</dd></div>
@@ -3446,8 +3447,8 @@ function showVerdict(recorded) {
       ${card && !state.viewing ? `<button class="btn primary" data-card${ends ? " data-dismiss" : ""}>Scorecard</button>` : ""}
     </div>
     <p class="fine">${fine}</p>`, m => {
-    // focus lands on the heading, below the label: without this a solved case and an abandoned one sound the same on opening
-    m.setAttribute("aria-describedby", state.gaveUp ? "modal-stamp" : "modal-stamp modal-accused");
+    // "Solved!" names nobody, so that sheet is also described by who did it. A case given up names the culprit and role in the heading.
+    m.setAttribute("aria-describedby", state.gaveUp ? "modal-stamp" : "modal-stamp modal-who");
     // a verdict carrying the rank closes up its gaps to make room for it; a tap anywhere on it ends the moment at once,
     // and a tap on a button still does what the button does
     if (rank) {
