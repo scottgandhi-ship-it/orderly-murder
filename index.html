@@ -1882,6 +1882,8 @@ function openModal(html, onMount, kind, form) {
   else { heading.tabIndex = -1; heading.focus(); $("modal-bg").scrollTop = 0; }
 }
 function closeModal() {
+  // a verdict's beats end with it: "Next case" or Escape must not let one play over the next board
+  stopRankBeats();
   if (!modalOpen()) return;
   $("modal-bg").classList.remove("open");
   setBehindModal(false);
@@ -2305,6 +2307,18 @@ function backToDay(toToday) {
 // ---------------------------------------------------------------- game state
 let state = null;
 let timerHandle = null;
+// The iOS shell's haptic player (features/Haptics.md), looked up once as savedShell is: in a browser, and in an app built
+// before it, there is none and nothing below reaches anything. The page says what is felt and when; the shell only plays.
+const hapticShell = (() => {
+  try { const h = window.webkit.messageHandlers.haptics; return h && typeof h.postMessage === "function" ? h : null; } catch { return null; }
+})();
+function haptic(pattern, intensity) {
+  if (!hapticShell || document.hidden) return;
+  try { hapticShell.postMessage(intensity === undefined ? { pattern } : { pattern, intensity }); } catch {}
+}
+// The verdict's beats still to come, dropped by a tap that skips the moment and by closeModal, so none plays over the next board.
+let rankBeats = [];
+function stopRankBeats() { rankBeats.forEach(clearTimeout); rankBeats = []; }
 
 function startTimer() {
   stopTimer();
@@ -2818,16 +2832,16 @@ function onCellClick(r, k, mark) {
     snapshot();
     const key = r + "," + k;
     state.marks.has(key) ? state.marks.delete(key) : state.marks.add(key);
-    render(); return;
+    haptic("mark"); render(); return;
   }
   if (state.draftMode) {
     if (state.selected == null) { flashStatus("Choose a person to draft first.", "warn"); return; }
     if (occupant >= 0 || b.blocking(r, k)) return;
-    snapshot(); toggleDraft(r + "," + k, state.selected); render(); return;
+    snapshot(); toggleDraft(r + "," + k, state.selected); haptic("mark"); render(); return;
   }
   if (occupant >= 0 && (state.selected == null || state.selected === occupant)) {
     // pick the person back up
-    snapshot(); state.pos[occupant] = null; state.selected = occupant; render(); return;
+    snapshot(); state.pos[occupant] = null; state.selected = occupant; haptic("select"); render(); return;
   }
   if (state.selected == null) { flashStatus("Choose a person first.", "warn"); return; }
   if (b.blocking(r, k)) { flashStatus("Nobody can stand there; it's furniture.", "warn"); return; }
@@ -2838,6 +2852,8 @@ function onCellClick(r, k, mark) {
   settleDrafts(state.selected, r, k);
   // nobody is selected afterwards: testers kept placing a person the game had picked for them
   state.selected = null;
+  // the same on the right square and a wrong one: a haptic says a move was made, never that it was right
+  haptic("tap");
   render();
 }
 
@@ -2845,6 +2861,7 @@ function undo() {
   const h = state.history.pop();
   if (!h) return;
   clearNotices();
+  haptic("select");
   state.pos = h.pos; state.marks = h.marks; state.drafts = h.drafts; render();
 }
 
@@ -3097,6 +3114,7 @@ function hint() {
   // the cell is held here because the board may be rebuilt, for another case or another size, before the flash ends
   const cell = state.cells[r][k];
   cell.classList.add("hint-flash");
+  haptic("hint");
   setTimeout(() => cell.classList.remove("hint-flash"), 3000);
   flashStatus(hintMessage(people[next].short, moved, ousted >= 0 ? people[ousted].short : null), "good", true);
 }
@@ -3229,6 +3247,8 @@ function submitFindings() {
   if (withBody.length !== 1) {
     const scene = roomRef(c.roomNames[b.room(...pos[0])]);
     const names = withBody.map(i => people[i].short);
+    // felt here and below, not in rejectAccusation, which a Give up cancelled from the Reveal sheet opens again
+    haptic("error");
     // not counted: with nobody, or two, beside the body the board accuses no one, and the player can count that for themselves
     rejectAccusation({ rule: true, ring: [0, ...withBody], detail: names.length
       ? `You've put ${nameList(names)} in ${scene} with ${c.victim.short}. That is ${names.length} suspects.`
@@ -3237,7 +3257,7 @@ function submitFindings() {
   }
   const objection = findObjection();
   const correct = !objection && pos.every((p, i) => p[0] === c.solution[i][0] && p[1] === c.solution[i][1]);
-  if (!correct) { state.falseStarts++; rejectAccusation(objection); return; }
+  if (!correct) { state.falseStarts++; haptic("error"); rejectAccusation(objection); return; }
   closeCase();
 }
 
@@ -3332,6 +3352,8 @@ function closeCase() {
   state.solved = true; state.selected = null; state.lens = false;
   stopTimer();
   const recorded = recordResult(false);
+  // here and not in showVerdict, which also opens a kept result and a case given up
+  haptic("success");
   render();
   showVerdict(recorded);
 }
@@ -3388,6 +3410,28 @@ function runRankCount(m) {
   requestAnimationFrame(step);
   setTimeout(finish, 300 + duration + 150);
   return finish;
+}
+
+// What a solve is owed in feel after its success (features/Haptics.md, section 4): taps rising with the count, spread over
+// its duration as the figure is, and one at the bar's settle; a promotion, or the verdict that ends the day, is one thump.
+// The times are the sheet's own (03-sheets.css). Returns what a tap that skips the moment does: the beats still to come are
+// dropped, and a thump still owed plays at once, unless the tap was on a button, which leaves the verdict.
+function feelVerdict(m, ends) {
+  stopRankBeats();
+  const rank = m.querySelector(".rank"), tile = m.querySelector(".verdict-tile"), up = !!rank && rank.classList.contains("up");
+  let owed = up || ends;
+  const thump = () => { if (owed) { owed = false; haptic("thump"); } };
+  // a sheet opened over the verdict (the Scorecard) takes its markup away, and with it what the beats belonged to
+  const at = (ms, f) => rankBeats.push(setTimeout(() => { if (tile.isConnected) f(); }, ms));
+  if (!rank || matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (owed) at(400, thump);
+  } else {
+    const big = rank.classList.contains("big"), stretch = (big ? 1000 : 700) / 700;
+    [[0, .25], [220, .45], [460, .65]].forEach(([t, v]) => { const ms = 300 + Math.round(t * stretch); if (!up || ms <= 850) at(ms, () => haptic("tap", v)); });
+    if (up) { at(900, thump); at(1600, () => haptic("select")); }
+    else at(big ? 1200 : 1000, () => { if (owed) thump(); else haptic("tap", .9); });
+  }
+  return e => { stopRankBeats(); if (e.target.closest("button")) owed = false; else thump(); };
 }
 
 // recorded: this case's result has just been written. With nothing handed in the sheet is a result looked at, or one
@@ -3451,10 +3495,11 @@ function showVerdict(recorded) {
     m.setAttribute("aria-describedby", state.gaveUp ? "modal-stamp" : "modal-stamp modal-who");
     // a verdict carrying the rank closes up its gaps to make room for it; a tap anywhere on it ends the moment at once,
     // and a tap on a button still does what the button does
+    const skipFeel = !state.viewing && !state.gaveUp ? feelVerdict(m, ends) : null;
     if (rank) {
       m.classList.add("ranked");
       const finish = runRankCount(m);
-      m.onclick = () => { m.querySelector(".rank")?.classList.add("skip"); finish(); };
+      m.onclick = e => { m.querySelector(".rank")?.classList.add("skip"); finish(); if (skipFeel) skipFeel(e); };
     }
     // the verdict that ends the day has no X: every way out of it opens the Scorecard, and an X would say it closes
     if (ends) m.querySelector(".sheet-close").remove();
