@@ -613,6 +613,8 @@ button.progress:focus-visible { outline: 3px solid var(--ring); outline-offset: 
 .case-card h3 { grid-area: title; margin: 0; font-family: var(--title); font-weight: 400; font-size: 21px; line-height: 1.05; overflow-wrap: break-word; }
 .case-card h3.smaller { font-size: 18px; }
 .case-card h3.smallest { font-size: 15.5px; }
+/* a title cut to one line where a phone's Home would scroll (fitTiles); the row still holds the whole name */
+.case-card h3.one-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* the four states, told apart by the mark and the words (D3): Unsolved, n of m placed, Solved and its time in green, Given up */
 .case-card .file-status { grid-area: status; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 5px; min-width: 0; margin-top: 2px; font-family: var(--ui); font-weight: 500; font-size: var(--t-status); line-height: 16px; color: var(--fg-2); }
 .case-card .file-status .mark { flex: none; width: 12px; height: 12px; }
@@ -2077,17 +2079,28 @@ function renderDay() {
   fitTiles();
 }
 
-// A case row's title is two lines at most and never cut (D18), which depends on the width the row was given: it is
-// measured here, once the rows are laid out, and steps down a size where it must.
+// A case row's title is two lines at most (D18, as amended 2026-11-08), which depends on the width the row was given: it is
+// measured here, once the rows are laid out, and steps down a size where it must. Where a phone's Home would then
+// scroll, every title of more than one line steps down to one, and one that will not fit at the smallest size is cut
+// with an ellipsis, but only if that brings Home onto one screen (Scott, 2026-11-08: two long titles and a rule's
+// chip ran the iPhone SE's Home 7px past its screen).
+// The cut is drawn by the stylesheet alone: the row keeps the whole name, and so does the button's name.
 const TITLE_STEPS = ["smaller", "smallest"];
 function fitTiles() {
   const titles = [...document.querySelectorAll("#case-grid .case-card h3")];
-  titles.forEach(title => title.classList.remove(...TITLE_STEPS));
+  titles.forEach(title => title.classList.remove(...TITLE_STEPS, "one-line"));
   if (!titles.length || !titles[0].offsetParent) return;
-  titles.forEach(title => {
-    const twoLines = () => title.offsetHeight <= 2 * parseFloat(getComputedStyle(title).lineHeight) + 1;
-    TITLE_STEPS.forEach(step => { if (!twoLines()) { title.classList.remove(...TITLE_STEPS); title.classList.add(step); } });
-  });
+  const fit = lines => title => {
+    const within = () => title.offsetHeight <= lines * parseFloat(getComputedStyle(title).lineHeight) + 1;
+    TITLE_STEPS.forEach(step => { if (!within()) { title.classList.remove(...TITLE_STEPS); title.classList.add(step); } });
+    return within();
+  };
+  titles.forEach(fit(2));
+  const root = document.documentElement;
+  if (!isPhone() || root.scrollHeight <= innerHeight) return;
+  titles.forEach(title => { title.classList.remove(...TITLE_STEPS); if (!fit(1)(title)) title.classList.add("one-line"); });
+  // a screen too small for the layout scrolls anyway: there a cut would buy nothing, and the names stay whole (D19)
+  if (root.scrollHeight > innerHeight) { titles.forEach(title => title.classList.remove(...TITLE_STEPS, "one-line")); titles.forEach(fit(2)); }
 }
 
 // ---------------------------------------------------------------- Stats (features/StatsAndArchive.md, section 7)
