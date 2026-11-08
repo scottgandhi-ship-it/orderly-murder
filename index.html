@@ -343,6 +343,25 @@ body.modal-open { overflow: hidden; }
 /* the rejected sheet's mark: a ring with the red cross */
 .rejected-mark { width: 76px; height: 76px; margin: 8px 0 20px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--fg); display: grid; place-items: center; color: var(--bad); }
 .rejected-mark::before { content: ""; width: 26px; height: 26px; background: currentColor; -webkit-mask: var(--icon-cross) center / contain no-repeat; mask: var(--icon-cross) center / contain no-repeat; }
+/* The Settings sheet (features/Reminder.md, section 7): rows of at least 56px between 1px rules, the label and its help on the
+   left, the control on the right. A switch is the whole row; its state is said in words beside the track, not by colour alone,
+   and it is green, since a brass track fails 3:1 against the white thumb. */
+.settings-list { margin: 8px 0 0; border-top: 1px solid var(--line); }
+.setting { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; margin: 0; padding: 10px 0; background: none; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; font: inherit; color: var(--fg); text-align: left; cursor: pointer; }
+.setting:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
+.setting-text { flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.setting-label { font-family: var(--ui); font-weight: 600; font-size: 16px; line-height: 22px; color: var(--fg); }
+.setting-help { font-family: var(--ui); font-size: var(--t-status); line-height: 18px; color: var(--fg-2); }
+.setting .chevron { flex: none; width: 16px; height: 16px; color: var(--fg-2); }
+.switch { flex: none; display: flex; align-items: center; gap: 8px; }
+.switch-word { min-width: 2em; text-align: right; font-family: var(--ui); font-weight: 600; font-size: var(--t-btn); color: var(--fg-2); }
+.switch-track { position: relative; width: 51px; height: 31px; border-radius: 16px; background: var(--fill-grey); transition: background-color 160ms; }
+.switch-thumb { position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: var(--card); box-shadow: 0 1px 3px rgba(27,27,27,.3); transition: transform 160ms; }
+.setting[aria-checked="true"] .switch-word { color: var(--good); }
+.setting[aria-checked="true"] .switch-track { background: var(--good-fill); }
+.setting[aria-checked="true"] .switch-thumb { transform: translateX(20px); }
+.modal p.setting-fail { margin: 10px 0 0; font-size: var(--t-status); color: var(--bad); }
+.modal p.setting-fail:empty { display: none; }
 @media (min-width: 601px) {
   .modal-bg { background: rgba(27,27,27,.5); padding: 24px 16px; }
   .modal { min-height: 0; max-width: 640px; padding: 28px 28px 24px; background: var(--card); border-radius: 24px; }
@@ -352,6 +371,7 @@ body.modal-open { overflow: hidden; }
 }
 @media (prefers-reduced-motion: reduce) {
   .token { animation: none; }
+  .switch-track, .switch-thumb { transition: none; }
   /* the hint must not be lost with its flash: a still ring for the same three seconds */
   .cell.hint-flash .fx { animation: none; box-shadow: inset 0 0 0 4px var(--bad); }
 }
@@ -671,6 +691,9 @@ button.progress:focus-visible { outline: 3px solid var(--ring); outline-offset: 
 #premium-line { display: block; flex: none; margin: 4px 0 0; font-family: var(--ui); font-size: var(--t-label); line-height: 20px; text-align: center; color: var(--fg-2); }
 /* the ring stands 1px off, clear of the Premium line under it */
 button.soon-tile:focus-visible { outline: 3px solid var(--ring); outline-offset: 1px; }
+/* the third tile, in the app alone: under Archive and Stats, across both columns */
+#btn-settings { grid-column: 1 / -1; }
+#btn-settings[hidden] { display: none; }
 
 /* ---------- Stats and the Archive (features/StatsAndArchive.md; features/Visuals.md, 13.3) ----------
    The player's record, each screen reached by its tile on Home: one column of 600px at most at any width, on the page's
@@ -1081,6 +1104,7 @@ button.soon-tile:focus-visible { outline: 3px solid var(--ring); outline-offset:
   <div id="soon-row">
     <button class="soon-tile" id="btn-archive"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4h11v9.5h-11zM2.5 7.5h11M5.5 2v3.5M10.5 2v3.5" fill="none" stroke="currentColor" stroke-width="1.6"></path></svg><span>Archive</span></button>
     <button class="soon-tile" id="btn-stats"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 13.5V8M8 13.5v-11M12.5 13.5V6" fill="none" stroke="currentColor" stroke-width="2"></path></svg><span>Stats</span></button>
+    <button class="soon-tile" id="btn-settings" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4h11M2.5 8h11M2.5 12h11M10.5 2v4M5.5 6v4M9 10v4" fill="none" stroke="currentColor" stroke-width="1.6"></path></svg><span>Settings</span></button>
   </div>
   <p id="premium-line">Premium · coming soon</p>
 </section>
@@ -1396,6 +1420,11 @@ const STORE_KEY = TEST_DAY ? "orderly-murder-daily-test" : "orderly-murder-daily
 // The results of days that have been put away, under a key of their own: every move on a board rewrites the key above,
 // and a history that only grows must not be rewritten with it. The version is raised when the shape changes.
 const LOG_KEY = STORE_KEY + "-log", LOG_VERSION = 1;
+// The player's settings (features/Reminder.md, section 5), under a third key: no older page reads or writes it, so adding it
+// moves nothing. It has no test twin, since settings are not day data. A device without it reads the defaults, which are never
+// written on a read; the key is first written when the player changes a setting.
+const SETTINGS_KEY = "orderly-murder-settings", SETTINGS_VERSION = 1;
+const SETTINGS_DEFAULTS = { haptics: true };
 const RESULT_FIGURES = ["time", "hints", "lens", "wrong", "falseStarts"];
 // These two, and the remover in store.wipe, are the only lines of the page that name localStorage (the commit hook holds it):
 // the app keeps a second copy of saved state outside the web view, and a write made anywhere else would never reach it.
@@ -1444,7 +1473,7 @@ function writeSaved(key, v) {
 function reconcileSaved() {
   const given = window.nativeSavedState, native = given && typeof given === "object" ? given : null;
   if (!savedShell && !native) return;
-  [LOG_KEY, STORE_KEY].forEach(key => {
+  [LOG_KEY, STORE_KEY, SETTINGS_KEY].forEach(key => {
     const text = savedText(key), local = savedObject(text), L = local ? wholeRev(local.rev) : 0;
     const n = native && Object.prototype.hasOwnProperty.call(native, key) ? native[key] : undefined;
     if (n === undefined) { if (local) sendSaved(key, L, text); return; }
@@ -1462,6 +1491,16 @@ function reconcileSaved() {
 }
 // At the top level, far above boot: a throw here would kill every listener below, and leaves the page on localStorage alone.
 try { reconcileSaved(); } catch {}
+// The settings as last read or set: storage is read once, after the line above, and not on every haptic tap.
+let settingsCache = null;
+// a field of the stored settings counts only if it is of its default's kind; anything else reads as the default
+function settingsFrom(v) {
+  const out = {};
+  Object.keys(SETTINGS_DEFAULTS).forEach(k => { out[k] = v && typeof v[k] === typeof SETTINGS_DEFAULTS[k] ? v[k] : SETTINGS_DEFAULTS[k]; });
+  return out;
+}
+// an object setting is merged field by field, so a field a later page added inside it survives
+const mergeSetting = (was, c) => c && typeof c === "object" && was && typeof was === "object" ? Object.assign({}, was, c) : c;
 const store = {
   get() {
     const v = readSaved(STORE_KEY) || {};
@@ -1514,6 +1553,22 @@ const store = {
     if (!("open" in v)) return;
     delete v.open;
     this.set(v);
+  },
+  // A value that does not parse, or is of another version, reads as the defaults: a later page's is left for it to read.
+  settings() {
+    if (!settingsCache) { const v = readSaved(SETTINGS_KEY); settingsCache = settingsFrom(v && v.v === SETTINGS_VERSION ? v : null); }
+    return settingsCache;
+  },
+  // Says whether the write took. The change is merged into what is stored, so a field a later page added survives. A value of a later version is never written over: the change holds for
+  // this session alone. A value of no version this page knows is written over, since the player has now chosen.
+  setSettings(change) {
+    const now = this.settings(), known = Object.keys(change).filter(k => k in SETTINGS_DEFAULTS && typeof change[k] === typeof SETTINGS_DEFAULTS[k]);
+    known.forEach(k => { now[k] = mergeSetting(now[k], change[k]); });
+    const v = readSaved(SETTINGS_KEY);
+    if (v && Number.isFinite(v.v) && v.v > SETTINGS_VERSION) return false;
+    const base = v && v.v === SETTINGS_VERSION ? v : { v: SETTINGS_VERSION };
+    known.forEach(k => { base[k] = mergeSetting(base[k], change[k]); });
+    return writeSaved(SETTINGS_KEY, base);
   },
   // a log that does not parse, or is of another version, reads as empty
   getLog() {
@@ -1948,6 +2003,34 @@ $("btn-month-next").onclick = () => turnMonth(1);
 $("btn-stats").onclick = () => { show("stats"); renderStats(true); };
 $("btn-back-cases").onclick = () => { stopTimer(); backToDay(); };
 
+// Settings (features/Reminder.md, 4.2): in the app alone, where the shell is there to keep what is chosen. In a browser the
+// tile is never drawn and the playtest page's Home is as it was. A switch is a whole row, so the row is the target.
+$("btn-settings").hidden = !savedShell;
+const settingSwitch = (id, label, help) => `
+    <button class="setting" id="${id}" role="switch" aria-checked="false" aria-labelledby="${id}-label" aria-describedby="${id}-help">
+      <span class="setting-text"><span class="setting-label" id="${id}-label">${label}</span><span class="setting-help" id="${id}-help">${help}</span></span>
+      <span class="switch" aria-hidden="true"><span class="switch-word"></span><span class="switch-track"><span class="switch-thumb"></span></span></span>
+    </button>`;
+function showSettings() {
+  openModal(`<h2>Settings</h2>
+  <div class="settings-list">${settingSwitch("set-haptics", "Haptics", "A small tap when you place someone or accuse.")}
+    <button class="setting" id="set-how"><span class="setting-text"><span class="setting-label">How to Play</span></span><svg class="chevron" viewBox="0 0 16 16" aria-hidden="true">${MARKS.chevron}</svg></button>
+  </div>
+  <p class="setting-fail" id="set-fail" role="status"></p>`, m => {
+    const haptics = m.querySelector("#set-haptics");
+    const draw = () => {
+      const on = store.settings().haptics;
+      haptics.setAttribute("aria-checked", String(on));
+      haptics.querySelector(".switch-word").textContent = on ? "On" : "Off";
+    };
+    // A write refused (a later page's settings, or storage full) still holds for this session, and is said, not hidden.
+    haptics.onclick = () => { const took = store.setSettings({ haptics: !store.settings().haptics }); m.querySelector("#set-fail").textContent = took ? "" : "Could not save this setting."; draw(); };
+    m.querySelector("#set-how").onclick = () => showHowTo();
+    draw();
+  });
+}
+$("btn-settings").onclick = showSettings;
+
 let viewOffset = 0;  // 0 = today, 1 = yesterday
 // The Archive's month (a year's twelve and the month, as one number), its chosen day, and the day it was last drawn for.
 // They are not part of a case's state, so they outlast a case opened from the Archive and it comes back where it was left.
@@ -2326,7 +2409,8 @@ const hapticShell = (() => {
   try { const h = window.webkit.messageHandlers.haptics; return h && typeof h.postMessage === "function" ? h : null; } catch { return null; }
 })();
 function haptic(pattern, intensity) {
-  if (!hapticShell || document.hidden) return;
+  // the player's switch on the Settings sheet (features/Reminder.md, section 5), read from the cache, not from storage
+  if (!hapticShell || document.hidden || !store.settings().haptics) return;
   try { hapticShell.postMessage(intensity === undefined ? { pattern } : { pattern, intensity }); } catch {}
 }
 // The verdict's beats still to come, dropped by a tap that skips the moment and by closeModal, so none plays over the next board.
