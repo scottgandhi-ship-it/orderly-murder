@@ -360,6 +360,13 @@ body.modal-open { overflow: hidden; }
 .setting[aria-checked="true"] .switch-word { color: var(--good); }
 .setting[aria-checked="true"] .switch-track { background: var(--good-fill); }
 .setting[aria-checked="true"] .switch-thumb { transform: translateX(20px); }
+.setting:disabled { cursor: default; }
+.setting-help.bad { color: var(--bad); }
+.setting-help.denied { color: var(--fg-body); }
+/* the way out of a reminder iOS refuses: a full-width 44px button under its row, in the Home tiles' style */
+.soon-tile.setting-open { width: 100%; margin: 8px 0; cursor: pointer; }
+.setting-open[hidden] { display: none; }
+.modal p.setting-version { margin: 14px 0 0; font-family: var(--ui); font-size: var(--t-status); color: var(--fg-2); }
 .modal p.setting-fail { margin: 10px 0 0; font-size: var(--t-status); color: var(--bad); }
 .modal p.setting-fail:empty { display: none; }
 @media (min-width: 601px) {
@@ -662,6 +669,13 @@ button.progress:focus-visible { outline: 3px solid var(--ring); outline-offset: 
    grey with a grey ring for a day still open and untouched; grey with a dash for a day finished with a case given up;
    a lock for a day gone by untouched; a dashed ring for a day before the game began. Today has a dot beneath, and
    the day whose cases are on screen a bar under its cell. Today's and yesterday's cells are the buttons. */
+/* the reminder's offer, once (features/Reminder.md, section 7): under the day's cases, above the last seven days */
+#reminder-offer { flex: none; margin-top: 8px; padding: 12px 14px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+#reminder-offer[hidden] { display: none; }
+#reminder-offer .offer-text { margin: 0; font-family: var(--ui); font-size: 16px; line-height: 22px; color: var(--fg); }
+#reminder-offer .offer-row { display: flex; gap: 8px; margin-top: 10px; }
+#reminder-offer .offer-row .btn { flex: 1 1 0; min-height: 44px; padding: 0 12px; }
+#reminder-offer .setting-open { width: 100%; margin-top: 10px; }
 #week { display: block; flex: none; margin-top: 8px; padding: 10px 4px 12px; background: var(--card); border-radius: 16px; }
 .week-head { display: flex; align-items: center; justify-content: space-between; gap: 0 12px; flex-wrap: wrap; min-height: 16px; padding: 0 8px; font-family: var(--ui); font-size: var(--t-label); line-height: 16px; }
 .week-label { font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); }
@@ -1099,6 +1113,7 @@ button.soon-tile:focus-visible { outline: 3px solid var(--ring); outline-offset:
     <div id="progress-row"></div>
   </div>
   <div class="case-grid" id="case-grid"></div>
+  <div id="reminder-offer" hidden></div>
   <div id="week">
     <div class="week-head"><span class="week-label">Last 7 days</span><span id="next-phone"></span></div>
     <div class="week-days" id="week-days"></div>
@@ -1427,7 +1442,9 @@ const LOG_KEY = STORE_KEY + "-log", LOG_VERSION = 1;
 // moves nothing. It has no test twin, since settings are not day data. A device without it reads the defaults, which are never
 // written on a read; the key is first written when the player changes a setting.
 const SETTINGS_KEY = "orderly-murder-settings", SETTINGS_VERSION = 1;
-const SETTINGS_DEFAULTS = { haptics: true };
+// The reminder's wish is kept apart from what iOS allows: the switch shows both, and a wish the phone does not yet allow
+// comes back by itself when it does. offerAnswered is the one fact the offer on Home leaves.
+const SETTINGS_DEFAULTS = { haptics: true, reminder: { on: false }, offerAnswered: false };
 const RESULT_FIGURES = ["time", "hints", "lens", "wrong", "falseStarts"];
 // These two, and the remover in store.wipe, are the only lines of the page that name localStorage (the commit hook holds it):
 // the app keeps a second copy of saved state outside the web view, and a write made anywhere else would never reach it.
@@ -1501,14 +1518,16 @@ function notHereYet() { return inShell() ? "New cases are on their way. Check fo
 try { reconcileSaved(); } catch {}
 // The settings as last read or set: storage is read once, after the line above, and not on every haptic tap.
 let settingsCache = null;
-// a field of the stored settings counts only if it is of its default's kind; anything else reads as the default
+// a field of the stored settings counts only if it is of its default's kind (an object setting only if it is a plain object);
+// anything else reads as the default
+const settingKind = (v, d) => typeof v === typeof d && (typeof d !== "object" || (!!v && !Array.isArray(v)));
 function settingsFrom(v) {
   const out = {};
-  Object.keys(SETTINGS_DEFAULTS).forEach(k => { out[k] = v && typeof v[k] === typeof SETTINGS_DEFAULTS[k] ? v[k] : SETTINGS_DEFAULTS[k]; });
+  Object.keys(SETTINGS_DEFAULTS).forEach(k => { out[k] = v && settingKind(v[k], SETTINGS_DEFAULTS[k]) ? v[k] : SETTINGS_DEFAULTS[k]; });
   return out;
 }
 // an object setting is merged field by field, so a field a later page added inside it survives
-const mergeSetting = (was, c) => c && typeof c === "object" && was && typeof was === "object" ? Object.assign({}, was, c) : c;
+const mergeSetting = (was, c) => c && typeof c === "object" && was && typeof was === "object" && !Array.isArray(was) ? Object.assign({}, was, c) : c;
 const store = {
   get() {
     const v = readSaved(STORE_KEY) || {};
@@ -1537,7 +1556,8 @@ const store = {
   result(day, tierId) { return this.entry(day, tierId)?.[tierId] || null; },
   hintsUsed(day, tierId) { return this.entry(day, tierId)?.["hints:" + tierId] || 0; },
   setHintsUsed(day, tierId, n) { this.put(day, tierId, "hints:" + tierId, n); },
-  record(day, tierId, result) { this.put(day, tierId, tierId, result); },
+  // every result passes here, so the reminders are laid again here and not at the callers: a day just played gets none
+  record(day, tierId, result) { this.put(day, tierId, tierId, result); try { layReminders(); } catch {} },
   // the board of a case in progress, so a reload or a discarded page does not lose it; checked by readProgress before use
   progress(day, tierId) { return this.entry(day, tierId)?.["progress:" + tierId] ?? null; },
   // a case finished in another tab stays finished: a page still open on it must not put a board beside the result
@@ -1570,7 +1590,7 @@ const store = {
   // Says whether the write took. The change is merged into what is stored, so a field a later page added survives. A value of a later version is never written over: the change holds for
   // this session alone. A value of no version this page knows is written over, since the player has now chosen.
   setSettings(change) {
-    const now = this.settings(), known = Object.keys(change).filter(k => k in SETTINGS_DEFAULTS && typeof change[k] === typeof SETTINGS_DEFAULTS[k]);
+    const now = this.settings(), known = Object.keys(change).filter(k => k in SETTINGS_DEFAULTS && settingKind(change[k], SETTINGS_DEFAULTS[k]));
     known.forEach(k => { now[k] = mergeSetting(now[k], change[k]); });
     const v = readSaved(SETTINGS_KEY);
     if (v && Number.isFinite(v.v) && v.v > SETTINGS_VERSION) return false;
@@ -1970,6 +1990,60 @@ function dismissModal() {
 }
 $("modal-bg").addEventListener("click", e => { if (e.target === $("modal-bg")) dismissModal(); });
 
+
+// ---------------------------------------------------------------- the daily reminder (features/Reminder.md, section 6.2)
+// The iOS shell's scheduler, looked up once as savedShell and hapticShell are: in a browser, and in an app built before it,
+// there is none, nothing of the reminder is drawn and nothing is posted. The page decides which days get a reminder; the
+// shell only lays them, with words of its own.
+const reminderShell = (() => {
+  try { const h = window.webkit.messageHandlers.reminder; return h && typeof h.postMessage === "function" ? h : null; } catch { return null; }
+})();
+// a fixed 9:00 AM on the player's own clock (D2), on each of the next seven days (D3)
+const REMINDER_HOUR = 9, REMINDER_MINUTE = 0, REMINDER_DAYS = 7, REMINDER_WAIT = 10000;
+const REMINDER_STATES = ["notDetermined", "denied", "authorized", "provisional", "ephemeral"];
+const reminderGranted = status => ["authorized", "provisional", "ephemeral"].includes(status);
+// What iOS last said it allows: null before it has been asked, "unknown" when the question failed.
+let reminderStatus = null;
+// Asks the shell, and always settles: a throw, a refusal, or (but for iOS's own question, which is left as long as the
+// player reads it) no answer in ten seconds settles as { status: "unknown" }.
+function askReminder(action, fields) {
+  const unknown = { status: "unknown" };
+  if (!reminderShell) return Promise.resolve(unknown);
+  let sent;
+  try { sent = Promise.resolve(reminderShell.postMessage(Object.assign({ action }, fields))); } catch { return Promise.resolve(unknown); }
+  const answer = sent.then(a => a && typeof a === "object" && !Array.isArray(a) ? a : unknown, () => unknown);
+  if (action === "enable") return answer;
+  return Promise.race([answer, new Promise(done => setTimeout(() => done(unknown), REMINDER_WAIT))]);
+}
+// an answer's status as one of iOS's five states, or "unknown": an answer of any other state is a question that failed
+const statusOf = a => REMINDER_STATES.includes(a && a.status) ? a.status : "unknown";
+function noteReminderStatus(a) { reminderStatus = statusOf(a); return reminderStatus; }
+// The days a reminder is laid for: 9:00 on each of the next seven local dates, made with the local constructor so a clock
+// change moves no day, none sooner than a minute from now, and none whose game day (the Eastern day at that moment)
+// already has a result in any tier, in the day key or the log. Each is sent as the date and time the Date reads back.
+function reminderTimes(now = new Date()) {
+  const refused = reminderStatus !== null && reminderStatus !== "unknown" && !reminderGranted(reminderStatus);
+  if (!store.settings().reminder.on || refused) return [];
+  const played = new Set(store.outcomes().map(o => o.day)), times = [];
+  for (let i = 0; i < REMINDER_DAYS; i++) {
+    const at = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i, REMINDER_HOUR, REMINDER_MINUTE);
+    if (at.getTime() < now.getTime() + 60000 || played.has(dayAt(at))) continue;
+    times.push({ y: at.getFullYear(), m: at.getMonth() + 1, d: at.getDate(), h: at.getHours(), min: at.getMinutes() });
+  }
+  return times;
+}
+// One schedule at a time: while one is with the shell, later calls fold into one, worked out and sent when it settles, so the
+// last list the shell gets is the latest. A test day lays nothing: its days are pinned while the clock is real.
+let layingReminders = false, layAgain = false;
+function layReminders() {
+  if (!reminderShell || TEST_DAY) return;
+  if (layingReminders) { layAgain = true; return; }
+  layingReminders = true;
+  askReminder("schedule", { times: reminderTimes() })
+    .then(noteReminderStatus)
+    .catch(() => {})
+    .finally(() => { layingReminders = false; if (layAgain) { layAgain = false; layReminders(); } });
+}
 // ---------------------------------------------------------------- title / select
 // The furniture is named and drawn from the open case's art set; with no case open it is the 1930s set.
 const howTo = c => { const set = artSet(c).objects, pic = o => artSvg(set[o].symbol, "legend-art"), cap = s => s[0].toUpperCase() + s.slice(1); return `
@@ -2021,23 +2095,132 @@ const settingSwitch = (id, label, help) => `
       <span class="setting-text"><span class="setting-label" id="${id}-label">${label}</span><span class="setting-help" id="${id}-help">${help}</span></span>
       <span class="switch" aria-hidden="true"><span class="switch-word"></span><span class="switch-track"><span class="switch-thumb"></span></span></span>
     </button>`;
+// The reminder's row and the offer share these lines (features/Reminder.md, section 7).
+const REMINDER_DENIED = "Notifications are off for Orderly Murder in iPhone Settings.";
+const REMINDER_FAILED = "Could not set the reminder. Try again.";
+// 9:00 AM in the phone's own 12- or 24-hour form
+const reminderClock = () => new Date(2000, 0, 1, REMINDER_HOUR, REMINDER_MINUTE).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+// while iOS or the shell is being asked, and whether the last turn on failed
+let reminderWaiting = false, reminderFailed = false;
+// The switch shows what will happen: On only when the player wants it and iOS allows it. Refused in iPhone Settings, it is
+// Off and cannot be pressed, and the way to iPhone Settings is beside it. Drawn wherever the sheet is open, and nowhere else.
+function drawReminderRow() {
+  const row = document.getElementById("set-reminder");
+  if (!row) return;
+  // a wish not yet held against what iOS allows this session is waiting too, not Off
+  const wish = store.settings().reminder.on, asking = reminderWaiting || (wish && reminderStatus === null);
+  const denied = !asking && reminderStatus === "denied";
+  const failed = !asking && !denied && (reminderFailed || (wish && reminderStatus === "unknown"));
+  const on = !asking && wish && reminderGranted(reminderStatus);
+  row.setAttribute("aria-checked", String(on));
+  row.disabled = asking || denied;
+  if (asking) row.setAttribute("aria-busy", "true"); else row.removeAttribute("aria-busy");
+  row.querySelector(".switch-word").textContent = on ? "On" : "Off";
+  const help = row.querySelector(".setting-help");
+  help.textContent = asking ? "Waiting for your answer." : denied ? REMINDER_DENIED : failed ? REMINDER_FAILED
+    : on ? `Every day at ${reminderClock()}.` : "A note once a day when the new cases are in.";
+  help.classList.toggle("bad", failed);
+  help.classList.toggle("denied", denied);
+  document.getElementById("set-reminder-open").hidden = !denied;
+}
+// The player's tap on the switch or on Remind me. The wish is saved first, then iOS is asked whether it allows reminders,
+// and asked to ask the player only if it never has. A question that fails turns the wish off again, and says so.
+function turnReminderOn() {
+  const took = store.setSettings({ reminder: { on: true } });
+  reminderWaiting = true; reminderFailed = false;
+  drawReminderRow();
+  return askReminder("status")
+    .then(a => statusOf(a) === "notDetermined" ? askReminder("enable") : a)
+    .then(noteReminderStatus, () => noteReminderStatus(null))
+    .then(status => {
+      reminderWaiting = false;
+      if (status === "unknown") { reminderFailed = true; store.setSettings({ reminder: { on: false } }); }
+      drawReminderRow();
+      layReminders();
+      return { status, took };
+    })
+    // a throw while drawing or laying must not leave the switch waiting with nothing said
+    .catch(() => {
+      reminderWaiting = false; reminderFailed = true; store.setSettings({ reminder: { on: false } });
+      try { drawReminderRow(); } catch {}
+      return { status: "unknown", took };
+    });
+}
+function turnReminderOff() {
+  const took = store.setSettings({ reminder: { on: false } });
+  reminderFailed = false;
+  drawReminderRow();
+  layReminders();
+  return took;
+}
+// iOS is asked again, since the player may have changed it in iPhone Settings, and the reminders laid again. On start (once
+// the settings key has been written, so a player who never opted in makes no call), on every return to the front, and
+// when the sheet opens.
+function refreshReminder() {
+  if (!reminderShell) return;
+  askReminder("status").then(a => { noteReminderStatus(a); drawReminderRow(); layReminders(); }).catch(() => {});
+}
+const openIPhoneSettings = () => { askReminder("openSettings").catch(() => {}); };
 function showSettings() {
   openModal(`<h2>Settings</h2>
-  <div class="settings-list">${settingSwitch("set-haptics", "Haptics", "A small tap when you place someone or accuse.")}
+  <div class="settings-list">${reminderShell ? settingSwitch("set-reminder", "Daily reminder", "A note once a day when the new cases are in.") +
+    `<button class="soon-tile setting-open" id="set-reminder-open" hidden>Open iPhone Settings</button>` : ""}
+    ${settingSwitch("set-haptics", "Haptics", "A small tap when you place someone or accuse.")}
     <button class="setting" id="set-how"><span class="setting-text"><span class="setting-label">How to Play</span></span><svg class="chevron" viewBox="0 0 16 16" aria-hidden="true">${MARKS.chevron}</svg></button>
   </div>
-  <p class="setting-fail" id="set-fail" role="status"></p>`, m => {
-    const haptics = m.querySelector("#set-haptics");
+  <p class="setting-fail" id="set-fail" role="status"></p>
+  <p class="setting-version" id="set-version" hidden></p>`, m => {
+    const haptics = m.querySelector("#set-haptics"), fail = took => { m.querySelector("#set-fail").textContent = took ? "" : "Could not save this setting."; };
     const draw = () => {
       const on = store.settings().haptics;
       haptics.setAttribute("aria-checked", String(on));
       haptics.querySelector(".switch-word").textContent = on ? "On" : "Off";
     };
     // A write refused (a later page's settings, or storage full) still holds for this session, and is said, not hidden.
-    haptics.onclick = () => { const took = store.setSettings({ haptics: !store.settings().haptics }); m.querySelector("#set-fail").textContent = took ? "" : "Could not save this setting."; draw(); };
+    haptics.onclick = () => { fail(store.setSettings({ haptics: !store.settings().haptics })); draw(); };
     m.querySelector("#set-how").onclick = () => showHowTo();
     draw();
+    const reminder = m.querySelector("#set-reminder");
+    if (!reminder) return;
+    reminder.onclick = () => {
+      if (reminder.getAttribute("aria-checked") === "true") fail(turnReminderOff());
+      else turnReminderOn().then(r => fail(r.took)).catch(() => {});
+    };
+    m.querySelector("#set-reminder-open").onclick = openIPhoneSettings;
+    drawReminderRow();
+    refreshReminder();
+    askReminder("version").then(a => {
+      const v = m.querySelector("#set-version");
+      if (!v.isConnected || typeof a.version !== "string" || !a.version || typeof a.build !== "string" || !a.build) return;
+      v.textContent = `Version ${a.version} (build ${a.build})`;
+      v.hidden = false;
+    }).catch(() => {});
   });
+}
+// The offer, once (features/Reminder.md, 4.1): on Home in the app, once the player has results on two days, until it is
+// answered either way. Never on a test day, whose days are counted from the test key while its answer would be shared.
+function renderOffer(all) {
+  const box = $("reminder-offer");
+  const s = store.settings(), days = new Set(all.map(o => o.day)).size;
+  box.hidden = !reminderShell || !!TEST_DAY || s.offerAnswered || s.reminder.on || days < 2;
+  if (box.hidden) { box.replaceChildren(); return; }
+  box.innerHTML = `<p class="offer-text">Want a note when the new cases are in?</p>
+    <div class="offer-row"><button class="btn primary" id="offer-yes">Remind me</button><button class="btn" id="offer-no">Not now</button></div>`;
+  // the answer is kept for good; what it led to is one line, gone the next time Home is drawn
+  const said = (text, settings) => {
+    box.innerHTML = `<p class="offer-text" role="status">${esc(text)}</p>`;
+    if (settings) { const b = el("button", "soon-tile setting-open", "Open iPhone Settings"); b.onclick = openIPhoneSettings; box.appendChild(b); }
+  };
+  $("offer-no").onclick = () => { store.setSettings({ offerAnswered: true }); box.hidden = true; box.replaceChildren(); $("day-heading").focus(); };
+  $("offer-yes").onclick = () => {
+    store.setSettings({ offerAnswered: true });
+    said("Waiting for your answer.");
+    turnReminderOn().then(r => {
+      if (reminderGranted(r.status)) said(`Reminder set for ${reminderClock()} each day. Turn it off in Settings.`);
+      else if (r.status === "denied") said(REMINDER_DENIED, true);
+      else said("Could not set the reminder. Try again in Settings.");
+    }).catch(() => {});
+  };
 }
 $("btn-settings").onclick = showSettings;
 
@@ -2108,6 +2291,8 @@ function refreshDayScreen() {
 }
 setInterval(refreshDayScreen, 60000);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshDayScreen(); });
+// back from iPhone Settings, or a day later: what iOS allows is read again and the reminders laid again
+document.addEventListener("visibilitychange", () => { if (!document.hidden && (savedText(SETTINGS_KEY) !== null || document.getElementById("set-reminder"))) refreshReminder(); });
 
 // How a case stands, as a row says it on Home and in the Archive (D3): a mark and one of four lines of words.
 function rowStatus(kind, placed, people, result) {
@@ -2128,6 +2313,7 @@ function renderDay() {
   showNextCases();
   // the streak on Home (D1): the handoff's large figure, and nothing at zero; it is worked out, never stored
   const all = store.outcomes(), run = streak(today, all).current;
+  renderOffer(all);
   $("streak-figure").hidden = run === 0;
   $("streak-figure").firstChild.textContent = run;
   const grid = $("case-grid"); grid.innerHTML = "";
@@ -3700,6 +3886,8 @@ function arrive() {
 let reopened = true;
 try { reopened = boot(); } catch { stopTimer(); state = null; store.clearOpen(); show("title"); }
 if (!reopened) { try { arrive(); } catch { show("title"); } }
+// the reminders are laid again at every start, but only for a player who has saved a setting: one who never opted in makes no call
+try { if (savedText(SETTINGS_KEY) !== null) refreshReminder(); } catch {}
 </script>
 </body>
 </html>
