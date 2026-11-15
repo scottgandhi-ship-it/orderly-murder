@@ -1542,9 +1542,20 @@ const store = {
     const d = this.get().days[day], id = d && d["case:" + tierId];
     return d && (!id || id === puzzleFor(tierId, day)?.id) ? d : null;
   },
+  // The case a held day's result was played on, when that case is in the tier's pool. It may differ from the case the day shows
+  // now, because an app update that comes late may bring a day whose case the web has since changed (features/CaseFlex.md, 5.1). The pool never
+  // shrinks, so the result is kept under its own case; a board in progress on that day is not, and the new case starts afresh.
+  keptCase(d, tierId) {
+    const id = d && d["case:" + tierId], r = d && d[tierId];
+    return id && r && typeof r === "object" && caseOf(id)?.tier === tierId ? caseOf(id) : null;
+  },
   put(day, tierId, key, value) {
     const v = this.get(), d = (v.days[day] = v.days[day] || {}), id = puzzleFor(tierId, day)?.id;
-    if (d["case:" + tierId] && d["case:" + tierId] !== id) { delete d[tierId]; delete d["hints:" + tierId]; delete d["progress:" + tierId]; }
+    if (d["case:" + tierId] && d["case:" + tierId] !== id) {
+      // the day is finished under its own case, and nothing written for the new one may take its result's place
+      if (this.keptCase(d, tierId)) return;
+      delete d[tierId]; delete d["hints:" + tierId]; delete d["progress:" + tierId];
+    }
     d["case:" + tierId] = id;
     d[key] = value;
     // a finished case has no board in progress; cleared here, with the result, so that every way a case can end clears it
@@ -1553,7 +1564,10 @@ const store = {
     if (key === "progress:" + tierId) v.open = { day, tier: tierId };
     this.set(v);
   },
-  result(day, tierId) { return this.entry(day, tierId)?.[tierId] || null; },
+  result(day, tierId) {
+    const d = this.get().days[day];
+    return this.entry(day, tierId)?.[tierId] || (this.keptCase(d, tierId) ? d[tierId] : null);
+  },
   hintsUsed(day, tierId) { return this.entry(day, tierId)?.["hints:" + tierId] || 0; },
   setHintsUsed(day, tierId, n) { this.put(day, tierId, "hints:" + tierId, n); },
   // every result passes here, so the reminders are laid again here and not at the callers: a day just played gets none
@@ -1628,8 +1642,8 @@ const store = {
   fold(day, d) {
     const out = { n: TIERS.length };
     TIERS.forEach(t => {
-      const r = d && d[t.id], id = puzzleFor(t.id, day)?.id;
-      // a result of another case than the day's own is not this day's: the test entry() makes for a day still held
+      const r = d && d[t.id], own = this.keptCase(d, t.id), id = own ? own.id : puzzleFor(t.id, day)?.id;
+      // a result of another case than the day's own is not this day's, unless it names a case of the pool: the test entry() makes for a day still held
       if (!r || typeof r !== "object" || !id || (d["case:" + t.id] && d["case:" + t.id] !== id)) return;
       const kept = {};
       RESULT_FIGURES.forEach(k => { if (Number.isInteger(r[k]) && r[k] >= 0) kept[k] = r[k]; });
@@ -1687,7 +1701,7 @@ const store = {
       TIERS.forEach(t => {
         const was = past && past[t.id], its = was && typeof was === "object" ? caseOf(past["case:" + t.id]) : null;
         if (its && its.tier === t.id) { out.push({ day, tier: t.id, caseId: its.id, result: was, n }); return; }
-        const now = held && held[t.id], id = puzzleFor(t.id, day)?.id;
+        const now = held && held[t.id], id = this.keptCase(held, t.id)?.id || puzzleFor(t.id, day)?.id;
         if (now && typeof now === "object" && id && (!held["case:" + t.id] || held["case:" + t.id] === id)) out.push({ day, tier: t.id, caseId: id, result: now, n });
       });
     });
@@ -2326,8 +2340,10 @@ function renderDay() {
   // A case is a row at every width: the tier's tile with a picture of the board, the label, the title, how the case
   // stands and what a press does (features/Visuals.md, D3 and D12; 9.4). Nothing here asks which screen it is.
   let solved = 0, firstOpen = true;
+  const heldDay = store.get().days[day];
   TIERS.forEach(t => {
-    const c = puzzleFor(t.id, day);
+    // a result kept under another case of the pool is shown with its own case (features/CaseFlex.md, 5.1), as its press opens it
+    const c = store.keptCase(heldDay, t.id) || puzzleFor(t.id, day);
     const done = store.result(day, t.id);
     if (done && !done.gaveUp) solved++;
     // the row is shown only when opening the case would really bring a board back
