@@ -2949,13 +2949,18 @@ function onCellClick(r, k, mark) {
     if (occupant >= 0 || b.blocking(r, k)) return;
     snapshot();
     const key = r + "," + k;
-    state.marks.has(key) ? state.marks.delete(key) : state.marks.add(key);
+    // the newer move wins (features/Misc.md, section 3): a square ruled out keeps no notes, and taking the X off brings none back
+    if (!state.marks.delete(key)) { state.marks.add(key); state.drafts.delete(key); }
     haptic("mark"); render(); return;
   }
   if (state.draftMode) {
     if (state.selected == null) { flashStatus("Choose a person to draft first.", "warn"); return; }
     if (occupant >= 0 || b.blocking(r, k)) return;
-    snapshot(); toggleDraft(r + "," + k, state.selected); haptic("mark"); render(); return;
+    const key = r + "," + k;
+    snapshot(); toggleDraft(key, state.selected);
+    // a draft added on a crossed-out square takes the X off; one taken off leaves it, so an older save's square keeps both
+    if (state.drafts.get(key)?.has(state.selected)) state.marks.delete(key);
+    haptic("mark"); render(); return;
   }
   if (occupant >= 0 && (state.selected == null || state.selected === occupant)) {
     // pick the person back up
