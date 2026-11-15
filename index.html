@@ -412,6 +412,28 @@ body.modal-open { overflow: hidden; }
 /* the end card: the solve's tile and stamp, "Solved!" large, and one button */
 .modal.demo-card .demo-end { font-size: 32px; }
 @media (min-width: 601px) { .modal.demo-card .demo-end { font-size: 36px; } }
+
+/* The Case Breakdown (features/CaseBreakdown.md, section 4): while it is open the header names it, with a close X, and the
+   play verbs and the clue panel give way to the step card and its Back and Next. Its parts are hidden at all other times.
+   Nothing new is drawn on the board: the lens's look, the claimed wash and the selected ring are the play screen's own. */
+.breakdown-head, .step-card, .step-nav { display: none; }
+#game.breaking :is(#btn-back-cases, #case-name, .top-links, .timer, .tools, .status, .clues) { display: none; }
+#game.breaking .breakdown-head { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+.breakdown-title { flex: 1; min-width: 0; margin: 0; font-family: var(--title); font-weight: 400; font-size: clamp(24px, 3vw, 30px); line-height: 1.05; color: var(--fg); }
+#breakdown-close { flex: none; width: 44px; height: 44px; min-height: 44px; padding: 0; border-radius: 50%; background: var(--card); box-shadow: none; display: grid; place-items: center; }
+#breakdown-close svg { width: 18px; height: 18px; }
+#game.breaking .step-card { display: block; }
+#game.breaking .step-nav { display: flex; gap: 8px; }
+.step-card { padding: 16px; border-radius: 16px; background: var(--card); color: var(--fg); }
+.step-count { margin: 0 0 8px; font-family: var(--ui); font-weight: 600; font-size: var(--t-label); line-height: 16px; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); }
+.step-quotes { display: flex; flex-direction: column; gap: 8px; }
+.step-quote { display: flex; align-items: center; gap: 10px; margin: 0; }
+.step-quote p { margin: 0; font-family: var(--title); font-size: 19px; line-height: 1.3; }
+.step-quote.house { padding: 6px 12px; border-radius: 12px; background: var(--chip); font-family: var(--ui); font-size: 15px; line-height: 1.35; }
+.step-quote .chip { flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-family: var(--ui); font-weight: 600; font-size: 13px; color: var(--cream); border: 1.5px solid var(--cream); }
+.step-reason { margin: 10px 0 0; padding-top: 10px; border-top: 1px solid var(--line); font-family: var(--ui); font-weight: 500; font-size: 16px; line-height: 1.4; color: var(--fg); }
+.step-nav .btn { flex: 1 1 0; min-width: 0; min-height: 44px; }
+#game.breaking :is(.cell, .person, .tray-btn) { cursor: default; }
 /* The dialogs in the new look (features/Visuals.md, batch 4; D21). A sheet (a verdict, the Scorecard, the briefing, How to
    Play) is a full-height page on the opaque ground on a phone and a centred white card on a wide screen; a confirm dialog
    (hint, Reveal, Start over) is a small card over a dimmed ground at every width. One element, one script: the form is a
@@ -687,6 +709,8 @@ body.modal-open { overflow: hidden; }
 .rules .art-row .legend-art { width: 30px; height: 30px; }
 @media (min-width: 601px) { .modal.wide { max-width: 860px; } }
 .toolkit { font-size: 15px; line-height: 1.6; }
+/* the solved verdict's way into the Case Breakdown: quiet, on a line of its own under the buttons that leave the case */
+.modal .verdict-row .btn.breakdown-btn { flex-basis: 100%; min-height: 44px; text-decoration: underline; text-underline-offset: 3px; }
 /* ---------- phone ---------- */
 .tray, .clues, .sheet-head, .sheet-tools, .head-count, #tool-casebook { display: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
@@ -1171,6 +1195,14 @@ button.soon-tile:focus-visible { outline: 3px solid var(--ring); outline-offset:
   #sheet-tools button[aria-pressed="true"] { background: var(--fg); color: var(--card); box-shadow: none; }
   #sheet-tools button:focus-visible, #casebook-close:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
 }
+@media (max-width: 600px) {
+  /* The Case Breakdown on a phone: the header keeps its 52px, the step card takes the clue panel's place and scrolls inside
+     itself when a step is long, and Back and Next stand in the action bar's place, sticky at the foot like it. */
+  .breakdown-title { font-size: 24px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #game.breaking .step-card { flex: 1 1 0; min-height: 88px; width: 100%; overflow-y: auto; overscroll-behavior: contain; padding: 12px 16px; }
+  .step-quote p { font-size: 18px; }
+  #game.breaking .step-nav { position: sticky; bottom: 0; z-index: 30; flex: none; align-self: stretch; margin: 0 -8px; padding: 5px 8px calc(6px + var(--sab)); background: var(--bg); border-top: 1px solid var(--line); }
+}
 /* narrower than any phone the board is sized for: seven people no longer fit, and the tray scrolls in place of the page.
    A scrolling box clips what is drawn outside it, so here the ring is drawn inside the button. */
 @media (max-width: 359px) {
@@ -1312,6 +1344,10 @@ button.soon-tile:focus-visible { outline: 3px solid var(--ring); outline-offset:
       <button class="link" id="tool-reset">Reset</button>
     </div>
     <div class="timer" id="timer">0:00</div>
+    <div class="breakdown-head" id="breakdown-head">
+      <h2 class="breakdown-title" id="breakdown-title" tabindex="-1">Case Breakdown</h2>
+      <button class="btn" id="breakdown-close" aria-label="Close the Case Breakdown"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg></button>
+    </div>
   </div>
   <div class="layout">
     <div class="board-wrap">
@@ -1325,6 +1361,11 @@ button.soon-tile:focus-visible { outline: 3px solid var(--ring); outline-offset:
         <div class="clue-rule" id="clue-rule"></div>
         <div class="clue-rules"><b>The rules</b><span>One person to every row.</span><span>One person to every column.</span><span>One killer alone with the body.</span></div>
       </section>
+      <section class="step-card" id="step-card" aria-labelledby="step-count">
+        <h3 class="step-count" id="step-count"></h3>
+        <div class="step-quotes" id="step-quotes"></div>
+        <p class="step-reason" id="step-reason"></p>
+      </section>
       <div class="tools" id="tools">
         <button class="btn small" id="tool-casebook" aria-haspopup="dialog">Casebook</button>
         <button class="btn small" id="tool-draft" aria-label="Draft" aria-pressed="false" title="Note where the selected person might be (D)">Draft</button>
@@ -1333,6 +1374,10 @@ button.soon-tile:focus-visible { outline: 3px solid var(--ring); outline-offset:
         <button class="btn small" id="tool-lens" aria-pressed="false" title="Dim the squares the selected person's statement rules out (L)">Lens</button>
         <button class="btn small" id="tool-hint" title="Ask the Inspector (H)">Hint</button>
         <button class="btn small primary" id="tool-submit" disabled title="Available once everyone is placed">Accuse</button>
+      </div>
+      <div class="step-nav" id="step-nav">
+        <button class="btn" id="step-back">Back</button>
+        <button class="btn primary" id="step-next">Next</button>
       </div>
       <div class="status" id="status"></div>
     </div>
@@ -1522,6 +1567,194 @@ function verifyCases() {
   });
 }
 
+// ---------------------------------------------------------------- the Case Breakdown's steps (features/CaseBreakdown.md, section 5)
+// The rules of the house as the page quotes them: the rejected sheet's objections and the Case Breakdown's steps say the
+// same words, so they are written once.
+const HOUSE_ROW = "One person to every row.";
+const HOUSE_COLUMN = "One person to every column.";
+const HOUSE_ROOMS = "Guests keep to their own rooms.";
+const HOUSE_KILLER = "One killer alone with the body.";
+
+// How deduce() solves a case, as steps a player can follow: one step for each person made certain, in deduce()'s order,
+// a step of its own for a round that narrows squares and places nobody, and the accusation last. It replays deduce()'s
+// passes in the same order and notes which pass, and which statements, did each narrowing. What a statement means is
+// asked of the Board alone, so this is not a third copy of the clues; verifyBreakdowns() holds the replay to deduce().
+// Each step: placed (a person's index, or null), at (their square), quotes ({ who, text }: a person's own words, or a
+// rule of the house with who null; at most two), reason (one line), lit (the squares the board lights), scene (the
+// accusation, which shades every room but the victim's).
+function explain(board, people, clues) {
+  clues.forEach(cl => { if (!UNARY.has(cl.type) && !BINARY.has(cl.type)) throw new Error("explain: no reading for a " + cl.type + " statement"); });
+  const n = board.n, k = people.length, c = board.c, key = (r, q) => r * n + q;
+  const rc = v => [Math.floor(v / n), v % n];
+  const name = i => people[i].short;
+  const said = i => ({ who: i, text: clues[i].text });
+  const house = text => ({ who: null, text });
+  const lineWord = ax => ax === 0 ? "row" : "column";
+  const lineRule = ax => house(ax === 0 ? HOUSE_ROW : HOUSE_COLUMN);
+  const squares = test => { const out = []; for (let r = 0; r < n; r++) for (let q = 0; q < n; q++) if (test(r, q)) out.push([r, q]); return out; };
+  const inLines = (ax, lines) => squares((r, q) => lines.has(ax === 0 ? r : q));
+  const pos = people.map(() => null);
+  // the squares a statement allows the person it is read for: the speaker's own, or for a statement about two people,
+  // either of them once the other is placed. A person placed by someone else's ONLY or ALONE statement is shown that
+  // statement's squares, the ones it closes to everyone else.
+  const lit = (ci, subject) => {
+    const cl = clues[ci], p = people[subject];
+    if (UNARY.has(cl.type)) return subject === ci ? squares((r, q) => board.allowed(p, r, q) && board.unaryOk(cl, r, q)) : [];
+    const other = subject === ci ? pos[cl.other] : pos[ci];
+    if (!other) return [];
+    return squares((r, q) => board.allowed(p, r, q) && r !== other[0] && q !== other[1]
+      && (subject === ci ? board.binaryOk(cl, [r, q], other) : board.binaryOk(cl, other, [r, q])));
+  };
+  const steps = [];
+  const place = (i, step) => { pos[i] = rc([...cands[i]][0]); steps.push({ placed: i, at: pos[i], scene: false, ...step }); };
+
+  // the opening reading, as deduce() makes it: each person's own statement, the rooms and objects closed to them, and
+  // everyone else's ONLY and ALONE statements
+  const opening = people.map(() => null);
+  let cands = people.map((p, i) => {
+    const own = UNARY.has(clues[i].type);
+    const base = squares((r, q) => !board.blocking(r, q) && (!own || board.unaryOk(clues[i], r, q)));
+    const open = base.filter(([r, q]) => board.allowed(p, r, q));
+    const only = clues.map((cl, j) => j).filter(j => j !== i && ONLY[clues[j].type] && open.some(([r, q]) => board.unaryOk(clues[j], r, q)));
+    opening[i] = { own, rule: open.length < base.length, only };
+    return new Set(open.filter(([r, q]) => !only.some(j => board.unaryOk(clues[j], r, q))).map(([r, q]) => key(r, q)));
+  });
+  const order = [];
+  const fresh = () => cands.map((s, i) => i).filter(i => cands[i].size === 1 && !order.includes(i));
+  const noteSolved = () => { const now = fresh(); order.push(...now); return now; };
+  const setIf = (i, s) => { if (s.size !== cands[i].size) { cands[i] = s; return true; } return false; };
+  const ruleQuote = () => house(c.twist ? c.twist.text : HOUSE_ROOMS);
+
+  noteSolved().forEach(i => {
+    const o = opening[i], others = o.only.map(said), A = name(i);
+    const quotes = (o.own ? [said(i)] : []).concat(others, o.rule ? [ruleQuote()] : []).slice(0, 2);
+    const also = o.only.length ? `${name(o.only[0])}'s` : o.rule ? "the Local rule" : null;
+    const reason = o.own ? (also ? `${A}'s statement and ${also} leave ${A} one square.` : `${A}'s statement leaves ${A} one square.`)
+      : o.only.length ? `${name(o.only[0])}'s statement leaves ${A} one square.` : `The Local rule leaves ${A} one square.`;
+    place(i, { quotes, reason, lit: o.own || !o.only.length ? lit(i, i) : lit(o.only[0], o.only[0]) });
+  });
+
+  let changed = true, guard = 0;
+  while (changed && guard++ < 500) {
+    changed = false;
+    if (cands.some(s => s.size === 0)) throw new Error("explain: " + c.id + " leaves someone nowhere");
+    // everyone placed takes their row and column from everyone else
+    for (let i = 0; i < k; i++) if (cands[i].size === 1) {
+      const [r, q] = rc([...cands[i]][0]);
+      for (let j = 0; j < k; j++) if (j !== i)
+        changed = setIf(j, new Set([...cands[j]].filter(v => { const [a, b] = rc(v); return a !== r && b !== q; }))) || changed;
+    }
+    if (changed) {
+      const now = noteSolved();
+      now.forEach(j => place(j, { quotes: [house(HOUSE_ROW), house(HOUSE_COLUMN)],
+        reason: `The rows and columns already taken leave ${name(j)} one square.`, lit: lit(j, j) }));
+      if (!now.length) steps.push({ placed: null, at: null, scene: false, quotes: [house(HOUSE_ROW), house(HOUSE_COLUMN)],
+        reason: "The rows and columns already taken narrow everyone else's squares.", lit: [] });
+      continue;
+    }
+    // a row or column only one person can still reach is theirs
+    const reached = [];
+    for (const ax of [0, 1]) for (let line = 0; line < n; line++) {
+      const who = [];
+      for (let i = 0; i < k; i++) if ([...cands[i]].some(v => rc(v)[ax] === line)) who.push(i);
+      if (who.length === 0) throw new Error("explain: " + c.id + " leaves a line empty");
+      if (who.length === 1 && setIf(who[0], new Set([...cands[who[0]]].filter(v => rc(v)[ax] === line)))) {
+        changed = true; reached.push({ ax, line, i: who[0] });
+      }
+    }
+    if (changed) {
+      const now = noteSolved();
+      now.forEach(i => {
+        const why = reached.filter(x => x.i === i).pop();
+        place(i, { quotes: [lineRule(why.ax), said(i)], reason: `Nobody but ${name(i)} can still reach this ${lineWord(why.ax)}.`,
+          lit: inLines(why.ax, new Set([why.line])) });
+      });
+      if (!now.length) {
+        const why = reached[0], I = name(why.i);
+        steps.push({ placed: null, at: null, scene: false, quotes: [lineRule(why.ax), said(why.i)],
+          reason: `Nobody but ${I} can still reach this ${lineWord(why.ax)}, so ${I} is in it.`, lit: inLines(why.ax, new Set([why.line])) });
+      }
+      continue;
+    }
+    // one person kept to one line, or two people kept to two lines, leave those lines to nobody else
+    const filled = [];
+    outer: for (const ax of [0, 1]) {
+      const groups = [];
+      for (let i = 0; i < k; i++) groups.push([i]);
+      for (let i = 0; i < k; i++) for (let j = i + 1; j < k; j++) groups.push([i, j]);
+      for (const g of groups) {
+        const lines = new Set(); g.forEach(i => cands[i].forEach(v => lines.add(rc(v)[ax])));
+        if (lines.size !== g.length) continue;
+        for (let j = 0; j < k; j++) if (!g.includes(j) && setIf(j, new Set([...cands[j]].filter(v => !lines.has(rc(v)[ax]))))) {
+          changed = true; filled.push({ ax, g, lines, j });
+        }
+      }
+      if (changed) break outer;
+    }
+    if (changed) {
+      const held = f => f.g.length === 1 ? `${name(f.g[0])} must be in this ${lineWord(f.ax)}.`
+        : `${name(f.g[0])} and ${name(f.g[1])} fill these two ${lineWord(f.ax)}s.`;
+      const now = noteSolved();
+      now.forEach(j => {
+        const f = filled.filter(x => x.j === j).pop();
+        place(j, { quotes: [lineRule(f.ax), said(j)], reason: `${held(f)} ${name(j)} has one square left.`, lit: inLines(f.ax, f.lines) });
+      });
+      if (!now.length) {
+        const f = filled[0];
+        const reason = f.g.length === 1 ? `${name(f.g[0])} must be in this ${lineWord(f.ax)}, so nobody else can be.`
+          : `${name(f.g[0])} and ${name(f.g[1])} must fill these two ${lineWord(f.ax)}s.`;
+        steps.push({ placed: null, at: null, scene: false, quotes: [lineRule(f.ax)], reason, lit: inLines(f.ax, f.lines) });
+      }
+      continue;
+    }
+    // a statement about two people keeps each to the squares the other leaves it
+    const paired = [];
+    for (let i = 0; i < k; i++) {
+      const cl = clues[i];
+      if (!BINARY.has(cl.type)) continue;
+      const j = cl.other;
+      const ok = (a, b) => { const A = rc(a), B = rc(b); return A[0] !== B[0] && A[1] !== B[1] && board.binaryOk(cl, A, B); };
+      const ni = new Set([...cands[i]].filter(a => [...cands[j]].some(b => ok(a, b))));
+      const nj = new Set([...cands[j]].filter(b => [...ni].some(a => ok(a, b))));
+      if (setIf(i, ni)) { changed = true; paired.push({ by: i, to: i }); }
+      if (setIf(j, nj)) { changed = true; paired.push({ by: i, to: j }); }
+    }
+    const now = noteSolved();
+    now.forEach(p => {
+      const by = paired.filter(x => x.to === p).pop().by;
+      place(p, { quotes: by === p ? [said(by)] : [said(by), said(p)], reason: `${name(by)}'s statement leaves ${name(p)} one square.`, lit: lit(by, p) });
+    });
+    if (changed && !now.length) {
+      const x = paired[0], sub = name(x.to), spoke = name(x.by);
+      steps.push({ placed: null, at: null, scene: false, quotes: [said(x.by)],
+        reason: x.by === x.to ? `${spoke}'s statement narrows ${spoke}'s squares.` : `${spoke}'s statement narrows ${sub}'s squares.`, lit: lit(x.by, x.to) });
+    }
+  }
+  const done = cands.map(s => [...s].map(rc));
+  // the accusation: the one suspect in the victim's room
+  const scene = board.room(...pos[0]);
+  steps.push({ placed: null, at: null, scene: true, quotes: [house(HOUSE_KILLER)],
+    reason: `Only ${name(c.killer)} is in ${roomRef(c.roomNames[scene])} with ${name(0)}.`, lit: [] });
+  return { steps, cands: done, order, pos };
+}
+
+// Dev check, run wherever verifyCases() runs: for every shipped case, the breakdown ends where deduce() ends, places people
+// in deduce()'s order, and every square matches the solution.
+function verifyBreakdowns() {
+  return TIERS.flatMap(t => DATA.puzzles[t.id]).map(c => {
+    const b = new Board(c), people = [{ ...c.victim, victim: true }, ...c.suspects];
+    let ok = false;
+    try {
+      const want = deduce(b, people, c.clues), got = explain(b, people, c.clues);
+      const placed = got.steps.filter(s => s.placed != null).map(s => s.placed);
+      ok = !!want.cands && JSON.stringify(got.cands) === JSON.stringify(want.cands) && JSON.stringify(got.order) === JSON.stringify(want.order)
+        && JSON.stringify(placed) === JSON.stringify(want.order) && placed.length === people.length
+        && got.pos.every((p, i) => p && p[0] === c.solution[i][0] && p[1] === c.solution[i][1])
+        && got.steps[got.steps.length - 1].scene;
+    } catch { ok = false; }
+    return `${c.id}: ${ok ? "OK" : "FAIL"}`;
+  });
+}
 // ---------------------------------------------------------------- daily schedule
 const DAY_MS = 86400000;
 // Development only: ?day=7 pins the day number so any day of the schedule can be tested without waiting.
@@ -3802,6 +4035,14 @@ document.addEventListener("keydown", e => {
   // a held key repeats: one press leaves one dialog, not a chain of them
   if (modalOpen()) { if (e.key === "Escape" && !e.repeat) dismissModal(); return; }
   if (!$("game").classList.contains("active") || !state) return;
+  // the Case Breakdown steps with the arrows and closes with Escape; Right stops at the last step, which only Close leaves
+  if (state.breakdown) {
+    const bd = state.breakdown;
+    if (e.key === "ArrowRight" && bd.at < bd.steps.length - 1) stepBreakdown(1);
+    else if (e.key === "ArrowLeft") stepBreakdown(-1);
+    else if (e.key === "Escape" && !e.repeat) closeBreakdown();
+    return;
+  }
   // the board is out of sight behind the Casebook, so its shortcuts must not reach it
   if (sheetOpen()) { if (e.key === "Escape") closeCasebook(); return; }
   // none of the game's keys is ever a walkthrough's target; Enter and Space are left to the click a focused control gets
@@ -3845,6 +4086,8 @@ function rivals(i) {
 
 function render() {
   if (!state) return;
+  $("game").classList.toggle("breaking", !!state.breakdown);
+  if (state.breakdown) { renderBreakdown(); return; }
   const { board: b, pos, people, cells, c } = state;
   const n = b.n;
   const claimedR = new Set(), claimedC = new Set();
@@ -4051,6 +4294,9 @@ function setBehindSheet(hidden) {
 }
 // Lens, Briefing, How to play and Reset are single buttons: they live in the Casebook on a phone and in their old places otherwise
 function placeControls() {
+  // the Case Breakdown's card and buttons: in the clue panel's place and the action bar's on a phone, at the top of the side column otherwise
+  if (isPhone()) { $("clues").after($("step-card")); $("tools").after($("step-nav")); }
+  else { $("casebook").insertBefore($("step-card"), $("twist-box")); $("casebook").insertBefore($("step-nav"), $("twist-box")); }
   if (isPhone()) {
     ["tool-lens", "tool-briefing", "tool-how", "tool-reset"].forEach(id => $("sheet-tools").appendChild($(id)));
   } else {
@@ -4074,14 +4320,14 @@ function findObjection() {
   const inRoom = i => roomRef(c.roomNames[b.room(...pos[i])]);
   // house: the quote is a rule of the house, which nobody says, so the sheet shows no witness
   for (let i = 0; i < people.length; i++) for (let j = i + 1; j < people.length; j++) {
-    if (pos[i][0] === pos[j][0]) return { house: true, ring: [i, j], quote: "One person to every row.", detail: `${name(i)} and ${name(j)} are in the same row.` };
-    if (pos[i][1] === pos[j][1]) return { house: true, ring: [i, j], quote: "One person to every column.", detail: `${name(i)} and ${name(j)} are in the same column.` };
+    if (pos[i][0] === pos[j][0]) return { house: true, ring: [i, j], quote: HOUSE_ROW, detail: `${name(i)} and ${name(j)} are in the same row.` };
+    if (pos[i][1] === pos[j][1]) return { house: true, ring: [i, j], quote: HOUSE_COLUMN, detail: `${name(i)} and ${name(j)} are in the same column.` };
   }
   for (let i = 0; i < people.length; i++) {
     if (!b.allowed(people[i], pos[i][0], pos[i][1])) {
       // a closed kind of square is named for what it is; a closed room by its name
       const o = b.obj(...pos[i]);
-      return { house: true, ring: [i], quote: c.twist ? c.twist.text : "Guests keep to their own rooms.",
+      return { house: true, ring: [i], quote: c.twist ? c.twist.text : HOUSE_ROOMS,
         detail: b.closedObjects.has(o) ? `You've put ${name(i)} ${c.legend[o].on}.` : `You've put ${name(i)} in ${inRoom(i)}.` };
     }
   }
@@ -4198,7 +4444,7 @@ function confirmGiveUp(onCancel) {
   openModal(`
     <div class="kicker">Close the file?</div>
     <h2>Give up this case?</h2>
-    <p>The Inspector will show you where everyone was and who did it. Today's case will be recorded as given up, not solved.</p>
+    <p>The Inspector will walk you through the case. Today's case will be recorded as given up, not solved.</p>
     ${revealCost()}
     <div class="row">
       <button class="btn" data-no data-dismiss>Keep investigating</button>
@@ -4228,19 +4474,20 @@ function recordResult(gaveUp) {
   return true;
 }
 
+// The result is written first, so a reload or a closed app during the walk through lands as a case given up always has.
+// Everyone is put on their square only once the Case Breakdown is closed: until then the board is the breakdown's.
 function giveUp() {
   const { c } = state;
-  state.pos = c.solution.map(p => [...p]);
+  closeModal();
   state.marks.clear(); state.drafts.clear();
   clearNotices();
   state.selected = null; state.lens = false;
   state.solved = true; state.gaveUp = true;
   stopTimer();
   // the Training case's own end, no result and no verdict: a wall, since its walkthrough never offers a Reveal
-  if (state.demo) { render(); endDemo(); return; }
+  if (state.demo) { state.pos = c.solution.map(p => [...p]); render(); endDemo(); return; }
   const recorded = recordResult(true);
-  render();
-  showVerdict(recorded);
+  openBreakdown(() => { state.pos = c.solution.map(p => [...p]); render(); showVerdict(recorded); });
 }
 
 function closeCase() {
@@ -4333,8 +4580,9 @@ function feelVerdict(m, ends) {
 }
 
 // recorded: this case's result has just been written. With nothing handed in the sheet is a result looked at, or one
-// that records nothing.
-function showVerdict(recorded) {
+// that records nothing. reopened: the same verdict opened again after its Case Breakdown, with the same buttons; its rank
+// is drawn finished and nothing is counted or felt a second time.
+function showVerdict(recorded, reopened) {
   const { c, people } = state;
   const k = people[c.killer];
   const scene = roomRef(c.roomNames[state.board.room(...c.solution[0])]);
@@ -4389,14 +4637,18 @@ function showVerdict(recorded) {
       ${ends ? "" : `<button class="btn${state.viewing || late ? " primary" : ""}${again && card ? " under" : ""}" data-files>All cases</button>`}
       ${next && !late ? `<button class="btn primary" data-next>Next case: ${esc(next.label)}</button>` : ""}
       ${card && !state.viewing ? `<button class="btn primary" data-card${ends ? " data-dismiss" : ""}>Scorecard</button>` : ""}
+      ${state.gaveUp ? "" : `<button class="btn plain breakdown-btn" data-breakdown>Case Breakdown</button>`}
     </div>
     <p class="fine">${fine}</p>`, m => {
     // "Solved!" names nobody, so that sheet is also described by who did it. A case given up names the culprit and role in the heading.
     m.setAttribute("aria-describedby", state.gaveUp ? "modal-stamp" : "modal-stamp modal-who");
     // a verdict carrying the rank closes up its gaps to make room for it; a tap anywhere on it ends the moment at once,
     // and a tap on a button still does what the button does
-    const skipFeel = !state.viewing && !state.gaveUp ? feelVerdict(m, ends) : null;
-    if (rank) {
+    const skipFeel = !state.viewing && !state.gaveUp && !reopened ? feelVerdict(m, ends) : null;
+    if (rank && reopened) {
+      m.classList.add("ranked");
+      m.querySelector(".rank").classList.add("skip");
+    } else if (rank) {
       m.classList.add("ranked");
       const finish = runRankCount(m);
       m.onclick = e => { m.querySelector(".rank")?.classList.add("skip"); finish(); if (skipFeel) skipFeel(e); };
@@ -4413,7 +4665,102 @@ function showVerdict(recorded) {
     // it takes this sheet's place; a sheet left open past its day goes back to the cases, as showScorecard does for itself
     const sc = m.querySelector("[data-card]");
     if (sc) sc.onclick = () => showScorecard(state.day);
+    const bd = m.querySelector("[data-breakdown]");
+    if (bd) bd.onclick = () => { closeModal(); openBreakdown(() => showVerdict(recorded, true)); };
   });
+}
+
+// ---------------------------------------------------------------- the Case Breakdown (features/CaseBreakdown.md)
+// A walk through how the case is solved, worked out when it opens (explain, 03b-explain.js). It is shown on the case's
+// own board and writes nothing: the steps, the step shown and what closing leads to live in state.breakdown alone, and
+// state.pos is never touched. Opened only for a case already finished, so every way of playing the board is shut.
+function openBreakdown(onClose) {
+  const { board, people, c } = state;
+  // a statement explain() cannot read (a clue type added since) must not leave a finished case on no screen at all:
+  // the player gets what closing the breakdown would give
+  let steps;
+  try { steps = explain(board, people, c.clues).steps; } catch { onClose(); return; }
+  state.breakdown = { steps, at: 0, onClose };
+  state.selected = null; state.lens = false;
+  closeCasebook();
+  render();
+  if (state.breakdown.steps[0].placed != null) haptic("tap");
+  $("step-next").focus();
+}
+function stepBreakdown(by) {
+  const bd = state && state.breakdown;
+  if (!bd) return;
+  const to = bd.at + by;
+  if (to < 0) return;
+  if (to >= bd.steps.length) { closeBreakdown(); return; }
+  bd.at = to;
+  // a person placed is felt as the player's own placing is; Back takes them off again in silence
+  if (by > 0 && bd.steps[to].placed != null) haptic("tap");
+  render();
+  // the button pressed can be switched off by the step it brought, which would leave the keyboard nowhere
+  if (document.activeElement && document.activeElement.disabled) $("step-next").focus();
+}
+function closeBreakdown() {
+  const bd = state && state.breakdown;
+  if (!bd) return;
+  state.breakdown = null;
+  render();
+  bd.onClose();
+}
+$("step-back").onclick = () => stepBreakdown(-1);
+$("step-next").onclick = () => stepBreakdown(1);
+$("breakdown-close").onclick = () => closeBreakdown();
+
+// The board as the step shown leaves it: the people placed by this step and those before it, the rows and columns they
+// take, the squares the step's statement or line allows lit with the lens's own look, and the person just placed ringed.
+// The player's own marks and drafts are not drawn; the hint's red is never used. render() hands over to this while a
+// breakdown is open, so nothing else draws over it.
+function renderBreakdown() {
+  const { board: b, people, cells, c } = state, bd = state.breakdown, step = bd.steps[bd.at], n = b.n;
+  const pos = people.map(() => null);
+  bd.steps.slice(0, bd.at + 1).forEach(s => { if (s.placed != null) pos[s.placed] = s.at; });
+  const claimedR = new Set(pos.filter(Boolean).map(p => p[0])), claimedC = new Set(pos.filter(Boolean).map(p => p[1]));
+  const lit = new Set(step.lit.map(([r, k]) => r + "," + k));
+  const scene = step.scene ? b.room(...pos[0]) : null;
+  for (let r = 0; r < n; r++) for (let k = 0; k < n; k++) {
+    const d = cells[r][k], taken = pos.some(p => p && p[0] === r && p[1] === k);
+    d.querySelectorAll(".token, .mark, .drafts").forEach(x => x.remove());
+    d.classList.toggle("claimed", scene == null && (claimedR.has(r) || claimedC.has(k)) && !taken);
+    d.classList.toggle("lens", lit.has(r + "," + k));
+    d.classList.toggle("lens-off", lit.size > 0 && !lit.has(r + "," + k));
+    d.classList.toggle("away", scene != null && b.room(r, k) !== scene);
+  }
+  pos.forEach((p, i) => {
+    if (!p) return;
+    const t = el("div", "token" + (people[i].victim ? " victim" : "") + (step.placed === i ? " selected" : ""), initials(people[i].name));
+    t.style.background = people[i].color;
+    t.insertAdjacentHTML("beforeend", pipHtml(people[i]));
+    cells[p[0]][p[1]].appendChild(t);
+  });
+  state.cards.forEach((card, i) => {
+    card.classList.toggle("selected", step.placed === i);
+    card.classList.toggle("placed", !!pos[i]);
+    const st = card.querySelector(".state");
+    st.textContent = pos[i] ? c.roomNames[b.room(...pos[i])] : "–";
+    st.className = "state";
+    const tb = state.trayBtns[i], p = people[i];
+    tb.classList.toggle("selected", step.placed === i);
+    tb.classList.toggle("placed", !!pos[i]);
+    tb.setAttribute("aria-pressed", step.placed === i);
+    tb.setAttribute("aria-label", `${p.name}, ${p.victim ? "the deceased" : p.role}, ${pos[i] ? "placed in " + roomRef(c.roomNames[b.room(...pos[i])]) : "not placed"}`);
+  });
+  const count = `${pos.filter(Boolean).length} of ${people.length} placed`;
+  $("placed-count").textContent = count;
+  $("sheet-count").textContent = count;
+  const last = bd.at === bd.steps.length - 1;
+  $("step-count").textContent = `Step ${bd.at + 1} of ${bd.steps.length}`;
+  $("step-quotes").innerHTML = step.quotes.map(q => q.who == null ? `<p class="step-quote house">${esc(q.text)}</p>`
+    : `<div class="step-quote"><span class="chip" style="background:${people[q.who].color}" aria-hidden="true">${initials(people[q.who].name)}</span>
+      <p><span class="sr-only">${esc(people[q.who].short)} says: </span>“${esc(q.text)}”</p></div>`).join("");
+  $("step-reason").textContent = step.reason;
+  $("step-back").disabled = bd.at === 0;
+  $("step-next").textContent = last ? "Close" : "Next";
+  $("step-card").scrollTop = 0;
 }
 
 // What is measured against the room the screen has: the titles of the day's case rows, the Stats graph, and a case's board and clue panel.
