@@ -68,7 +68,8 @@
   --ring: var(--fg);
   color-scheme: light;
 }
-* { box-sizing: border-box; }
+/* a quick second tap on Undo or the screen must not zoom the page; pinch still zooms, for a player who needs it */
+* { box-sizing: border-box; touch-action: manipulation; }
 html, body { margin: 0; height: 100%; }
 body {
   background: var(--bg);
